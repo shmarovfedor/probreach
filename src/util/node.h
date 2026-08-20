@@ -62,6 +62,8 @@ public:
   }
 
   friend std::ostream &operator<<(std::ostream &os, const node &n);
+
+  bool is_empty();
 };
 
 node *copy_node(node *);
@@ -80,7 +82,6 @@ std::string node_to_string_prefix(node *);
 std::string node_to_string_infix(node *);
 
 std::string node_fix_index(node *, int, std::string);
-bool is_node_empty(node *);
 
 // we might not need these methods in future
 void get_first_node_by_value(node *, node *, std::vector<std::string>);

@@ -423,9 +423,9 @@ void pdrh::delete_node(pdrh::node *n)
  * @param n - node to check.
  * @return emptiness check result.
  */
-bool pdrh::is_node_empty(node *n)
+bool node::is_empty()
 {
-  return n->value.empty() && n->operands.empty();
+  return this->value.empty() && this->operands.empty();
 }
 
 /**
@@ -529,7 +529,7 @@ node *pdrh::get_node_neg_by_value(node *root, vector<string> values)
   pdrh::node *time_node = new pdrh::node;
   pdrh::get_first_node_by_value(root_copy, time_node, values);
   //cout << "Node before removing time node: " << pdrh::node_to_string_prefix(root) << endl;
-  if (pdrh::is_node_empty(time_node))
+  if (time_node->is_empty())
     return NULL;
   // creating a negation node
   pdrh::node *not_node = new node("not", {root_copy});

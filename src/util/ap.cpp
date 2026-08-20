@@ -32,7 +32,7 @@ capd::interval ap::get_sample_rate(pdrh::node *n)
   pdrh::delete_node(node_copy);
   capd::interval result(0);
   // checking if the time node is not empty
-  if (!pdrh::is_node_empty(time_node))
+  if (!time_node->is_empty())
   {
     // checking if the time node signature is <var>=<value>
     if (time_node->value == "=")
@@ -82,7 +82,7 @@ capd::interval ap::get_meal_time(pdrh::node *n, vector<box> boxes)
   pdrh::delete_node(node_copy);
   capd::interval result(0);
   // checking if the time node is not empty
-  if (!pdrh::is_node_empty(time_node))
+  if (!time_node->is_empty())
   {
     // checking if the time node signature is <var>=<value>
     if (time_node->value == "=")
