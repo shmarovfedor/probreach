@@ -3,7 +3,7 @@
 ## How to build
 
 ```
-sudo apt-get install git cmake build-essential bison flex libgsl-dev pkg-config libfl-dev
+sudo apt-get install git cmake build-essential bison flex libgsl-dev pkg-config libfl-dev libomp-dev
 git clone https://github.com/dreal/probreach.git probreach
 cd probreach
 mkdir -p build/release
