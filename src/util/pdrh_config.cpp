@@ -100,30 +100,6 @@ void parse_pdrh_config(int argc, char *argv[])
         exit(EXIT_FAILURE);
       }
     }
-    //        // sobol sequence optimization bound
-    //        else if(strcmp(argv[i], "--sobol-term-arg") == 0)
-    //        {
-    //            i++;
-    //            istringstream is(argv[i]);
-    //            is >> global_config.sobol_term_arg;
-    //            if(global_config.sobol_term_arg <= 0)
-    //            {
-    //                cerr << "--sobol-term-arg must be positive";
-    //                exit(EXIT_FAILURE);
-    //            }
-    //        }
-    //        // cross-entropy termination condition
-    //        else if(strcmp(argv[i], "--cross-entropy-term-arg") == 0)
-    //        {
-    //            i++;
-    //            istringstream is(argv[i]);
-    //            is >> global_config.cross_entropy_term_arg;
-    //            if(global_config.cross_entropy_term_arg <= 0)
-    //            {
-    //                cerr << "--cross-entropy-term-arg must be positive";
-    //                exit(EXIT_FAILURE);
-    //            }
-    //        }
     // minimum probability flag
     else if (strcmp(argv[i], "--min-prob") == 0)
     {
@@ -153,11 +129,6 @@ void parse_pdrh_config(int argc, char *argv[])
         cerr << "-l cannot be negative\n";
         exit(EXIT_FAILURE);
       }
-      //else if(global_config.reach_depth_min > global_config.reach_depth_max)
-      //{
-      //    CLOG(ERROR, "config") << "Minimum reachaility depth cannot be smaller than the maximum one";
-      //    exit(EXIT_FAILURE);
-      //}
     }
     // maximum reachability depth
     else if (strcmp(argv[i], "-u") == 0)
@@ -170,11 +141,6 @@ void parse_pdrh_config(int argc, char *argv[])
         cerr << "-u cannot be negative\n";
         exit(EXIT_FAILURE);
       }
-      //else if(global_config.reach_depth_min > global_config.reach_depth_max)
-      //{
-      //    CLOG(ERROR, "config") << "Minimum reachaility depth cannot be smaller than the maximum one";
-      //    exit(EXIT_FAILURE);
-      //}
     }
     // maximum reachability depth
     else if (strcmp(argv[i], "--decision-method") == 0)
@@ -251,13 +217,6 @@ void parse_pdrh_config(int argc, char *argv[])
         exit(EXIT_FAILURE);
       }
     }
-    //        // time series filename
-    //        else if(strcmp(argv[i], "--series") == 0)
-    //        {
-    //            i++;
-    //            global_config.series_filename = argv[i];
-    //            istringstream is(argv[i]);
-    //        }
     // solver binary
     else if (strcmp(argv[i], "--solver") == 0)
     {
@@ -283,88 +242,11 @@ void parse_pdrh_config(int argc, char *argv[])
         }
       }
     }
-    // controller plan output
-    else if (strcmp(argv[i], "--plant-output") == 0)
-    {
-      i++;
-      bool map_end = false;
-      while (!map_end)
-      {
-        if (is_flag(argv[i]) || is_drh(argv[i]) || is_pdrh(argv[i]))
-        {
-          map_end = true;
-          i--;
-        }
-        else
-        {
-          if (
-            find(
-              global_config.controller.plant_output.begin(),
-              global_config.controller.plant_output.end(),
-              argv[i]) == global_config.controller.plant_output.end())
-          {
-            global_config.controller.plant_output.push_back(argv[i]);
-          }
-          i++;
-        }
-      }
-    }
-    // controller output
-    else if (strcmp(argv[i], "--controller-output") == 0)
-    {
-      i++;
-      bool map_end = false;
-      while (!map_end)
-      {
-        if (is_flag(argv[i]) || is_drh(argv[i]) || is_pdrh(argv[i]))
-        {
-          map_end = true;
-          i--;
-        }
-        else
-        {
-          if (
-            find(
-              global_config.controller.controller_output.begin(),
-              global_config.controller.controller_output.end(),
-              argv[i]) == global_config.controller.controller_output.end())
-          {
-            global_config.controller.controller_output.push_back(argv[i]);
-          }
-          i++;
-        }
-      }
-    }
-    // controller output
-    else if (strcmp(argv[i], "--controller-input") == 0)
-    {
-      i++;
-      bool map_end = false;
-      while (!map_end)
-      {
-        if (is_flag(argv[i]) || is_drh(argv[i]) || is_pdrh(argv[i]))
-        {
-          map_end = true;
-          i--;
-        }
-        else
-        {
-          global_config.controller.controller_input.push_back(argv[i]);
-          i++;
-        }
-      }
-    }
     // global_time variable
     else if (strcmp(argv[i], "--global-time") == 0)
     {
       i++;
       global_config.global_time = argv[i];
-    }
-    // system's output
-    else if (strcmp(argv[i], "--sys-out") == 0)
-    {
-      i++;
-      global_config.controller.sys_out = argv[i];
     }
     // sample_time variable
     else if (strcmp(argv[i], "--sample-time") == 0)
@@ -444,8 +326,6 @@ void parse_pdrh_config(int argc, char *argv[])
       global_config.qmc_flag = true;
       global_config.stat_flag = true;
       i++;
-      //istringstream is(argv[i]);
-      // is >> global_config.CI_flag;
       global_config.CI_flag = argv[i];
       if (strcmp(global_config.CI_flag, "") == 0)
       {
@@ -544,18 +424,6 @@ void parse_pdrh_config(int argc, char *argv[])
     {
       global_config.sort_rv_flag = true;
     }
-    //        // sobol
-    //        else if(strcmp(argv[i], "--sobol") == 0)
-    //        {
-    //            global_config.sobol_flag = true;
-    //            global_config.cross_entropy_flag = false;
-    //        }
-    //        // cross-entropy
-    //        else if(strcmp(argv[i], "--cross-entropy") == 0)
-    //        {
-    //            global_config.cross_entropy_flag = true;
-    //            global_config.sobol_flag = false;
-    //        }
     // sample size display
     else if (strcmp(argv[i], "--verbose-result") == 0)
     {

@@ -15,8 +15,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # setting version related variables (i.e., MAJOR, MINOR and GIT_SHA1)
-set(PROBREACH_VERSION_MAJOR 1)
-set(PROBREACH_VERSION_MINOR 4)
+set(PROBREACH_VERSION_MAJOR 2)
+set(PROBREACH_VERSION_MINOR 0)
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 configure_file(
@@ -171,11 +171,8 @@ configure_file(
 
 # adding CMakeLists.txt files that specify executables
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/pid_optimiser/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/formal_verifier/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/mc_verifier/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/qmc_verifier/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/gp/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/translator/CMakeLists.txt)
 
 # enabling testing

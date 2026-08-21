@@ -57,16 +57,6 @@ capd::interval algorithm::evaluate_pha_chernoff(
     // getting all paths
     std::vector<std::vector<pdrh::mode *>> paths =
       pdrh::get_all_paths(min_depth, max_depth);
-    //        // getting all paths
-    //        for (pdrh::state i : pdrh::init) {
-    //            for (pdrh::state g : pdrh::goal) {
-    //                for (int j = min_depth; j <= max_depth; j++) {
-    //                    std::vector<std::vector<pdrh::mode *>> paths_j = pdrh::get_paths(pdrh::get_mode(i.id),
-    //                                                                                     pdrh::get_mode(g.id), j);
-    //                    paths.insert(paths.cend(), paths_j.cbegin(), paths_j.cend());
-    //                }
-    //            }
-    //        }
     // getting a sample
     box b = rnd::get_random_sample(r);
     CLOG_IF(global_config.verbose, INFO, "algorithm") << "Random sample: " << b;
@@ -112,8 +102,6 @@ capd::interval algorithm::evaluate_pha_chernoff(
         else if (res == decision_procedure::UNDET)
         {
           CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNDET";
-          //cout<< "Undet sample: " << b << endl;
-          //exit(EXIT_FAILURE);
           undet_counter++;
         }
       }
@@ -182,7 +170,6 @@ capd::interval algorithm::evaluate_pha_bayesian(
   CLOG_IF(global_config.verbose_result, INFO, "algorithm")
     << "Bayesian estimations algorithm started";
   // getting set of all paths
-  //std::vector<std::vector<pdrh::mode *>> paths = pdrh::get_paths();
   vector<vector<pdrh::mode *>> paths;
   if (global_config.decision_method == 0)
   {
@@ -222,12 +209,6 @@ capd::interval algorithm::evaluate_pha_bayesian(
       break;
     case 2:
       res = ap::simulate(min_depth, max_depth, boxes);
-      //                cout << "Simulation " << sample_size << endl;
-      //                cout << "Result " << res << endl;
-      //                cout << "Post prob " << post_prob << " required conf " << conf << endl;
-      //                cout << "Accuracy " << acc << endl;
-      //                cout << "SAT " << sat << endl;
-      //                cout << "UNSAT " << unsat << endl;
       break;
     default:
       cerr << "Unknown decision procedure method" << endl;
@@ -246,7 +227,6 @@ capd::interval algorithm::evaluate_pha_bayesian(
       case decision_procedure::UNSAT:
         CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNSAT";
         unsat++;
-        //ap::unsat_samples.push_back(b);
         break;
 
       case decision_procedure::UNDET:
@@ -295,64 +275,6 @@ capd::interval algorithm::evaluate_pha_bayesian(
   return capd::interval(
     max(post_mean_sat - acc, 0.0), min(post_mean_unsat + acc, 1.0));
 }
-
-//pair<box, capd::interval> algorithm::evaluate_npha_sobol(int min_depth, int max_depth, int size) {
-//    gsl_qrng *q = gsl_qrng_alloc(gsl_qrng_sobol, pdrh::par_map.size());
-//
-//    //initializing probability value
-//    pair<box, capd::interval> res;
-//    if (global_config.max_prob) {
-//        res = make_pair(box(), capd::interval(0.0));
-//    } else {
-//        res = make_pair(box(), capd::interval(1.0));
-//    }
-//    box domain = pdrh2box::get_nondet_domain();
-//    vector<pair<box, capd::interval>> samples;
-//    while (domain.max_side_width() > global_config.sobol_term_arg) {
-//        CLOG_IF(global_config.verbose_result, INFO, "algorithm") << "Explored space: " << domain << " | "
-//                                                                 << domain.max_side_width();
-//        for (int i = 0; i < size; i++) {
-//            box b = rnd::get_sobol_sample(q, domain);
-//            CLOG_IF(global_config.verbose_result, INFO, "algorithm") << "Quasi-random sample: " << b;
-//            capd::interval probability;
-//            if (global_config.bayesian_flag) {
-//                probability = evaluate_pha_bayesian(min_depth, max_depth, global_config.bayesian_acc,
-//                                                    global_config.bayesian_conf, vector<box>{b});
-//            } else if (global_config.chernoff_flag) {
-//                probability = evaluate_pha_chernoff(min_depth, max_depth, global_config.chernoff_acc,
-//                                                    global_config.chernoff_conf, vector<box>{b});
-//            } else {
-//                CLOG(ERROR, "algorithm") << "Unknown setting";
-//                exit(EXIT_FAILURE);
-//            }
-//            // fixing probability value
-//            if (probability.leftBound() < 0) {
-//                probability.setLeftBound(0);
-//            }
-//            if (probability.rightBound() > 1) {
-//                probability.setRightBound(1);
-//            }
-//            CLOG_IF(global_config.verbose_result, INFO, "algorithm") << "Probability: " << probability << endl;
-//            samples.push_back(make_pair(b, probability));
-//        }
-//        if (global_config.max_prob) {
-//            sort(samples.begin(), samples.end(), measure::compare_pairs::descending);
-//        } else {
-//            sort(samples.begin(), samples.end(), measure::compare_pairs::ascending);
-//        }
-//        vector<pair<box, capd::interval>> elite;
-//        copy_n(samples.begin(), ceil(samples.size() * global_config.elite_ratio), back_inserter(elite));
-//        vector<box> elite_boxes;
-//        for (pair<box, capd::interval> p : elite) {
-//            elite_boxes.push_back(p.first);
-//        }
-//        res = samples.front();
-//        samples.clear();
-//        domain = box_factory::get_cover(elite_boxes);
-//    }
-//    gsl_qrng_free(q);
-//    return res;
-//}
 
 pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   size_t min_depth,
@@ -457,17 +379,6 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
         }
         if (resume)
         {
-          //                if (true) {
-
-          //                    CLOG_IF(global_config.verbose_result, INFO, "algorithm") << "Stability check is switched off";
-          //                    if (global_config.bayesian_flag) {
-          //                        probability = evaluate_pha_bayesian(min_depth, max_depth, acc, conf, vector<box>{b});
-          //                    } else if (global_config.chernoff_flag) {
-          //                        probability = evaluate_pha_chernoff(min_depth, max_depth, acc, conf, vector<box>{b});
-          //                    } else {
-          //                        CLOG(ERROR, "algorithm") << "Unknown setting";
-          //                        exit(EXIT_FAILURE);
-          //                    }
           // bayesian estimations algorithm by default
           probability = evaluate_pha_bayesian(
             min_depth, max_depth, acc, conf, vector<box>{b});
