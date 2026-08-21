@@ -76,14 +76,6 @@ bool pdrh2box::check_zero_crossing(
     expr->value == ">=" || expr->value == ">" || expr->value == "=" ||
     expr->value == "<" || expr->value == "<=")
   {
-    //        cout << "Beginning left: " << pdrh::node_to_interval(expr->operands.front(), {boxes, first}) << endl;
-    //        cout << "Beginning right: " << pdrh::node_to_interval(expr->operands.back(), {boxes, first}) << endl;
-    //        cout << "Beginning left-right: " << pdrh::node_to_interval(expr->operands.front(), {boxes, first}) -
-    //                                            pdrh::node_to_interval(expr->operands.back(), {boxes, first}) << endl;
-    //        cout << "End left: " << pdrh::node_to_interval(expr->operands.front(), {boxes, last}) << endl;
-    //        cout << "End right: " << pdrh::node_to_interval(expr->operands.back(), {boxes, last}) << endl;
-    //        cout << "End left-right: " << pdrh::node_to_interval(expr->operands.front(), {boxes, last}) -
-    //                                           pdrh::node_to_interval(expr->operands.back(), {boxes, last}) << endl;
     return (pdrh2box::node_to_interval(expr->operands.front(), {boxes, first}) -
             pdrh2box::node_to_interval(expr->operands.back(), {boxes, first})) *
              (pdrh2box::node_to_interval(
@@ -144,11 +136,6 @@ capd::interval pdrh2box::node_to_interval(pdrh::node *expr, vector<box> boxes)
   }
   else if (expr->operands.size() > 2)
   {
-    //        for(node *n : expr->operands)
-    //        {
-    //            return pdrh::node_to_interval(n);
-    //        }
-    //        CLOG(ERROR, "model") << "The number of operands can't be greater than 2";
     exit(EXIT_FAILURE);
   }
   else

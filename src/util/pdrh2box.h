@@ -22,12 +22,8 @@ capd::interval node_to_interval(pdrh::node *, std::vector<box>);
 bool node_to_boolean(pdrh::node *, std::vector<box>);
 pdrh::node *box_to_node(box);
 bool check_zero_crossing(pdrh::node *, std::vector<box>, box, box);
-
-//    box node_to_box(pdrh::node*);
-
 box get_nondet_domain();
 box get_domain();
-
 box init_to_box(std::vector<box>);
 } // namespace pdrh2box
 #endif // PROBREACH_PDRH2BOX_H

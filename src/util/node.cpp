@@ -3,7 +3,6 @@
 //
 
 #include "node.h"
-#include "model.h"
 #include <sstream>
 #include <random>
 #include <cmath>
@@ -528,13 +527,11 @@ node *pdrh::get_node_neg_by_value(node *root, vector<string> values)
   pdrh::copy_tree(root_copy, root);
   pdrh::node *time_node = new pdrh::node;
   pdrh::get_first_node_by_value(root_copy, time_node, values);
-  //cout << "Node before removing time node: " << pdrh::node_to_string_prefix(root) << endl;
   if (time_node->is_empty())
     return NULL;
   // creating a negation node
   pdrh::node *not_node = new node("not", {root_copy});
   // creating a resulting node
   pdrh::node *res_node = new node("and", {time_node, not_node});
-  //cout << "RES TIME NODE: " << pdrh::node_to_string_prefix(res_node) << endl;
   return res_node;
 }
