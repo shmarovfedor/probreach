@@ -6,9 +6,7 @@
 #define PROBREACH_DREAL_WRAPPER_H
 #include <iostream>
 #include <vector>
-#include <capd/capdlib.h>
 #include "util/box.h"
-//#include <capd/intervals/lib.h>
 
 using namespace std;
 

@@ -36,13 +36,11 @@ int line_num = 1;
 true                    { return TRUE; }
 false                   { return FALSE; }
 
-timeprecision           { return TIME_PREC; }
 model                   { return MODEL; }
 ha                      { yylval.sval = strdup(yytext); return m_type; }
 pha                     { yylval.sval = strdup(yytext); return m_type; }
 nha                     { yylval.sval = strdup(yytext); return m_type; }
 npha                    { yylval.sval = strdup(yytext); return m_type; }
-psy                     { yylval.sval = strdup(yytext); return m_type; }
 
 time                    { return TIME; }
 
@@ -61,9 +59,6 @@ flow                    { return FLOW; }
 jump                    { return JUMP; }
 init                    { return INIT; }
 goal                    { return GOAL; }
-sample                  { return SAMPLE; }
-paths                   { return PATHS; }
-synthesize              { return SYNTHESIZE; }
 
 not	            		{ return NOT; }
 and                    	{ return AND; }

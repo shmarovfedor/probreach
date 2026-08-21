@@ -6,8 +6,6 @@
 #include <sstream>
 #include <cmath>
 #include <limits>
-//#include <capd/capdlib.h>
-//#include <capd/intervals/lib.h>
 #include "node.h"
 #include "model.h"
 #include "pdrh_config.h"
@@ -27,8 +25,8 @@ void yyerror(const char *s);
 	int                         ival;
 	float                       fval;
 	char*                       sval;
-    pdrh::node*                 nval;
-    std::vector<pdrh::node*>*   nval_list;
+  pdrh::node*                 nval;
+  std::vector<pdrh::node*>*   nval_list;
 }
 
 // terminals
@@ -36,7 +34,7 @@ void yyerror(const char *s);
 %token PDF N_DIST U_DIST E_DIST G_DIST DD_DIST
 %token INFTY
 
-%token MODE INVT FLOW JUMP INIT GOAL SYNTHESIZE TIME_PREC PATHS SAMPLE
+%token MODE INVT FLOW JUMP INIT GOAL 
 %token D_DT TRANS PRIME
 
 %token SQRT EXP LOGN SIN COS TAN ASIN ACOS ATAN ABS
@@ -82,16 +80,8 @@ map<string, node*> define_map;
 
 %%
 pdrh:
-	declarations modes init synthesize  {
-	                                        pdrh::model_type = pdrh::PSY;
-	                                    }
-    | declarations modes init goal paths { ; }
-	| declarations modes init goal      {
-	                                        // we try to identify the model type automatically here
-	                                        //pdrh::model_type = pdrh::HA;
-	                                    }
+	| declarations modes init goal      { ; }
 	| model declarations modes init goal { ; }
-	| model declarations modes init goal paths { ; }
 
 model:
     MODEL ':' m_type ';' {
@@ -99,7 +89,6 @@ model:
                                 else if(strcmp(strdup($3), "pha") == 0)     pdrh::model_type = pdrh::PHA;
                                 else if(strcmp(strdup($3), "nha") == 0)     pdrh::model_type = pdrh::NHA;
                                 else if(strcmp(strdup($3), "npha") == 0)    pdrh::model_type = pdrh::NPHA;
-                                else if(strcmp(strdup($3), "psy") == 0)     pdrh::model_type = pdrh::PSY;
 	                     }
 
 declarations:
@@ -130,12 +119,6 @@ const_declaration:
                                             }
                                         }
                                     }
-                                    // printing out the define map
-                                    // cout << "Define map update:" << endl;
-                                    // for(auto it = define_map.begin(); it != define_map.end(); it++)
-                                    // {
-                                    //     cout << it->first << ": " << node_to_string_infix(it->second) << endl;
-                                    // }
                                 }
 
 
@@ -174,12 +157,6 @@ dist_declaration:
                                                                                     {
                                                                                         pdrh::push_var($11, $5, $7);
                                                                                         pdrh::push_rv($11, $3, $5, $7, $9);
-                                                                                        //if(global_config.stat_flag)
-                                                                                        //{
-                                                                                        //    std::stringstream s;
-                                                                                        //    s << "user-defined distribution for \"" << $11 << "\" is not supported in sampling mode";
-                                                                                        //    yyerror(s.str().c_str());
-                                                                                        //}
                                                                                     }
                                                                                     else
                                                                                     {
@@ -260,10 +237,6 @@ dist_declaration:
                                                                                        yyerror(s.str().c_str());
                                                                                     }
                                                                                 }
-
-
-// SORT THIS BIT OUT!!!
-
 dist:
     PDF '(' expr ',' expr ',' expr ',' expr ')'       { $$ = new node("dist_pdf", {$3, $5, $7, $9}); }
     | G_DIST '(' expr ',' expr ')'                                  { $$ = new node("dist_gamma", {$3, $5}); }
@@ -375,10 +348,6 @@ mode:
                                                                     }
                                                                 }
 
-//  // timeprec has never been used before
-//  timeprec:
-//	    TIME_PREC ':' number ';' { ; }
-
 invt:
 	INVT ':' prop_list { ; }
 	| INVT ':'
@@ -433,16 +402,6 @@ expr:
     identifier                  {
                                     if(define_map.find($1) != define_map.end()) $$ = define_map[$1];
                                         else $$ = new node($1);
-                                    //if(pdrh::var_exists($1))
-                                    //{
-                                    //    $$ = new pdrh::node($1);
-                                    //}
-                                    //else
-                                    //{
-                                    //    std::stringstream s;
-                                    //    s << "undefined variable \"" << $1 << "\"";
-                                    //    yyerror(s.str().c_str());
-                                    //}
                                 }
     | number                    { $$ = new node($1); }
     | dist                      { $$ = $1; }
@@ -523,24 +482,6 @@ reset_state:
                                     }
 	 	                        }
 
-//// THIS HAS NOT BEEN INCLUDED YET
-//samples:
-//    samples sample { ; }
-//    | sample { ; }
-//
-//sample:
-//    SAMPLE '(' number ')' ':'
-//
-//sample_resets:
-//    sample_resets sample_reset { ; }
-//    | sample_reset { ; }
-//
-//sample_reset:
-//    reset_var '=' expr ';' { ; }
-
-
-
-
 jumps_section:
 	JUMP ':' jumps { ; }
 	| JUMP ':' { ; }
@@ -571,54 +512,6 @@ goal:
                             cur_states.clear();
                         }
 
-
-
-
-paths:
-    PATHS ':' path_list { ; }
-
-path_list:
-    path_list path ';'  {
-                            pdrh::push_path(cur_path);
-                            cur_path.clear();
-                        }
-    | path ';' {
-                    pdrh::push_path(cur_path);
-                    cur_path.clear();
-               }
-    ;
-
-path:
-    path ',' number {
-                        pdrh::mode* m = pdrh::get_mode(atoi($3));
-                        if(m == NULL)
-                        {
-                            std::stringstream s;
-                            s << "mode \"" << $3 << "\" has not been defined";
-                            yyerror(s.str().c_str());
-                        }
-                        else
-                        {
-                            cur_path.push_back(m);
-                        }
-                    }
-    | number {
-                pdrh::mode* m = pdrh::get_mode(atoi($1));
-                if(m == NULL)
-                {
-                    std::stringstream s;
-                    s << "mode \"" << $1 << "\" has not been defined";
-                    yyerror(s.str().c_str());
-                }
-                else
-                {
-                    cur_path.push_back(m);
-                }
-             }
-    ;
-
-
-
 state:
 	'@' number prop ';' {
 	                        if(get_mode(atoi($2)) != NULL)
@@ -641,27 +534,6 @@ states:
 	states state { ; }
 	| state { ; }
 	;
-
-synthesize:
-	SYNTHESIZE ':' syn_pairs { ; }
-
-syn_pairs:
-	syn_pairs syn_pair ';' { ; }
-	| syn_pair ';' { ; }
-
-syn_pair:
-    identifier ':' expr     {
-                                if(pdrh::var_exists($1))
-                                {
-                                    pdrh::push_syn_pair($1, $3);
-                                }
-                                else
-                                {
-                                   std::stringstream s;
-                                   s << "undefined variable \"" << $1 << "\"";
-                                   yyerror(s.str().c_str());
-                                }
-                            }
 
 %%
 

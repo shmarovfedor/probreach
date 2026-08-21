@@ -23,7 +23,6 @@ map<string, map<pdrh::node *, pdrh::node *>> pdrh::dd_map;
 map<string, pair<pdrh::node *, pdrh::node *>> pdrh::var_map;
 map<string, string> pdrh::const_map;
 map<string, pair<pdrh::node *, pdrh::node *>> pdrh::par_map;
-map<string, pdrh::node *> pdrh::syn_map;
 vector<pdrh::mode> pdrh::modes;
 vector<pdrh::state> pdrh::init;
 vector<pdrh::state> pdrh::goal;
@@ -37,24 +36,6 @@ map<string, pair<pdrh::node *, pdrh::node *>> pdrh::distribution::gamma;
 // adding a variable
 void pdrh::push_var(string var, pdrh::node *left, pdrh::node *right)
 {
-  // COMMENTED OUT UNTIL ALL DEPENDENCIES HAS BEEN RESOLVED
-  // setting initial domain to (-infty, infty)
-  //    capd::interval domain(-numeric_limits<double>::infinity(), numeric_limits<double>::infinity());
-  //    if(strcmp(left->value.c_str(), "-infty") != 0)
-  //    {
-  //        domain.setLeftBound(pdrh::node_to_interval(left).leftBound());
-  //    }
-  //    if(strcmp(right->value.c_str(), "infty") != 0)
-  //    {
-  //        domain.setRightBound(pdrh::node_to_interval(right).rightBound());
-  //    }
-  //    // checking the width of the domain
-  //    if(capd::intervals::width(domain) < 0)
-  //    {
-  //        stringstream s;
-  //        s << "invalid domain " << domain << " for variable \"" << var << "\"";
-  //        throw invalid_argument(s.str());
-  //    }
   if (pdrh::var_map.find(var) != pdrh::var_map.cend())
   {
     stringstream s;
@@ -70,14 +51,6 @@ void pdrh::push_var(string var, pdrh::node *left, pdrh::node *right)
 // adding time bounds
 void pdrh::push_time_bounds(pdrh::node *left, pdrh::node *right)
 {
-  // COMMENTED OUT UNTIL ALL DEPENDENCIES HAS BEEN RESOLVED
-  //    capd::interval domain(pdrh::node_to_interval(left).leftBound(), pdrh::node_to_interval(right).rightBound());
-  //    if(capd::intervals::width(domain) < 0)
-  //    {
-  //        stringstream s;
-  //        s << "invalid time domain " << domain;
-  //        throw invalid_argument(s.str());
-  //    }
   pdrh::time = make_pair(left, right);
 }
 
@@ -108,10 +81,6 @@ void pdrh::push_mode(pdrh::mode m)
         pdrh::rv_map.find(var) == pdrh::rv_map.cend() &&
         pdrh::dd_map.find(var) == pdrh::dd_map.cend() &&
         pdrh::var_map[var].first != pdrh::var_map[var].second)
-      // COMMENTED OUT DUE TO DEPENDANCE ON INTERVAL ARITHMETIC
-      //               capd::intervals::width(capd::interval(
-      //                       node_to_interval(pdrh::var_map[var].first).leftBound(),
-      //                       node_to_interval(pdrh::var_map[var].second).rightBound())) > 0)
       {
         bool insert_flag = true;
         for (pdrh::mode md : pdrh::modes)
@@ -195,12 +164,6 @@ void pdrh::push_goal(vector<pdrh::state> s)
 void pdrh::push_path(vector<mode *> path)
 {
   pdrh::paths.push_back(path);
-}
-
-// adding a parameter to synthesize
-void pdrh::push_syn_pair(string var, pdrh::node *precision)
-{
-  pdrh::syn_map.insert(make_pair(var, precision));
 }
 
 // adding continuous random variable
@@ -364,10 +327,6 @@ vector<vector<pdrh::mode *>> pdrh::get_paths()
   {
     return pdrh::paths;
   }
-  //    else
-  //    {
-  //        return get_all_paths();
-  //    }
 }
 
 // comparing two paths alphabetically
@@ -554,11 +513,6 @@ string pdrh::model_to_string()
     }
     out << ")" << endl;
   }
-  //    if(!pdrh::is_node_empty(pdrh::time.first) && !pdrh::is_node_empty(pdrh::time.second))
-  //    {
-  //        out << "TIME DOMAIN:" << endl;
-  //        out << "|   [" << pdrh::node_to_string_prefix(pdrh::time.first) << ", " << pdrh::node_to_string_prefix(pdrh::time.second) << "]" << endl;
-  //    }
   out << "MODES:" << endl;
   for (pdrh::mode m : pdrh::modes)
   {
@@ -638,15 +592,6 @@ string pdrh::model_to_string()
       out << "|   PROPOSITION: " << pdrh::node_to_string_prefix(s.prop) << endl;
     }
   }
-  else
-  {
-    out << "SYNTHESIZE:" << endl;
-    for (auto it = pdrh::syn_map.cbegin(); it != pdrh::syn_map.cend(); it++)
-    {
-      out << "|   " << it->first << " "
-          << pdrh::node_to_string_prefix(it->second) << endl;
-    }
-  }
   return out.str();
 }
 
@@ -695,27 +640,6 @@ std::map<std::string, double> pdrh::init_to_map(pdrh::state init)
       node_to_double(n->operands.back());
   }
   return res;
-}
-
-vector<pdrh::mode *> pdrh::get_psy_path(
-  map<string, vector<pair<pdrh::node *, pdrh::node *>>> time_series)
-{
-  std::vector<pdrh::mode *> path;
-  path.push_back(pdrh::get_mode(pdrh::init.front().id));
-  for (int i = 1; i < time_series.cbegin()->second.size(); i++)
-  {
-    if (
-      pdrh::node_to_string_prefix(time_series["Mode"].at(i).first) !=
-      pdrh::node_to_string_prefix(time_series["Mode"].at(i - 1).first))
-    {
-      istringstream is(
-        pdrh::node_to_string_prefix(time_series["Mode"].at(i).first));
-      int id;
-      is >> id;
-      path.push_back(pdrh::get_mode(id));
-    }
-  }
-  return path;
 }
 
 void pdrh::distribution::push_uniform(string var, pdrh::node *a, pdrh::node *b)
@@ -781,15 +705,9 @@ pdrh::node *pdrh::distribution::exp_to_node(string var, node *lambda)
 void pdrh::set_model_type()
 {
   if (
-    pdrh::rv_map.empty() && pdrh::dd_map.empty() && pdrh::par_map.empty() &&
-    pdrh::syn_map.empty())
-  {
-    pdrh::model_type = pdrh::type::HA;
-  }
-  else if (
     pdrh::rv_map.empty() && pdrh::dd_map.empty() && pdrh::par_map.empty())
   {
-    pdrh::model_type = pdrh::type::PSY;
+    pdrh::model_type = pdrh::type::HA;
   }
   else if (pdrh::par_map.empty())
   {

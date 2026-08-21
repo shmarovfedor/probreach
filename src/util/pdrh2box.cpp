@@ -316,22 +316,6 @@ box pdrh2box::get_domain()
   return box(m);
 }
 
-// domain of parameters to synthesize
-box pdrh2box::get_psy_domain()
-{
-  map<std::string, capd::interval> m;
-  for (auto it = pdrh::syn_map.cbegin(); it != pdrh::syn_map.cend(); it++)
-  {
-    m.insert(make_pair(
-      it->first,
-      capd::interval(
-        pdrh2box::node_to_interval(pdrh::var_map[it->first].first).leftBound(),
-        pdrh2box::node_to_interval(pdrh::var_map[it->first].second)
-          .rightBound())));
-  }
-  return box(m);
-}
-
 // only the first initial state is taken
 box pdrh2box::init_to_box(vector<box> boxes)
 {

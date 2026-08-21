@@ -18,8 +18,7 @@ enum type
   HA,
   PHA,
   NHA,
-  NPHA,
-  PSY
+  NPHA
 };
 extern type model_type;
 extern std::pair<node *, node *> time;
@@ -29,7 +28,7 @@ extern std::map<std::string, std::map<node *, node *>> dd_map;
 extern std::map<std::string, std::pair<node *, node *>> var_map;
 extern std::map<std::string, std::pair<node *, node *>> par_map;
 extern std::map<std::string, std::string> const_map;
-extern std::map<std::string, node *> syn_map;
+
 // mode struct
 struct mode
 {
@@ -113,21 +112,11 @@ void push_reset(mode &, mode::jump &, std::string, node *);
 void push_init(std::vector<state>);
 void push_goal(std::vector<state>);
 void push_path(std::vector<mode *>);
-//    void push_psy_goal(int, box);
-//    void push_psy_c_goal(int, box);
-void push_syn_pair(std::string, node *);
 void push_time_bounds(node *, node *);
 
 void set_model_type();
 
 void output_traj(std::vector<std::map<std::string, double>>, std::ostream &);
-
-//    std::vector<mode*> get_psy_path(std::map<std::string, std::vector<capd::interval>>);
-std::vector<mode *> get_psy_path(
-  std::map<std::string, std::vector<std::pair<pdrh::node *, pdrh::node *>>>);
-
-//    vector<tuple<int, box>> series_to_boxes(std::map<std::string, std::vector<capd::interval>>);
-//vector<state> series_to_goals(map<string, vector<pair<pdrh::node*, pdrh::node*>>>);
 
 std::map<std::string, double> init_to_map(pdrh::state);
 

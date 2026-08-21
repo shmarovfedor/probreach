@@ -27,7 +27,6 @@ bool check_zero_crossing(pdrh::node *, std::vector<box>, box, box);
 
 box get_nondet_domain();
 box get_domain();
-box get_psy_domain();
 
 box init_to_box(std::vector<box>);
 } // namespace pdrh2box
