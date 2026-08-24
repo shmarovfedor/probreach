@@ -1,7 +1,7 @@
 file(GLOB SIMULATOR_SRC
         ${PROBREACH_SOURCE_DIR}/util/node.cpp
         ${PROBREACH_SOURCE_DIR}/util/model.cpp
-        ${PROBREACH_SOURCE_DIR}/util/pdrh2box.cpp
+        ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
         ${PROBREACH_SOURCE_DIR}/util/naive.cpp)
 

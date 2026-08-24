@@ -13,7 +13,7 @@
 #include "git_sha1.h"
 #include "version.h"
 #include "box.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include "formal.h"
 #include "pdrh_config.h"
 

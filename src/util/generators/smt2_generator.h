@@ -6,7 +6,6 @@
 #define PROBREACH_SMT2_GENERATOR_H
 
 #include <iostream>
-#include <capd/capdlib.h>
 #include "model.h"
 #include "box.h"
 

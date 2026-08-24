@@ -8,7 +8,7 @@
 #include "git_sha1.h"
 #include "version.h"
 #include "box.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include "decision_procedure.h"
 #include "solver/dreal_wrapper.h"
 #include "test_env.h"

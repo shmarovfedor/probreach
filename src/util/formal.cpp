@@ -8,7 +8,7 @@
 #include "box_factory.h"
 #include <iomanip>
 #include <omp.h>
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include "formal.h"
 #include "decision_procedure.h"
 
@@ -24,9 +24,6 @@ int formal::evaluate_ha(int min_depth, int max_depth)
 
 capd::interval formal::evaluate_pha(int min_depth, int max_depth)
 {
-  //CLOG_IF(global_config.verbose, INFO, "algorithm") << setprecision(16);
-  //CLOG_IF(global_config.verbose, INFO, "algorithm")
-  //  << "Obtaining partition of domain of continuous random parameters";
   // getting partition of domain of continuous random variables
   std::vector<box> init_rv_partition = measure::get_rv_partition();
   // getting domain of continuous random variables
@@ -45,7 +42,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   }
   capd::interval probability(0, 1);
   // checking if there are any continuous random variables
-  //CLOG_IF(global_config.verbose, INFO, "algorithm") << "P = " << probability;
   // generating all paths of lengths [min_depth, max_depth]
   std::vector<std::vector<pdrh::mode *>> paths =
     pdrh::get_all_paths(min_depth, max_depth);
@@ -70,7 +66,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
       // sorting boxes by probability value
       if (global_config.sort_rv_flag)
       {
-        //CLOG_IF(global_config.verbose, INFO, "algorithm")
         //  << "Sorting the partition of domain of continuous random parameters";
         sort(
           rv_partition.begin(),
@@ -83,20 +78,15 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
         box rv = rv_partition.at(i);
         // calculating probability measure of the box
         // initially p_box = [1.0, 1.0]
-        //CLOG_IF(global_config.verbose, INFO, "algorithm")
-        //  << "====================";
         capd::interval p_box(1);
         if (!dd.empty())
         {
           p_box *= measure::p_dd_measure(dd);
-          //CLOG_IF(global_config.verbose, INFO, "algorithm") << "dd_box: " << dd;
         }
         if (!rv.empty())
         {
           p_box *= measure::p_measure(rv, global_config.precision_prob);
-          //CLOG_IF(global_config.verbose, INFO, "algorithm") << "rv_box: " << rv;
         }
-        //CLOG_IF(global_config.verbose, INFO, "algorithm") << "p_box: " << p_box;
         // evaluating boxes
         std::vector<box> boxes{dd, rv};
         // undetermined answers counter
@@ -116,9 +106,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
             p_stream << m->id << " ";
           }
           // removing trailing whitespace
-          //CLOG_IF(global_config.verbose, INFO, "algorithm")
-          //  << "Path: "
-          //  << p_stream.str().substr(0, p_stream.str().find_last_of(" "));
           std::stringstream s;
 // changing solver precision
 #pragma omp critical
@@ -144,31 +131,16 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
                   probability.leftBound() + p_box.leftBound(),
                   probability.rightBound());
               }
-              //CLOG_IF(global_config.verbose, INFO, "algorithm") << "SAT";
-              // CLOG_IF(global_config.verbose, INFO, "algorithm")
-              //  << "P = " << probability;
-              /*
-                                if(capd::intervals::width(probability) <= global_config.precision_prob)
-                                {
-                                    return probability;
-                                }
-                                */
               sat_flag = true;
               break;
 
             case decision_procedure::UNSAT:
-              //CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNSAT";
               unsat_counter++;
               break;
             case decision_procedure::UNDET:
-              //CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNDET";
-              //CLOG_IF(global_config.verbose, INFO, "algorithm")
-              //  << "P = " << probability;
               undet_counter++;
               break;
             case decision_procedure::ERROR:
-              //CLOG(ERROR, "algorithm")
-              //  << "Error occurred while calling the solver";
               exit(EXIT_FAILURE);
 
             default:
@@ -187,8 +159,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
             // if the box is undetermined on either path
             if (undet_counter > 0)
             {
-              //CLOG_IF(global_config.verbose, INFO, "algorithm")
-              //  << "Bisect " << rv;
               std::vector<box> rv_bisect = box_factory::bisect(rv);
               rv_stack.insert(
                 rv_stack.end(), rv_bisect.begin(), rv_bisect.end());
@@ -202,8 +172,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
                   probability.leftBound(),
                   probability.rightBound() - p_box.leftBound());
               }
-              //CLOG_IF(global_config.verbose, INFO, "algorithm")
-              //  << "P = " << probability;
             }
           }
         };
@@ -222,8 +190,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
     {
       capd::interval dd_measure = measure::p_dd_measure(dd);
       res_prob += probability * dd_measure;
-      //CLOG_IF(global_config.verbose, INFO, "algorithm")
-      //  << "P(" << dd << ") = " << probability * dd_measure;
     }
     else
     {
@@ -237,7 +203,7 @@ std::map<box, capd::interval>
 formal::evaluate_npha(int min_depth, int max_depth)
 {
   // getting parameter domain
-  box nd_domain = pdrh2box::get_nondet_domain();
+  box nd_domain = pdrh::get_nondet_domain();
   // initially partition is the entire parameter domain
   std::vector<box> nd_partition{nd_domain};
   // if flag is enabled the domain is partitioned up to precision_nondet
@@ -552,7 +518,7 @@ std::map<box, capd::interval>
 formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
 {
   // getting parameter domain
-  box nd_domain = pdrh2box::get_nondet_domain();
+  box nd_domain = pdrh::get_nondet_domain();
   // initially partition is the entire parameter domain
   std::vector<box> nd_partition{nd_domain};
   // if flag is enabled the domain is partitioned up to precision_nondet
@@ -611,9 +577,6 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =
     measure::p_measure(rv_domain, global_config.precision_prob);
-  // temporary solution. This will need to be fixed
-  //if(rv_domain_measure.leftBound() > 1)
-  //  rv_domain_measure.setLeftBound(1);
   capd::interval total_probability =
     capd::interval(0, 2 - rv_domain_measure.leftBound());
   // initialising the probability map
@@ -766,7 +729,6 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
         if (!nd.empty())
         {
           // bisecting the nondeterministic box
-          //CLOG_IF(global_config.verbose, INFO, "algorithm") << "Bisect " << nd;
           std::vector<box> tmp_boxes;
           // checking if the --ignore-nondet flag is up
           if (global_config.ignore_nondet)

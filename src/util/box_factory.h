@@ -22,7 +22,7 @@ public:
   static std::vector<box> partition(box, int);
   static std::vector<box> bisect(box, std::map<std::string, capd::interval>);
   static std::vector<box> bisect(box, std::map<std::string, std::string>);
-  static std::vector<box> bisect(box, std::map<std::string, pdrh::node *>);
+  static std::vector<box> bisect(box, std::map<std::string, node *>);
   static std::vector<box> bisect(box, std::vector<std::string>, double);
   static std::vector<box> bisect(box, std::vector<std::string>);
   static std::vector<box> merge(std::vector<box>);

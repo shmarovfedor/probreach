@@ -480,7 +480,7 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
     }
     s << "] flow_" << m->id << ")))\n";
     s << "; invariants\n";
-    for (pdrh::node *invt : m->invts)
+    for (node *invt : m->invts)
     {
       s << "(assert (forall_t " << m->id << " [0.0 time_" << step << "] "
         << pdrh::node_fix_index(invt, step, "t") << "))" << endl;
@@ -669,7 +669,7 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
     //}
     s << "] flow_" << m->id << "))" << endl;
     // defining invariants
-    for (pdrh::node *invt : m->invts)
+    for (node *invt : m->invts)
     {
       s << "(forall_t " << m->id << " [0.0 time_" << step << "] "
         << pdrh::node_fix_index(invt, step, "t") << ")" << endl;
@@ -706,11 +706,11 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     if (path.back()->id == st.id)
     {
-      //pdrh::node* timed_node_neg = ap::get_time_node_neg(st.prop);
+      //node* timed_node_neg = ap::get_time_node_neg(st.prop);
       // defining time vars
       vector<string> time_vars = global_config.time_var_name;
       time_vars.push_back(global_config.sample_time);
-      pdrh::node *timed_node_neg =
+      node *timed_node_neg =
         pdrh::get_node_neg_by_value(st.prop, time_vars);
       if (!timed_node_neg)
       {
@@ -730,7 +730,7 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
         // transforming the negation of disjunction into the conjunction of negations
         else if (st.prop->value == "or")
         {
-          for (pdrh::node *n : st.prop->operands)
+          for (node *n : st.prop->operands)
           {
             s << "(forall_t " << st.id << " [0 time_" << path.size() - 1
               << "] (not " << pdrh::node_fix_index(n, path.size() - 1, "t")
@@ -773,7 +773,7 @@ string smt2_generator::reach_c_to_smt2(
     // setting logic
     s << "(set-logic QF_NRA_ODE)" << endl;
     // checking whether either of last jumps have a time node
-    //        pdrh::node* timed_node_neg;
+    //        node* timed_node_neg;
     //        for(pdrh::mode::jump j : path.at(depth)->jumps)
     //        {
     //            timed_node_neg = pdrh::get_time_node_neg(j.guard);
@@ -933,7 +933,7 @@ string smt2_generator::reach_c_to_smt2(
       //}
       s << "] flow_" << m->id << "))" << endl;
       // defining invariants
-      for (pdrh::node *invt : m->invts)
+      for (node *invt : m->invts)
       {
         s << "(forall_t " << m->id << " [0.0 time_" << i << "] "
           << pdrh::node_fix_index(invt, i, "t") << ")" << endl;
@@ -968,11 +968,11 @@ string smt2_generator::reach_c_to_smt2(
     {
       if (j.next_id == path.at(depth + 1)->id)
       {
-        //pdrh::node* timed_node_neg = ap::get_time_node_neg(j.guard);
+        //node* timed_node_neg = ap::get_time_node_neg(j.guard);
         // extracting time variables
         vector<string> time_vars = global_config.time_var_name;
         time_vars.push_back(global_config.sample_time);
-        pdrh::node *timed_node_neg =
+        node *timed_node_neg =
           pdrh::get_node_neg_by_value(j.guard, time_vars);
         if (!timed_node_neg)
         {
@@ -984,7 +984,7 @@ string smt2_generator::reach_c_to_smt2(
           if (j.guard->value == "not")
           {
             /*
-                        pdrh::node *guard_without_negation = new pdrh::node();
+                        node *guard_without_negation = new node();
                         pdrh::copy_tree(guard_without_negation, j.guard->operands.front());
                         s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth << "] (" <<
                         pdrh::node_fix_index(guard_without_negation, depth, "t") << "))";
@@ -998,7 +998,7 @@ string smt2_generator::reach_c_to_smt2(
           // transforming the negation of disjunction into the conjunction of negations
           else if (j.guard->value == "or")
           {
-            for (pdrh::node *n : j.guard->operands)
+            for (node *n : j.guard->operands)
             {
               s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth
                 << "] (not " << pdrh::node_fix_index(n, depth, "t") << "))";

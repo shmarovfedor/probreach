@@ -3,7 +3,8 @@
 //
 
 #include "naive.h"
-#include "fstream"
+#include <fstream>
+#include "node_utils.h"
 
 using namespace std;
 using namespace pdrh;
@@ -19,7 +20,7 @@ using namespace pdrh;
  * @return solution of the IVP.
  */
 std::map<std::string, double> naive::solve_ivp(
-  std::map<std::string, pdrh::node *> odes,
+  std::map<std::string, node *> odes,
   std::map<std::string, double> init,
   double time,
   double dt)
@@ -55,7 +56,7 @@ std::map<std::string, double> naive::solve_ivp(
  * @return trajectories for the given IVP.
  */
 std::vector<std::map<std::string, double>> naive::trajectory(
-  std::map<std::string, pdrh::node *> odes,
+  std::map<std::string, node *> odes,
   std::map<std::string, double> init,
   double time,
   double dt)

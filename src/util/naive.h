@@ -12,13 +12,13 @@
 namespace naive
 {
 std::map<std::string, double> solve_ivp(
-  std::map<std::string, pdrh::node *>,
+  std::map<std::string, node *>,
   std::map<std::string, double>,
   double,
   double);
 
 std::vector<std::map<std::string, double>> trajectory(
-  std::map<std::string, pdrh::node *>,
+  std::map<std::string, node *>,
   std::map<std::string, double>,
   double,
   double);

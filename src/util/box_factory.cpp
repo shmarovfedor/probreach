@@ -3,7 +3,7 @@
 //
 
 #include "box_factory.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 
 using namespace std;
 
@@ -227,7 +227,7 @@ vector<box> box_factory::bisect(box b, map<std::string, capd::interval> e)
  * Dividing the box in all n dimensions producing 2^n boxes of the same size
  * according to the precision vector e
  */
-vector<box> box_factory::bisect(box b, map<string, pdrh::node *> e)
+vector<box> box_factory::bisect(box b, map<string, node *> e)
 {
   std::map<std::string, std::vector<capd::interval>> tmp_m;
   std::map<std::string, capd::interval> m = b.get_map();
@@ -237,7 +237,7 @@ vector<box> box_factory::bisect(box b, map<string, pdrh::node *> e)
     // cout << it->first << ":" << it->second;
     if (
       capd::intervals::width(it->second) >
-      pdrh2box::node_to_interval(e[it->first]).leftBound())
+      pdrh::node_to_interval(e[it->first]).leftBound())
     {
       // cout << " yes" << endl;
       std::vector<capd::interval> tmp_v;

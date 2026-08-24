@@ -6,7 +6,7 @@
 #include "box_factory.h"
 #include "model.h"
 #include "pdrh_config.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include <iomanip>
 
 using namespace std;
@@ -101,12 +101,12 @@ capd::interval measure::p_measure(box b, double e)
     else if (pdrh::dd_map.find(it->first) != pdrh::dd_map.cend())
     {
       bool measure_exists = false;
-      map<pdrh::node *, pdrh::node *> tmp_map = pdrh::dd_map[it->first];
+      map<node *, node *> tmp_map = pdrh::dd_map[it->first];
       for (auto it2 = tmp_map.cbegin(); it2 != tmp_map.cend(); it2++)
       {
-        if (it->second == pdrh2box::node_to_interval(it2->first))
+        if (it->second == pdrh::node_to_interval(it2->first))
         {
-          res *= pdrh2box::node_to_interval(it2->second);
+          res *= pdrh::node_to_interval(it2->second);
           measure_exists = true;
           break;
         }
@@ -143,12 +143,12 @@ capd::interval measure::p_dd_measure(box b)
     if (pdrh::dd_map.find(it->first) != pdrh::dd_map.cend())
     {
       bool measure_exists = false;
-      map<pdrh::node *, pdrh::node *> tmp_map = pdrh::dd_map[it->first];
+      map<node *, node *> tmp_map = pdrh::dd_map[it->first];
       for (auto it2 = tmp_map.cbegin(); it2 != tmp_map.cend(); it2++)
       {
-        if (it->second == pdrh2box::node_to_interval(it2->first))
+        if (it->second == pdrh::node_to_interval(it2->first))
         {
-          res *= pdrh2box::node_to_interval(it2->second);
+          res *= pdrh::node_to_interval(it2->second);
           measure_exists = true;
           break;
         }
@@ -351,12 +351,12 @@ std::vector<box> measure::get_rv_partition()
     if (get<1>(it->second)->value != "-infty")
     {
       init_domain.setLeftBound(
-        pdrh2box::node_to_interval(std::get<1>(it->second)).leftBound());
+        pdrh::node_to_interval(std::get<1>(it->second)).leftBound());
     }
     if (get<2>(it->second)->value != "infty")
     {
       init_domain.setRightBound(
-        pdrh2box::node_to_interval(std::get<2>(it->second)).rightBound());
+        pdrh::node_to_interval(std::get<2>(it->second)).rightBound());
     }
     // getting rv bounds
     std::pair<capd::interval, std::vector<capd::interval>> bound =
@@ -364,7 +364,7 @@ std::vector<box> measure::get_rv_partition()
         it->first,
         pdrh::node_to_string_infix(get<0>(it->second)),
         init_domain,
-        pdrh2box::node_to_interval(get<3>(it->second)).mid().leftBound(),
+        pdrh::node_to_interval(get<3>(it->second)).mid().leftBound(),
         measure::precision(global_config.precision_prob, pdrh::rv_map.size()));
     // updating rv bounds
     pdrh::rv_map[it->first] = make_tuple(
@@ -389,7 +389,7 @@ std::vector<box> measure::get_dd_partition()
     std::vector<capd::interval> args;
     for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)
     {
-      args.push_back(pdrh2box::node_to_interval(it2->first));
+      args.push_back(pdrh::node_to_interval(it2->first));
     }
     m.insert(make_pair(it->first, args));
   }
@@ -403,8 +403,8 @@ box measure::bounds::get_rv_domain()
   {
     vector<capd::interval> tmp;
     tmp.push_back(capd::interval(
-      pdrh2box::node_to_interval(get<1>(it->second)).leftBound(),
-      pdrh2box::node_to_interval(get<2>(it->second)).rightBound()));
+      pdrh::node_to_interval(get<1>(it->second)).leftBound(),
+      pdrh::node_to_interval(get<2>(it->second)).rightBound()));
     domain_map.insert(std::make_pair(it->first, tmp));
   }
   if (domain_map.empty())

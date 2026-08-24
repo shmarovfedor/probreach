@@ -7,14 +7,13 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
-#include <logging/easylogging++.h>
 #include <solver/dreal_wrapper.h>
 #include "node.h"
 #include "model.h"
 #include "git_sha1.h"
 #include "version.h"
 #include "box.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include "mc.h"
 #include "pdrh_config.h"
 #include "decision_procedure.h"
@@ -27,8 +26,6 @@ extern "C"
 {
 #include "pdrhparser.h"
 }
-
-INITIALIZE_EASYLOGGINGPP
 
 extern "C" int yyparse();
 extern "C" FILE *yyin;
@@ -57,9 +54,6 @@ int main(int argc, char *argv[])
   {
     yyparse();
   } while (!feof(yyin));
-
-  START_EASYLOGGINGPP(argc, argv);
-  el::Logger *algorithm_logger = el::Loggers::getLogger("algorithm");
 
   // setting the model type
   pdrh::set_model_type();
@@ -94,8 +88,6 @@ int main(int argc, char *argv[])
     cerr << "Unrecognised model type" << endl;
     exit(EXIT_FAILURE);
   }
-
-  el::Loggers::unregisterLogger("algorithm");
 
   return 0;
 }

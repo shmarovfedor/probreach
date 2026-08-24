@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "node.h"
+#include "node_utils.h"
 #include <cmath>
 
 using namespace std;

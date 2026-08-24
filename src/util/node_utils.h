@@ -15,15 +15,15 @@
 #include "box.h"
 #include "node.h"
 
-namespace pdrh2box
+namespace pdrh
 {
-capd::interval node_to_interval(pdrh::node *);
-capd::interval node_to_interval(pdrh::node *, std::vector<box>);
-bool node_to_boolean(pdrh::node *, std::vector<box>);
-pdrh::node *box_to_node(box);
-bool check_zero_crossing(pdrh::node *, std::vector<box>, box, box);
+capd::interval node_to_interval(node *);
+capd::interval node_to_interval(node *, std::vector<box>);
+bool node_to_boolean(node *, std::vector<box>);
+node *box_to_node(box);
+bool check_zero_crossing(node *, std::vector<box>, box, box);
 box get_nondet_domain();
 box get_domain();
 box init_to_box(std::vector<box>);
-} // namespace pdrh2box
+} // namespace pdrh
 #endif // PROBREACH_PDRH2BOX_H

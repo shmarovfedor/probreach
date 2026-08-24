@@ -5,12 +5,11 @@
 #include "rnd.h"
 #include "model.h"
 #include "box_factory.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <capd/capdlib.h>
 #include <capd/intervals/lib.h>
-#include <logging/easylogging++.h>
 #include <gsl/gsl_vector_double.h>
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_cdf.h>
@@ -32,12 +31,11 @@ box rnd::get_random_sample(gsl_rng *r)
     {
       edges.insert(make_pair(
         it->first,
-        pdrh2box::node_to_interval(
-          pdrh::distribution::uniform[it->first].first) +
+        pdrh::node_to_interval(pdrh::distribution::uniform[it->first].first) +
           gsl_rng_uniform(r) *
-            (pdrh2box::node_to_interval(
+            (pdrh::node_to_interval(
                pdrh::distribution::uniform[it->first].second) -
-             pdrh2box::node_to_interval(
+             pdrh::node_to_interval(
                pdrh::distribution::uniform[it->first].first))));
     }
     else if (
@@ -46,12 +44,10 @@ box rnd::get_random_sample(gsl_rng *r)
     {
       edges.insert(make_pair(
         it->first,
-        pdrh2box::node_to_interval(
-          pdrh::distribution::normal[it->first].first) +
+        pdrh::node_to_interval(pdrh::distribution::normal[it->first].first) +
           gsl_ran_gaussian_ziggurat(
             r,
-            pdrh2box::node_to_interval(
-              pdrh::distribution::normal[it->first].second)
+            pdrh::node_to_interval(pdrh::distribution::normal[it->first].second)
               .mid()
               .leftBound())));
     }
@@ -62,7 +58,7 @@ box rnd::get_random_sample(gsl_rng *r)
         it->first,
         gsl_ran_exponential(
           r,
-          1 / pdrh2box::node_to_interval(pdrh::distribution::exp[it->first])
+          1 / pdrh::node_to_interval(pdrh::distribution::exp[it->first])
                 .mid()
                 .leftBound())));
     }
@@ -74,32 +70,31 @@ box rnd::get_random_sample(gsl_rng *r)
         it->first,
         gsl_ran_gamma(
           r,
-          pdrh2box::node_to_interval(pdrh::distribution::gamma[it->first].first)
+          pdrh::node_to_interval(pdrh::distribution::gamma[it->first].first)
             .mid()
             .leftBound(),
-          pdrh2box::node_to_interval(
-            pdrh::distribution::gamma[it->first].second)
+          pdrh::node_to_interval(pdrh::distribution::gamma[it->first].second)
             .mid()
             .leftBound())));
     }
     else
     {
-      CLOG(ERROR, "ran_gen") << "Random number generator for the variable \""
-                             << it->first << "\" is not supported";
+      cerr << "Random number generator for the variable \"" << it->first
+           << "\" is not supported\n";
     }
   }
   //discrete distributions
   for (auto it = pdrh::dd_map.cbegin(); it != pdrh::dd_map.cend(); it++)
   {
-    map<pdrh::node *, pdrh::node *> mass_map = pdrh::dd_map[it->first];
+    map<node *, node *> mass_map = pdrh::dd_map[it->first];
     double *p_mass = new double[mass_map.size()];
-    pdrh::node **p_value = new pdrh::node *[mass_map.size()];
+    node **p_value = new node *[mass_map.size()];
     size_t i = 0;
     // getting values and their probabilities
     for (auto it2 = mass_map.cbegin(); it2 != mass_map.cend(); it2++)
     {
       p_value[i] = it2->first;
-      p_mass[i] = pdrh2box::node_to_interval(it2->second).mid().leftBound();
+      p_mass[i] = pdrh::node_to_interval(it2->second).mid().leftBound();
       i++;
     }
     // getting a pointer to the look up table
@@ -107,10 +102,10 @@ box rnd::get_random_sample(gsl_rng *r)
     // getting a value index
     size_t index = gsl_ran_discrete(r, g);
     edges.insert(
-      std::make_pair(it->first, pdrh2box::node_to_interval(p_value[index])));
+      std::make_pair(it->first, pdrh::node_to_interval(p_value[index])));
     // releasing memory
-    delete p_value;
-    delete p_mass;
+    delete[] p_value;
+    delete[] p_mass;
     gsl_ran_discrete_free(g);
   }
   return box(edges);
@@ -186,8 +181,7 @@ box rnd::get_random_sample2(gsl_rng *r, box b, int k, double non)
       }
       else
       {
-        CLOG(ERROR, "ran_gen")
-          << "Distribution is not supported ny Random number generator";
+        cerr << "Distribution is not supported ny Random number generator\n";
       }
     }
   }
@@ -211,8 +205,7 @@ box rnd::get_random_sample2(gsl_rng *r, box b, int k, double non)
       }
       else
       {
-        CLOG(ERROR, "ran_gen")
-          << "Distribution is not supported ny Random number generator";
+        cerr << "Distribution is not supported ny Random number generator\n";
       }
     }
   }
@@ -240,15 +233,13 @@ box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
       }
       else
       {
-        CLOG(ERROR, "ran_gen")
-          << "Parameter \"" << it->first << "\" is not defined";
+        cerr << "Parameter \"" << it->first << "\" is not defined\n";
       }
     }
     else
     {
       edges.insert(make_pair(
-        it->first,
-        pdrh2box::node_to_interval(it->second.first).mid().leftBound()));
+        it->first, pdrh::node_to_interval(it->second.first).mid().leftBound()));
     }
   }
   return box(edges);
@@ -416,10 +407,9 @@ box rnd::get_icdf(box b)
     {
       double value = gsl_cdf_flat_Pinv(
         it->second.leftBound(),
-        pdrh2box::node_to_interval(pdrh::distribution::uniform[it->first].first)
+        pdrh::node_to_interval(pdrh::distribution::uniform[it->first].first)
           .leftBound(),
-        pdrh2box::node_to_interval(
-          pdrh::distribution::uniform[it->first].second)
+        pdrh::node_to_interval(pdrh::distribution::uniform[it->first].second)
           .leftBound());
       //value += pdrh::node_to_interval(pdrh::distribution::normal[it->first].first).leftBound();
 
@@ -431,10 +421,10 @@ box rnd::get_icdf(box b)
     {
       double value = gsl_cdf_gaussian_Pinv(
         it->second.leftBound(),
-        pdrh2box::node_to_interval(pdrh::distribution::normal[it->first].second)
+        pdrh::node_to_interval(pdrh::distribution::normal[it->first].second)
           .leftBound());
       value +=
-        pdrh2box::node_to_interval(pdrh::distribution::normal[it->first].first)
+        pdrh::node_to_interval(pdrh::distribution::normal[it->first].first)
           .leftBound();
       edges.insert(make_pair(it->first, capd::interval(value, value)));
     }
@@ -449,8 +439,8 @@ box rnd::get_icdf(box b)
     }
     else
     {
-      CLOG(ERROR, "ran_gen") << "Random number generator for the variable \""
-                             << it->first << "\" is not supported";
+      cerr << "Random number generator for the variable \"" << it->first
+           << "\" is not supported\n";
     }
   }
   return box(edges);
@@ -469,13 +459,13 @@ box rnd::get_GPicdf(box b, box params)
       pdrh::distribution::uniform.cend())
     {
       //            cout << "Distribution: " << pdrh::node_to_string_infix(pdrh::distribution::uniform[it->first].first) << endl;
-      //            cout << "Left bound: " << pdrh2box::node_to_interval(pdrh::distribution::uniform[it->first].first, {params}).leftBound() << endl;
+      //            cout << "Left bound: " << pdrh::node_to_interval(pdrh::distribution::uniform[it->first].first, {params}).leftBound() << endl;
       double value = gsl_cdf_flat_Pinv(
         it->second.leftBound(),
-        pdrh2box::node_to_interval(
+        pdrh::node_to_interval(
           pdrh::distribution::uniform[it->first].first, {params})
           .leftBound(),
-        pdrh2box::node_to_interval(
+        pdrh::node_to_interval(
           pdrh::distribution::uniform[it->first].second, {params})
           .leftBound());
       //value += pdrh::node_to_interval(pdrh::distribution::normal[it->first].first).leftBound();
@@ -488,10 +478,10 @@ box rnd::get_GPicdf(box b, box params)
     {
       double value = gsl_cdf_gaussian_Pinv(
         it->second.leftBound(),
-        pdrh2box::node_to_interval(
+        pdrh::node_to_interval(
           pdrh::distribution::normal[it->first].second, {params})
           .leftBound());
-      value += pdrh2box::node_to_interval(
+      value += pdrh::node_to_interval(
                  pdrh::distribution::normal[it->first].first, {params})
                  .leftBound();
       edges.insert(make_pair(it->first, capd::interval(value, value)));
@@ -507,8 +497,8 @@ box rnd::get_GPicdf(box b, box params)
     }
     else
     {
-      CLOG(ERROR, "ran_gen") << "Random number generator for the variable \""
-                             << it->first << "\" is not supported";
+      cerr << "Random number generator for the variable \"" << it->first
+           << "\" is not supported\n";
     }
   }
   return box(edges);
@@ -524,16 +514,6 @@ box rnd::get_randomuni_sample(gsl_rng *r)
   }
   return box(edges);
 }
-/*
-double rnd::find_sample_var(box b)
-{
-    map<std::string, capd::interval> b_edges, edges;
-    b_edges = b.get_map();
-    auto it = b_edges.cbegin();
-    double value = it->second.leftBound();
-    return value;
-}
-*/
 
 double *rnd::sobol_vector(box b)
 {
@@ -545,9 +525,9 @@ double *rnd::sobol_vector(box b)
   {
     vv[i] = gsl_cdf_flat_Pinv(
       it->second.leftBound(),
-      pdrh2box::node_to_interval(pdrh::distribution::uniform[it->first].first)
+      pdrh::node_to_interval(pdrh::distribution::uniform[it->first].first)
         .leftBound(),
-      pdrh2box::node_to_interval(pdrh::distribution::uniform[it->first].second)
+      pdrh::node_to_interval(pdrh::distribution::uniform[it->first].second)
         .leftBound());
     i++;
   }

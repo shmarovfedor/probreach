@@ -175,7 +175,6 @@ int decision_procedure::evaluate_delta_sat(
       (std::remove(smt_filename.c_str()) == 0) &&
       (std::remove(std::string(smt_filename + ".output").c_str()) == 0))
     {
-      //LOG(DEBUG) << "Removed auxiliary files";
       return decision_procedure::UNSAT;
     }
     else
@@ -205,7 +204,6 @@ int decision_procedure::evaluate_delta_sat(
       //            new_init_state.id = pdrh::modes.front().jumps.front().next_id;
       //            new_init_state.prop = pdrh::box_to_node(init_box);
       //            cout << "New init state: " << new_init_state.id << ": " << pdrh::node_to_string_prefix(new_init_state.prop) << endl;
-      //LOG(DEBUG) << "Removed auxiliary files";
       return decision_procedure::SAT;
     }
     else

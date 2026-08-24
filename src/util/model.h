@@ -44,10 +44,10 @@ struct mode
       std::string,
       std::tuple<
         std::string,
-        pdrh::node *,
-        pdrh::node *,
-        pdrh::node *,
-        pdrh::node *>>
+        node *,
+        node *,
+        node *,
+        node *>>
       reset_rv;
     std::map<std::string, std::map<node *, node *>> reset_dd;
     std::map<std::string, std::pair<node *, node *>> reset_nondet;
@@ -89,7 +89,7 @@ struct state
 
   friend std::ostream &operator<<(std::ostream &os, const pdrh::state &st)
   {
-    os << st.id << ":" << pdrh::node_to_string_prefix(st.prop) << ";";
+    os << st.id << ":" << node_to_string_prefix(st.prop) << ";";
     return os;
   }
 };
@@ -111,7 +111,6 @@ void push_jump(mode &, mode::jump);
 void push_reset(mode &, mode::jump &, std::string, node *);
 void push_init(std::vector<state>);
 void push_goal(std::vector<state>);
-void push_path(std::vector<mode *>);
 void push_time_bounds(node *, node *);
 
 void set_model_type();
@@ -126,9 +125,7 @@ mode *get_mode(int);
 std::vector<mode *> get_init_modes();
 std::vector<mode *> get_goal_modes();
 std::vector<mode *> get_successors(mode *);
-std::vector<mode *> get_shortest_path(mode *, mode *);
 std::vector<std::vector<mode *>> get_paths(mode *, mode *, int);
-std::vector<std::vector<mode *>> get_paths();
 std::vector<std::vector<mode *>> get_all_paths(int);
 std::vector<std::vector<mode *>> get_all_paths(int, int);
 

@@ -7,7 +7,6 @@
 #include <gsl/gsl_cdf.h>
 #include <capd/intervals/lib.h>
 #include "mc.h"
-#include "easylogging++.h"
 #include "pdrh_config.h"
 #include "measure.h"
 #include "box_factory.h"
@@ -15,8 +14,7 @@
 #include <iomanip>
 #include <omp.h>
 #include "rnd.h"
-#include "ap.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include "naive.h"
 #include "solver/dreal_wrapper.h"
 
@@ -46,11 +44,12 @@ capd::interval algorithm::evaluate_pha_chernoff(
   //    long int sample_size = algorithm::get_cernoff_bound(acc, std::sqrt(conf));
   long int sat = 0;
   long int unsat = 0;
-  CLOG_IF(global_config.verbose, INFO, "algorithm") << setprecision(16);
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Chernoff-Hoeffding algorithm started";
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Random sample size: " << sample_size;
+  if (global_config.verbose)
+    cout << setprecision(16);
+  if (global_config.verbose_result)
+    cout << "Chernoff-Hoeffding algorithm started\n";
+  if (global_config.verbose_result)
+    cout << "Random sample size: " << sample_size << "\n";
 #pragma omp parallel for schedule(dynamic)
   for (long int ctr = 0; ctr < sample_size; ctr++)
   {
@@ -59,7 +58,8 @@ capd::interval algorithm::evaluate_pha_chernoff(
       pdrh::get_all_paths(min_depth, max_depth);
     // getting a sample
     box b = rnd::get_random_sample(r);
-    CLOG_IF(global_config.verbose, INFO, "algorithm") << "Random sample: " << b;
+    if (global_config.verbose)
+      cout << "Random sample: " << b << "\n";
     std::vector<box> boxes = {b};
     boxes.insert(boxes.end(), nondet_boxes.begin(), nondet_boxes.end());
     int undet_counter = 0;
@@ -73,9 +73,10 @@ capd::interval algorithm::evaluate_pha_chernoff(
         p_stream << m->id << " ";
       }
       // removing trailing whitespace
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "Path: "
-        << p_stream.str().substr(0, p_stream.str().find_last_of(" "));
+      if (global_config.verbose)
+        cout << "Path: "
+             << p_stream.str().substr(0, p_stream.str().find_last_of(" "))
+             << "\n";
       int res;
       if (global_config.delta_sat)
       {
@@ -91,17 +92,20 @@ capd::interval algorithm::evaluate_pha_chernoff(
       {
         if (res == decision_procedure::SAT)
         {
-          CLOG_IF(global_config.verbose, INFO, "algorithm") << "SAT";
+          if (global_config.verbose)
+            cout << "SAT\n";
           sat++;
           sat_flag = true;
         }
         else if (res == decision_procedure::UNSAT)
         {
-          CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNSAT";
+          if (global_config.verbose)
+            cout << "UNSAT\n";
         }
         else if (res == decision_procedure::UNDET)
         {
-          CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNDET";
+          if (global_config.verbose)
+            cout << "UNDET\n";
           undet_counter++;
         }
       }
@@ -117,18 +121,18 @@ capd::interval algorithm::evaluate_pha_chernoff(
       {
         unsat++;
       }
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "CI: "
+      if (global_config.verbose)
+        cout << "CI: "
         << capd::interval(
              ((double)sat / (double)sample_size) - acc,
-             ((double)(sample_size - unsat) / (double)sample_size) + acc);
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "Progress: " << (double)ctr / (double)sample_size;
+             ((double)(sample_size - unsat) / (double)sample_size) + acc) << "\n";
+      if (global_config.verbose)
+        cout << "Progress: " << (double)ctr / (double)sample_size << "\n";
     }
   }
   gsl_rng_free(r);
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Chernoff-Hoeffding algorithm finished";
+  if (global_config.verbose_result)
+    cout << "Chernoff-Hoeffding algorithm finished\n";
   return capd::interval(
     ((double)sat / (double)sample_size) - acc,
     ((double)(sample_size - unsat) / (double)sample_size) + acc);
@@ -166,9 +170,10 @@ capd::interval algorithm::evaluate_pha_bayesian(
   double post_mean_unsat = ((double)sample_size - unsat + alpha) /
                            ((double)sample_size + alpha + beta);
   double post_prob = 0;
-  CLOG_IF(global_config.verbose, INFO, "algorithm") << setprecision(16);
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Bayesian estimations algorithm started";
+  if (global_config.verbose)
+    cout << setprecision(16);
+  if (global_config.verbose_result)
+    cout << "Bayesian estimations algorithm started\n";
   // getting set of all paths
   vector<vector<pdrh::mode *>> paths;
   if (global_config.decision_method == 0)
@@ -185,7 +190,8 @@ capd::interval algorithm::evaluate_pha_bayesian(
     {
       sample_size++;
     }
-    CLOG_IF(global_config.verbose, INFO, "algorithm") << "Random sample: " << b;
+    if (global_config.verbose)
+      cout << "Random sample: " << b << "\n";
     std::vector<box> boxes = {b};
     boxes.insert(boxes.end(), nondet_boxes.begin(), nondet_boxes.end());
 
@@ -205,11 +211,11 @@ capd::interval algorithm::evaluate_pha_bayesian(
       }
       break;
     case 1:
-      res = ap::verify(min_depth, max_depth, boxes);
-      break;
+      //res = ap::verify(min_depth, max_depth, boxes);
+      //break;
     case 2:
-      res = ap::simulate(min_depth, max_depth, boxes);
-      break;
+      //res = ap::simulate(min_depth, max_depth, boxes);
+      //break;
     default:
       cerr << "Unknown decision procedure method" << endl;
       exit(EXIT_FAILURE);
@@ -220,17 +226,20 @@ capd::interval algorithm::evaluate_pha_bayesian(
       switch (res)
       {
       case decision_procedure::SAT:
-        CLOG_IF(global_config.verbose, INFO, "algorithm") << "SAT";
+        if (global_config.verbose)
+          cout << "SAT\n";
         sat++;
         break;
 
       case decision_procedure::UNSAT:
-        CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNSAT";
+        if (global_config.verbose)
+          cout << "UNSAT\n";
         unsat++;
         break;
 
       case decision_procedure::UNDET:
-        CLOG_IF(global_config.verbose, INFO, "algorithm") << "UNDET";
+        if (global_config.verbose)
+          cout << "UNDET\n";
         break;
       }
       post_mean_sat =
@@ -252,26 +261,25 @@ capd::interval algorithm::evaluate_pha_bayesian(
             post_mean_unsat + acc, sample_size - unsat + alpha, unsat + beta) -
           gsl_cdf_beta_P(0, sat + alpha, sample_size - sat + beta);
       }
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "CI: "
+      if (global_config.verbose)
+      {
+        cout << "CI: "
         << capd::interval(
-             max(post_mean_sat - acc, 0.0), min(post_mean_unsat + acc, 1.0));
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "P(SAT) mean: " << post_mean_sat;
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "P(UNSAT) mean: " << post_mean_unsat;
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "Random sample size: " << sample_size;
-      CLOG_IF(global_config.verbose, INFO, "algorithm")
-        << "P prob: " << post_prob;
+             max(post_mean_sat - acc, 0.0), min(post_mean_unsat + acc, 1.0)) << "\n";
+        cout << "P(SAT) mean: " << post_mean_sat << "\n";
+        cout << "P(UNSAT) mean: " << post_mean_unsat << "\n";
+        cout << "Random sample size: " << sample_size << "\n";
+        cout << "P prob: " << post_prob << "\n";
+      }
     }
   }
   gsl_rng_free(r);
   // displaying sample size if enabled
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Random sample size: " << sample_size;
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Bayesian estimations algorithm finished";
+  if (global_config.verbose_result)
+  {
+    cout << "Random sample size: " << sample_size << "\n";
+    cout << "Bayesian estimations algorithm finished\n";
+  }
   return capd::interval(
     max(post_mean_sat - acc, 0.0), min(post_mean_unsat + acc, 1.0));
 }
@@ -295,7 +303,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   size_t iter_num,
   double acc,
   double conf,
-  bool (*is_stable)(std::map<std::string, pdrh::node *>, double, box, box))
+  bool (*is_stable)(std::map<std::string, node *>, double, box, box))
 {
   // random number generator for cross entropy
   const gsl_rng_type *T;
@@ -309,14 +317,15 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     r,
     std::chrono::system_clock::now().time_since_epoch() /
       std::chrono::milliseconds(1));
-  box domain = pdrh2box::get_nondet_domain();
+  box domain = pdrh::get_nondet_domain();
   //initializing probability value
   pair<box, capd::interval> res(domain, capd::interval(0.0));
   if (global_config.min_prob)
     res = make_pair(domain, capd::interval(1.0));
-  CLOG_IF(global_config.verbose, INFO, "algorithm") << setprecision(16);
-  CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-    << "Domain of nondeterministic parameters: " << domain;
+  if (global_config.verbose)
+    cout << setprecision(16);
+  if (global_config.verbose_result)
+    cout << "Domain of nondeterministic parameters: " << domain << "\n";
   box mean = domain.mid();
   box sigma = domain.get_stddev();
   box var = sigma * sigma;
@@ -328,14 +337,13 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   for (int j = 0; j < iter_num; j++)
   {
     var = sigma * sigma;
-    CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-      << "Iteration number: " << j + 1;
-    CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-      << "Mean: " << mean;
-    CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-      << "Standard deviation: " << sigma;
-    CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-      << "Variance: " << var;
+    if (global_config.verbose_result)
+    {
+      cout << "Iteration number: " << j + 1 << "\n";
+      cout << "Mean: " << mean << "\n";
+      cout << "Standard deviation: " << sigma << "\n";
+      cout << "Variance: " << var << "\n";
+    }
     // correct the sample size only if the probability of sampling outside the domain is still greater than 0.99999
     if (size_correction_coef.leftBound() < 0.99999)
     {
@@ -343,38 +351,38 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     }
     unsigned long new_size =
       (unsigned long)ceil(size / size_correction_coef.leftBound());
-    CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-      << "Sample size: " << new_size;
+    if (global_config.verbose_result)
+      cout << "Sample size: " << new_size << "\n";
     int outliers = 0;
     //#pragma omp parallel for
     for (int i = 0; i < new_size; i++)
     {
       box b = rnd::get_normal_random_sample(r, mean, sigma);
-      CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-        << "Quasi-random sample: " << b;
+      if (global_config.verbose_result)
+        cout << "Quasi-random sample: " << b << "\n";
       capd::interval probability;
       if (domain.contains(b))
       {
-        CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-          << "The sample is inside the domain";
+        if (global_config.verbose_result)
+          cout << "The sample is inside the domain\n";
         // stability test
         bool resume = true;
         if (is_stable != NULL)
         {
           resume = is_stable(
             init_mode->odes,
-            pdrh2box::node_to_interval(init_mode->time.second).rightBound(),
-            pdrh2box::init_to_box({}),
+            pdrh::node_to_interval(init_mode->time.second).rightBound(),
+            pdrh::init_to_box({}),
             b);
           if (resume)
           {
-            CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-              << "The sample is stable";
+            if (global_config.verbose_result)
+              cout << "The sample is stable\n";
           }
           else
           {
-            CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-              << "The sample is unstable";
+            if (global_config.verbose_result)
+              cout << "The sample is unstable";
           }
         }
         if (resume)
@@ -395,8 +403,8 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
       }
       else
       {
-        CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-          << "The sample is outside the domain";
+        if (global_config.verbose_result)
+          cout << "The sample is outside the domain\n";
         outliers++;
         if (global_config.min_prob)
         {
@@ -407,12 +415,12 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
           probability = capd::interval(-numeric_limits<double>::infinity());
         }
       }
-      CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-        << "Probability: " << probability << endl;
+      if (global_config.verbose_result)
+        cout << "Probability: " << probability << "\n";
       samples.push_back(make_pair(b, probability));
     }
-    CLOG_IF(global_config.verbose_result, INFO, "algorithm")
-      << "Number of outliers: " << outliers << endl;
+    if (global_config.verbose_result)
+      cout << "Number of outliers: " << outliers << "\n";
     if (global_config.min_prob)
     {
       sort(samples.begin(), samples.end(), measure::compare_pairs::ascending);

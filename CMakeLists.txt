@@ -125,7 +125,6 @@ include_directories("${PROBREACH_SOURCE_DIR}/parser/csv")
 include_directories("${PROBREACH_SOURCE_DIR}/parser/output")
 include_directories("${PROBREACH_SOURCE_DIR}/parser/pdrh")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
-include_directories("${PROBREACH_SOURCE_DIR}/logging")
 
 # searching for GSL
 find_package(GSL)
@@ -173,7 +172,6 @@ configure_file(
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/formal_verifier/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/mc_verifier/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/translator/CMakeLists.txt)
 
 # enabling testing
 find_package(GTest)

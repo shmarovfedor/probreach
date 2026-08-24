@@ -9,8 +9,6 @@
 #include <map>
 #include <vector>
 
-namespace pdrh
-{
 // node of the tree of mathematical expression
 class node
 {
@@ -66,15 +64,17 @@ public:
   bool is_empty();
 };
 
+namespace pdrh
+{
 node *copy_node(node *);
 void copy_tree(node *&, node *);
 void delete_node(node *);
 
-double node_to_double(pdrh::node *);
-double node_to_double(pdrh::node *, std::map<std::string, double>);
-bool node_to_boolean(pdrh::node *, std::map<std::string, double>);
+double node_to_double(node *);
+double node_to_double(node *, std::map<std::string, double>);
+bool node_to_boolean(node *, std::map<std::string, double>);
 bool node_zero_crossing(
-  pdrh::node *,
+  node *,
   std::map<std::string, double>,
   std::map<std::string, double>);
 
@@ -85,7 +85,7 @@ std::string node_fix_index(node *, int, std::string);
 
 // we might not need these methods in future
 void get_first_node_by_value(node *, node *, std::vector<std::string>);
-pdrh::node *get_node_neg_by_value(pdrh::node *, std::vector<std::string>);
+node *get_node_neg_by_value(node *, std::vector<std::string>);
 } // namespace pdrh
 
 #endif // PROBREACH_NODE_H

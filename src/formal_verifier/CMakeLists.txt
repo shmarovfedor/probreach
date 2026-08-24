@@ -1,7 +1,7 @@
 file(GLOB PROBREACH_FORMAL_SRC
         ${PROBREACH_SOURCE_DIR}/util/formal.cpp
         ${PROBREACH_SOURCE_DIR}/util/model.cpp
-        ${PROBREACH_SOURCE_DIR}/util/pdrh2box.cpp
+        ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
         ${PROBREACH_SOURCE_DIR}/util/pdrh_config.cpp
         ${PROBREACH_SOURCE_DIR}/util/box_factory.cpp

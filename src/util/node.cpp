@@ -20,7 +20,7 @@ node::node(double v)
   this->value = ss.str();
 }
 
-std::ostream &pdrh::operator<<(std::ostream &os, const node &n)
+std::ostream &operator<<(std::ostream &os, const node &n)
 {
   if (n.operands.size() > 1)
   {
@@ -51,16 +51,16 @@ std::ostream &pdrh::operator<<(std::ostream &os, const node &n)
  * @param n - pointer to the root of the expression tree.
  * @return node in prefix notation as string.
  */
-string pdrh::node_to_string_prefix(pdrh::node *n)
+string pdrh::node_to_string_prefix(node *n)
 {
   stringstream s;
   // checking whether n is an operation node
   if (n->operands.size() > 0)
   {
     s << "(" << n->value;
-    for (pdrh::node *op : n->operands)
+    for (node *op : n->operands)
     {
-      s << pdrh::node_to_string_prefix(op);
+      s << node_to_string_prefix(op);
     }
     s << ")";
   }
@@ -77,7 +77,7 @@ string pdrh::node_to_string_prefix(pdrh::node *n)
  * @param n - pointer to the root of the expression tree.
  * @return node in infix notation as string.
  */
-string pdrh::node_to_string_infix(pdrh::node *n)
+string pdrh::node_to_string_infix(node *n)
 {
   stringstream s;
   s << *n;
@@ -92,16 +92,16 @@ string pdrh::node_to_string_infix(pdrh::node *n)
  * @param index - an identifier.
  * @return node with fixed index as string.
  */
-string pdrh::node_fix_index(pdrh::node *n, int step, string index)
+string pdrh::node_fix_index(node *n, int step, string index)
 {
   stringstream s;
   // checking whether n is an operation node
   if (n->operands.size() > 0)
   {
     s << "(" << n->value;
-    for (pdrh::node *op : n->operands)
+    for (node *op : n->operands)
     {
-      s << pdrh::node_fix_index(op, step, index);
+      s << node_fix_index(op, step, index);
     }
     s << ")";
   }
@@ -122,13 +122,127 @@ string pdrh::node_fix_index(pdrh::node *n, int step, string index)
 }
 
 /**
+ * Copies the entire tree given its root
+ *
+ * @param copy - root node for the copy of the tree
+ * @param origin - root node for the original tree
+ */
+void pdrh::copy_tree(node *&copy, node *origin)
+{
+  copy->value = origin->value;
+  for (node *child : origin->operands)
+  {
+    node *copy_operand = new node;
+    pdrh::copy_tree(copy_operand, child);
+    copy->operands.push_back(copy_operand);
+  }
+}
+
+/**
+ * Creates a copy of the node.
+ *
+ * @param origin - original node
+ * @return the copy of the node
+ */
+node *pdrh::copy_node(node *origin)
+{
+  node *copy = new node();
+  copy_tree(copy, origin);
+  return copy;
+}
+
+/**
+ * Creating a string representation of the node in prefix notation
+ * @param n - node to delete
+ */
+void pdrh::delete_node(node *n)
+{
+  for (node *op : n->operands)
+  {
+    delete_node(op);
+  }
+  delete n;
+}
+
+/**
+ * Checking if the node is empty.
+ *
+ * @param n - node to check.
+ * @return emptiness check result.
+ */
+bool node::is_empty()
+{
+  return this->value.empty() && this->operands.empty();
+}
+
+
+/**
+ * Returns the first node matching the pattern (root->value == values[i]) and (expr).
+ *
+ * @param root - root of the tree.
+ * @param res_node - resulting node.
+ * @param values - list of values to check.
+ */
+void pdrh::get_first_node_by_value(
+  node *root,
+  node *res_node,
+  vector<string> values)
+{
+  if (root->value == "=")
+  {
+    for (node *child : root->operands)
+    {
+      if (find(values.begin(), values.end(), child->value) != values.end())
+      {
+        *res_node = *root;
+        root->value = "true";
+        root->operands.clear();
+      }
+      else
+      {
+        pdrh::get_first_node_by_value(child, res_node, values);
+      }
+    }
+  }
+  else
+  {
+    for (node *child : root->operands)
+    {
+      pdrh::get_first_node_by_value(child, res_node, values);
+    }
+  }
+}
+
+/**
+ * Returns the first node matching the pattern (root->value == values[i]) and (!expr)
+ *
+ * @param root - root of the tree.
+ * @param values - resulting node.
+ * @return
+ */
+node *pdrh::get_node_neg_by_value(node *root, vector<string> values)
+{
+  node *root_copy = new node();
+  pdrh::copy_tree(root_copy, root);
+  node *time_node = new node;
+  pdrh::get_first_node_by_value(root_copy, time_node, values);
+  if (time_node->is_empty())
+    return NULL;
+  // creating a negation node
+  node *not_node = new node("not", {root_copy});
+  // creating a resulting node
+  node *res_node = new node("and", {time_node, not_node});
+  return res_node;
+}
+
+/**
  * Computes the value of the node provided as the first arguments at the point specified by the second argument.
  *
  * @param n - root node of the expression tree.
  * @param vals - map defining the point.
  * @return value of the node.
  */
-double pdrh::node_to_double(pdrh::node *n, std::map<std::string, double> vals)
+double pdrh::node_to_double(node *n, std::map<std::string, double> vals)
 {
   // terminal node
   if (n->operands.size() == 0)
@@ -307,7 +421,7 @@ double pdrh::node_to_double(pdrh::node *n, std::map<std::string, double> vals)
  * @param n - root node of the expression tree.
  * @return - value of the node.
  */
-double pdrh::node_to_double(pdrh::node *n)
+double pdrh::node_to_double(node *n)
 {
   return node_to_double(n, std::map<string, double>());
 }
@@ -320,7 +434,7 @@ double pdrh::node_to_double(pdrh::node *n)
  * @param vals - point for which the evaluation is performed
  * @return
  */
-bool pdrh::node_to_boolean(pdrh::node *n, std::map<std::string, double> vals)
+bool pdrh::node_to_boolean(node *n, std::map<std::string, double> vals)
 {
   // comparison operators
   if (n->value == ">=")
@@ -351,7 +465,7 @@ bool pdrh::node_to_boolean(pdrh::node *n, std::map<std::string, double> vals)
   else if (n->value == "and")
   {
     bool res = true;
-    for (pdrh::node *nd : n->operands)
+    for (node *nd : n->operands)
     {
       res = res && node_to_boolean(nd, vals);
     }
@@ -360,7 +474,7 @@ bool pdrh::node_to_boolean(pdrh::node *n, std::map<std::string, double> vals)
   else if (n->value == "or")
   {
     bool res = false;
-    for (pdrh::node *nd : n->operands)
+    for (node *nd : n->operands)
     {
       res = res || node_to_boolean(nd, vals);
     }
@@ -374,60 +488,6 @@ bool pdrh::node_to_boolean(pdrh::node *n, std::map<std::string, double> vals)
 }
 
 /**
- * Copies the entire tree given its root
- *
- * @param copy - root node for the copy of the tree
- * @param origin - root node for the original tree
- */
-void pdrh::copy_tree(pdrh::node *&copy, pdrh::node *origin)
-{
-  copy->value = origin->value;
-  for (pdrh::node *child : origin->operands)
-  {
-    pdrh::node *copy_operand = new pdrh::node;
-    pdrh::copy_tree(copy_operand, child);
-    copy->operands.push_back(copy_operand);
-  }
-}
-
-/**
- * Creates a copy of the node.
- *
- * @param origin - original node
- * @return the copy of the node
- */
-pdrh::node *pdrh::copy_node(node *origin)
-{
-  pdrh::node *copy = new pdrh::node();
-  copy_tree(copy, origin);
-  return copy;
-}
-
-/**
- * Creating a string representation of the node in prefix notation
- * @param n - node to delete
- */
-void pdrh::delete_node(pdrh::node *n)
-{
-  for (pdrh::node *op : n->operands)
-  {
-    delete_node(op);
-  }
-  delete n;
-}
-
-/**
- * Checking if the node is empty.
- *
- * @param n - node to check.
- * @return emptiness check result.
- */
-bool node::is_empty()
-{
-  return this->value.empty() && this->operands.empty();
-}
-
-/**
  * Returns true if zero-crossing happens between the left-handside and the right-handside points.
  *
  *
@@ -437,7 +497,7 @@ bool node::is_empty()
  * @return the result of zero-crossing check
  */
 bool pdrh::node_zero_crossing(
-  pdrh::node *expr,
+  node *expr,
   std::map<std::string, double> left,
   std::map<std::string, double> right)
 {
@@ -455,7 +515,7 @@ bool pdrh::node_zero_crossing(
   else if (expr->value == "and")
   {
     bool res = true;
-    for (pdrh::node *n : expr->operands)
+    for (node *n : expr->operands)
     {
       res = res && node_zero_crossing(n, left, right);
     }
@@ -464,7 +524,7 @@ bool pdrh::node_zero_crossing(
   else if (expr->value == "or")
   {
     bool res = true;
-    for (pdrh::node *n : expr->operands)
+    for (node *n : expr->operands)
     {
       res = res || node_zero_crossing(n, left, right);
     }
@@ -475,63 +535,4 @@ bool pdrh::node_zero_crossing(
     cerr << "Unrecognised or unsupported operation \"" << expr->value << "\"";
     exit(EXIT_FAILURE);
   }
-}
-
-/**
- * Returns the first node matching the pattern (root->value == values[i]) and (expr).
- *
- * @param root - root of the tree.
- * @param res_node - resulting node.
- * @param values - list of values to check.
- */
-void pdrh::get_first_node_by_value(
-  node *root,
-  node *res_node,
-  vector<string> values)
-{
-  if (root->value == "=")
-  {
-    for (pdrh::node *child : root->operands)
-    {
-      if (find(values.begin(), values.end(), child->value) != values.end())
-      {
-        *res_node = *root;
-        root->value = "true";
-        root->operands.clear();
-      }
-      else
-      {
-        pdrh::get_first_node_by_value(child, res_node, values);
-      }
-    }
-  }
-  else
-  {
-    for (pdrh::node *child : root->operands)
-    {
-      pdrh::get_first_node_by_value(child, res_node, values);
-    }
-  }
-}
-
-/**
- * Returns the first node matching the pattern (root->value == values[i]) and (!expr)
- *
- * @param root - root of the tree.
- * @param values - resulting node.
- * @return
- */
-node *pdrh::get_node_neg_by_value(node *root, vector<string> values)
-{
-  pdrh::node *root_copy = new pdrh::node();
-  pdrh::copy_tree(root_copy, root);
-  pdrh::node *time_node = new pdrh::node;
-  pdrh::get_first_node_by_value(root_copy, time_node, values);
-  if (time_node->is_empty())
-    return NULL;
-  // creating a negation node
-  pdrh::node *not_node = new node("not", {root_copy});
-  // creating a resulting node
-  pdrh::node *res_node = new node("and", {time_node, not_node});
-  return res_node;
 }

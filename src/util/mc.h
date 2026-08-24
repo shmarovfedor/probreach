@@ -30,7 +30,7 @@ std::pair<box, capd::interval> evaluate_npha_cross_entropy_normal(
   size_t,
   double,
   double,
-  bool(std::map<std::string, pdrh::node *>, double, box, box));
+  bool(std::map<std::string, node *>, double, box, box));
 
 } // namespace algorithm
 
