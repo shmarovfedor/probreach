@@ -89,7 +89,7 @@ struct state
 
   friend std::ostream &operator<<(std::ostream &os, const pdrh::state &st)
   {
-    os << st.id << ":" << node_to_string_prefix(st.prop) << ";";
+    os << st.id << ":" << st.prop->to_prefix() << ";";
     return os;
   }
 };

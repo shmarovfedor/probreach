@@ -62,6 +62,10 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const node &n);
 
   bool is_empty();
+
+  std::string to_infix();
+  std::string to_prefix();
+  std::string to_prefix(int step, std::string index);
 };
 
 namespace pdrh
@@ -77,11 +81,6 @@ bool node_zero_crossing(
   node *,
   std::map<std::string, double>,
   std::map<std::string, double>);
-
-std::string node_to_string_prefix(node *);
-std::string node_to_string_infix(node *);
-
-std::string node_fix_index(node *, int, std::string);
 
 // we might not need these methods in future
 void get_first_node_by_value(node *, node *, std::vector<std::string>);

@@ -1,30 +1,27 @@
 %{
-#include <cstdio>
 #include <iostream>
 #include <string>
-#include <string.h>
 #include <sstream>
-#include <cmath>
-#include <limits>
 #include "node.h"
 #include "model.h"
-#include "pdrh_config.h"
+
+#include "symbolt.h"
 
 // stuff from flex that bison needs to know about:
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
-extern int line_num;
 
 void yyerror(const char *s);
 
 %}
+%locations
 
 %union
 {
-	int                         ival;
-	float                       fval;
-	char*                       sval;
+	int                   ival;
+	float                 fval;
+	char*                 sval;
   node*                 nval;
   std::vector<node*>*   nval_list;
 }
@@ -84,10 +81,11 @@ pdrh:
 model:
     MODEL ':' m_type ';' 
 {
-  if(strcmp(strdup($3), "ha") == 0)           pdrh::model_type = pdrh::HA;
-  else if(strcmp(strdup($3), "pha") == 0)     pdrh::model_type = pdrh::PHA;
-  else if(strcmp(strdup($3), "nha") == 0)     pdrh::model_type = pdrh::NHA;
-  else if(strcmp(strdup($3), "npha") == 0)    pdrh::model_type = pdrh::NPHA;
+  std::string type_str($3);
+  if(type_str == "ha")           pdrh::model_type = pdrh::HA;
+  else if(type_str == "pha")     pdrh::model_type = pdrh::PHA;
+  else if(type_str == "nha")     pdrh::model_type = pdrh::NHA;
+  else if(type_str == "npha")    pdrh::model_type = pdrh::NPHA;
 }
 
 declarations:
@@ -416,7 +414,7 @@ odes:
 ode:
 	D_DT '[' identifier ']' EQ expr ';'
 {
-  push_ode(*cur_mode, strdup($3), $6);
+  push_ode(*cur_mode, std::string($3), $6);
 	free($3);
 }
 
@@ -568,6 +566,7 @@ states:
 
 void yyerror(const char *s)
 {
-  cerr << "line " << line_num << ": " << s << endl;
+  cerr << "error at " << yylloc.first_line << ":" 
+    << yylloc.first_column << ":" << s << "\n";
   exit(EXIT_FAILURE);
 }

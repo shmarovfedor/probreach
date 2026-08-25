@@ -93,7 +93,7 @@ capd::interval measure::p_measure(box b, double e)
     {
       res *= measure::integral(
                it->first,
-               pdrh::node_to_string_infix(std::get<0>(pdrh::rv_map[it->first])),
+               std::get<0>(pdrh::rv_map[it->first])->to_infix(),
                it->second,
                measure::precision(e, edges.size()))
                .first;
@@ -362,7 +362,7 @@ std::vector<box> measure::get_rv_partition()
     std::pair<capd::interval, std::vector<capd::interval>> bound =
       measure::bounds::pdf(
         it->first,
-        pdrh::node_to_string_infix(get<0>(it->second)),
+        get<0>(it->second)->to_infix(),
         init_domain,
         pdrh::node_to_interval(get<3>(it->second)).mid().leftBound(),
         measure::precision(global_config.precision_prob, pdrh::rv_map.size()));

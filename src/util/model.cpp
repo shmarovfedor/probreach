@@ -407,24 +407,24 @@ string pdrh::model_to_string()
   for (auto it = pdrh::var_map.cbegin(); it != pdrh::var_map.cend(); it++)
   {
     out << "|   " << it->first << " ["
-        << node_to_string_prefix(it->second.first) << ", "
-        << node_to_string_prefix(it->second.second) << "]" << endl;
+        << it->second.first->to_prefix() << ", "
+        << it->second.second->to_prefix() << "]" << endl;
   }
   out << "PARAMETERS:" << endl;
   for (auto it = pdrh::par_map.cbegin(); it != pdrh::par_map.cend(); it++)
   {
     out << "|   " << it->first << " ["
-        << node_to_string_prefix(it->second.first) << ", "
-        << node_to_string_prefix(it->second.second) << "]" << endl;
+        << it->second.first->to_prefix() << ", "
+        << it->second.second->to_prefix() << "]" << endl;
   }
   out << "CONTINUOUS RANDOM VARIABLES:" << endl;
   for (auto it = pdrh::rv_map.cbegin(); it != pdrh::rv_map.cend(); it++)
   {
     out << "|   pdf(" << it->first
-        << ") = " << node_to_string_infix(get<0>(it->second)) << "  | "
-        << node_to_string_prefix(get<1>(it->second)) << " |   "
-        << node_to_string_prefix(get<2>(it->second)) << "    |   "
-        << node_to_string_prefix(get<3>(it->second)) << endl;
+        << ") = " << get<0>(it->second) << "  | "
+        << get<1>(it->second)->to_prefix() << " |   "
+        << get<2>(it->second)->to_prefix() << "    |   "
+        << get<3>(it->second)->to_prefix() << endl;
   }
   out << "DISCRETE RANDOM VARIABLES:" << endl;
   for (auto it = pdrh::dd_map.cbegin(); it != pdrh::dd_map.cend(); it++)
@@ -432,10 +432,10 @@ string pdrh::model_to_string()
     out << "|   dd(" << it->first << ") = (";
     for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)
     {
-      cout << node_to_string_prefix(it2->first) << " : "
-           << node_to_string_prefix(it2->second) << endl;
-      out << node_to_string_prefix(it2->first) << " : "
-          << node_to_string_prefix(it2->second) << ", ";
+      cout << it2->first->to_prefix() << " : "
+           << it2->second->to_prefix() << endl;
+      out << it2->first->to_prefix() << " : "
+          << it2->second->to_prefix() << ", ";
     }
     out << ")" << endl;
   }
@@ -443,52 +443,52 @@ string pdrh::model_to_string()
   for (pdrh::mode m : pdrh::modes)
   {
     out << "|   MODE: " << m.id << ";" << endl;
-    out << "|   TIME DOMAIN: [" << node_to_string_prefix(m.time.first)
-        << ", " << node_to_string_prefix(m.time.second) << "]" << endl;
+    out << "|   TIME DOMAIN: [" << m.time.first->to_prefix()
+        << ", " << m.time.second->to_prefix() << "]" << endl;
     out << "|   INVARIANTS:" << endl;
     for (node *n : m.invts)
     {
-      out << "|   |   " << node_to_string_prefix(n) << endl;
+      out << "|   |   " << n->to_prefix() << endl;
     }
     out << "|   FLOW_MAP:" << endl;
     for (auto it = m.flow_map.cbegin(); it != m.flow_map.cend(); it++)
     {
       out << "|   " << it->first << " "
-          << " [" << node_to_string_prefix(it->second.first) << ", "
-          << node_to_string_prefix(it->second.second) << "]" << endl;
+          << " [" << it->second.first->to_prefix() << ", "
+          << it->second.second->to_prefix() << "]" << endl;
     }
     out << "|   ODES:" << endl;
     for (auto it = m.odes.cbegin(); it != m.odes.cend(); it++)
     {
       out << "|   |   d[" << it->first
-          << "]/dt = " << node_to_string_prefix(it->second) << endl;
+          << "]/dt = " << it->second->to_prefix() << endl;
     }
     out << "|   JUMPS:" << endl;
     for (pdrh::mode::jump j : m.jumps)
     {
-      out << "|   |   GUARD: " << node_to_string_prefix(j.guard) << endl;
+      out << "|   |   GUARD: " << j.guard->to_prefix() << endl;
       out << "|   |   SUCCESSOR: " << j.next_id << endl;
       out << "|   |   RESETS:" << endl;
       for (auto it = j.reset.cbegin(); it != j.reset.cend(); it++)
       {
         out << "|   |   |   " << it->first
-            << " := " << node_to_string_prefix(it->second) << endl;
+            << " := " << it->second->to_prefix() << endl;
       }
       out << "|   |   RESETS NONDET:" << endl;
       for (auto it = j.reset_nondet.cbegin(); it != j.reset_nondet.cend(); it++)
       {
         out << "|   |   |   " << it->first << " := ["
-            << node_to_string_prefix(it->second.first) << ", "
-            << node_to_string_prefix(it->second.second) << "]" << endl;
+            << it->second.first->to_prefix() << ", "
+            << it->second.second->to_prefix() << "]" << endl;
       }
       out << "|   |   RESETS RV:" << endl;
       for (auto it = j.reset_rv.cbegin(); it != j.reset_rv.cend(); it++)
       {
         out << "|   |   " << get<0>(it->second) << "   |   "
-            << node_to_string_infix(get<1>(it->second)) << "  | "
-            << node_to_string_prefix(get<2>(it->second)) << " |   "
-            << node_to_string_prefix(get<3>(it->second)) << "    |   "
-            << node_to_string_prefix(get<4>(it->second)) << endl;
+            << get<1>(it->second) << "  | "
+            << get<2>(it->second)->to_prefix() << " |   "
+            << get<3>(it->second)->to_prefix() << "    |   "
+            << get<4>(it->second)->to_prefix() << endl;
       }
       out << "|   |   RESETS DD:" << endl;
       for (auto it = j.reset_dd.cbegin(); it != j.reset_dd.cend(); it++)
@@ -496,8 +496,8 @@ string pdrh::model_to_string()
         out << "|   |   |   dd(" << it->first << ") = (";
         for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)
         {
-          out << node_to_string_prefix(it2->first) << " : "
-              << node_to_string_prefix(it2->second) << ", ";
+          out << it2->first->to_prefix() << " : "
+              << it2->second->to_prefix() << ", ";
         }
         out << ")" << endl;
       }
@@ -507,7 +507,7 @@ string pdrh::model_to_string()
   for (pdrh::state s : pdrh::init)
   {
     out << "|   MODE: " << s.id << endl;
-    out << "|   PROPOSITION: " << node_to_string_prefix(s.prop) << endl;
+    out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;
   }
   if (pdrh::goal.size() > 0)
   {
@@ -515,7 +515,7 @@ string pdrh::model_to_string()
     for (pdrh::state s : pdrh::goal)
     {
       out << "|   MODE: " << s.id << endl;
-      out << "|   PROPOSITION: " << node_to_string_prefix(s.prop) << endl;
+      out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;
     }
   }
   return out.str();
@@ -562,7 +562,7 @@ std::map<std::string, double> pdrh::init_to_map(pdrh::state init)
            << endl;
       exit(EXIT_FAILURE);
     }
-    res[node_to_string_infix(n->operands.front())] =
+    res[n->operands.front()->to_infix()] =
       node_to_double(n->operands.back());
   }
   return res;
@@ -593,8 +593,7 @@ void pdrh::distribution::push_exp(string var, node *lambda)
 
 node *pdrh::distribution::uniform_to_node(node *a, node *b)
 {
-  capd::interval support(
-    node_to_string_infix(a), node_to_string_infix(b));
+  capd::interval support(a->to_infix(), b->to_infix());
   capd::interval a_interval = node_to_interval(a);
   capd::interval b_interval = node_to_interval(b);
   // relaxing the bounds to account for rounding errors (temporary solution)

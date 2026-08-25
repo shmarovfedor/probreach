@@ -46,41 +46,74 @@ std::ostream &operator<<(std::ostream &os, const node &n)
 }
 
 /**
+ * Getting a string representation of the node in infix notation.
+ *
+ * @return node in infix notation as string.
+ */
+string node::to_infix()
+{
+  stringstream s;
+  s << *this;
+  return s.str();
+}
+
+/**
  * Getting a string representation of the node in prefix notation.
  *
- * @param n - pointer to the root of the expression tree.
  * @return node in prefix notation as string.
  */
-string pdrh::node_to_string_prefix(node *n)
+string node::to_prefix()
 {
   stringstream s;
   // checking whether n is an operation node
-  if (n->operands.size() > 0)
+  if (this->operands.size() > 0)
   {
-    s << "(" << n->value;
-    for (node *op : n->operands)
+    s << "(" << this->value;
+    for (node *op : this->operands)
     {
-      s << node_to_string_prefix(op);
+      s << op->to_prefix();
     }
     s << ")";
   }
   else
   {
-    s << " " << n->value;
+    s << " " << this->value;
   }
   return s.str();
 }
 
 /**
- * Getting a string representation of the node in infix notation.
+ * Getting a string representation of the node in prefix notation with the fixed index.
  *
- * @param n - pointer to the root of the expression tree.
- * @return node in infix notation as string.
+ * @param step - depth in the path.
+ * @param index - an identifier.
+ * @return node with fixed index as string.
  */
-string pdrh::node_to_string_infix(node *n)
+string node::to_prefix(int step, string index)
 {
   stringstream s;
-  s << *n;
+  // checking whether n is an operation node
+  if (this->operands.size() > 0)
+  {
+    s << "(" << this->value;
+    for (node *op : this->operands)
+    {
+      s << op->to_prefix(step, index);
+    }
+    s << ")";
+  }
+  else
+  {
+    // only performing a soft check here whether the value is digit or an identifier
+    if (isdigit(this->value.front()) || this->value == "true" || this->value == "false")
+    {
+      s << " " << this->value;
+    }
+    else
+    {
+      s << " " << this->value << "_" << step << "_" << index;
+    }
+  }
   return s.str();
 }
 
@@ -92,6 +125,7 @@ string pdrh::node_to_string_infix(node *n)
  * @param index - an identifier.
  * @return node with fixed index as string.
  */
+/*
 string pdrh::node_fix_index(node *n, int step, string index)
 {
   stringstream s;
@@ -107,7 +141,6 @@ string pdrh::node_fix_index(node *n, int step, string index)
   }
   else
   {
-    //        if(pdrh::var_map.find(n->value) != pdrh::var_map.end())
     // only performing a soft check here whether the value is digit or an identifier
     if (isdigit(n->value.front()) || n->value == "true" || n->value == "false")
     {
@@ -120,6 +153,7 @@ string pdrh::node_fix_index(node *n, int step, string index)
   }
   return s.str();
 }
+*/
 
 /**
  * Copies the entire tree given its root

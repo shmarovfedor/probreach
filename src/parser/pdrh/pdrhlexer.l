@@ -2,18 +2,31 @@
 #include <iostream>
 #define YY_DECL extern "C" int yylex()
 #include "node.h"
-#include "model.h"
 #include "pdrhparser.h"
-int line_num = 1;
+
+#include "symbolt.h"
+
+#define YY_USER_ACTION \
+    yylloc.first_line = yylloc.last_line; \
+    yylloc.first_column = yylloc.last_column; \
+    for(int i = 0; yytext[i] != '\0'; i++) { \
+        if(yytext[i] == '\n') { \
+            yylloc.last_line++; \
+            yylloc.last_column = 0; \
+        } \
+        else { \
+            yylloc.last_column++; \
+        } \
+    }
 %}
 
 %x COMMENT
 
 %%
-"//".*\n	 		  	{ ++line_num; }
+"//".*\n	 		  	{ ; }
 "/*"            		{ BEGIN(COMMENT); }
 <COMMENT>"*/" 			{ BEGIN(INITIAL); }
-<COMMENT>\n    			{ ++line_num; }
+<COMMENT>\n    			{ ; }
 <COMMENT>.    			;
 
 "#define"               { return DEFINE; }
@@ -84,7 +97,7 @@ atan              	    { return ATAN; }
 [\[\]\(\):;,\{\}@]	    { return yytext[0]; }
 "==>"	                { return TRANS; }
 
-\n                      { ++line_num; }
+\n                      { ; }
 [ \t]+				    ;
 
 %%

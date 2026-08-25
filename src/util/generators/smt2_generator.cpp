@@ -31,16 +31,16 @@ string smt2_generator::generate_flow_invt_check(
     if (it->second.first->value != "-infty")
     {
       s << "(assert (>= " << it->first << "_0_0 "
-        << node_to_string_prefix(it->second.first) << "))" << endl;
+        << it->second.first->to_prefix() << "))" << endl;
       s << "(assert (>= " << it->first << "_0_t "
-        << node_to_string_prefix(it->second.first) << "))" << endl;
+        << it->second.first->to_prefix() << "))" << endl;
     }
     if (it->second.second->value != "infty")
     {
       s << "(assert (<= " << it->first << "_0_0 "
-        << node_to_string_prefix(it->second.second) << "))" << endl;
+        << it->second.second->to_prefix() << "))" << endl;
       s << "(assert (<= " << it->first << "_0_t "
-        << node_to_string_prefix(it->second.second) << "))" << endl;
+        << it->second.second->to_prefix() << "))" << endl;
     }
   }
 
@@ -80,7 +80,7 @@ string smt2_generator::generate_flow_invt_check(
   s << "(define-ode flow_" << m->id << " (";
   for (auto it = m->odes.begin(); it != m->odes.end(); it++)
   {
-    s << "(= d/dt[" << it->first << "] " << node_to_string_prefix(it->second)
+    s << "(= d/dt[" << it->first << "] " << it->second->to_prefix()
       << ")" << endl;
   }
 
@@ -119,7 +119,7 @@ string smt2_generator::generate_flow_invt_check(
   for (node *invt : m->invts)
   {
     s << "(assert (forall_t " << m->id << " [0.0 time] "
-      << pdrh::node_fix_index(invt, 0, "t") << "))" << endl;
+      << invt->to_prefix(0, "t") << "))" << endl;
   }
 
   // defining the goal for the time mock variable
@@ -155,16 +155,16 @@ string smt2_generator::generate_flow_invt_check_c(
     if (it->second.first->value != "-infty")
     {
       s << "(assert (>= " << it->first << "_0_0 "
-        << node_to_string_prefix(it->second.first) << "))" << endl;
+        << it->second.first->to_prefix() << "))" << endl;
       s << "(assert (>= " << it->first << "_0_t "
-        << node_to_string_prefix(it->second.first) << "))" << endl;
+        << it->second.first->to_prefix() << "))" << endl;
     }
     if (it->second.second->value != "infty")
     {
       s << "(assert (<= " << it->first << "_0_0 "
-        << node_to_string_prefix(it->second.second) << "))" << endl;
+        << it->second.second->to_prefix() << "))" << endl;
       s << "(assert (<= " << it->first << "_0_t "
-        << node_to_string_prefix(it->second.second) << "))" << endl;
+        << it->second.second->to_prefix() << "))" << endl;
     }
   }
 
@@ -197,7 +197,7 @@ string smt2_generator::generate_flow_invt_check_c(
   s << "(define-ode flow_" << m->id << " (";
   for (auto it = m->odes.begin(); it != m->odes.end(); it++)
   {
-    s << "(= d/dt[" << it->first << "] " << node_to_string_prefix(it->second)
+    s << "(= d/dt[" << it->first << "] " << it->second->to_prefix()
       << ")" << endl;
   }
   s << "))" << endl;
@@ -232,7 +232,7 @@ string smt2_generator::generate_flow_invt_check_c(
   s << "(assert (or" << endl;
   for (node *invt : m->invts)
   {
-    s << "(not " << pdrh::node_fix_index(invt, 0, "t") << ")" << endl;
+    s << "(not " << invt->to_prefix(0, "t") << ")" << endl;
   }
   s << "))" << endl;
 
@@ -264,16 +264,16 @@ string smt2_generator::generate_jump_check(
     if (it->second.first->value != "-infty")
     {
       s << "(assert (>= " << it->first << "_0_0 "
-        << node_to_string_prefix(it->second.first) << "))" << endl;
+        << it->second.first->to_prefix() << "))" << endl;
       s << "(assert (>= " << it->first << "_0_t "
-        << node_to_string_prefix(it->second.first) << "))" << endl;
+        << it->second.first->to_prefix() << "))" << endl;
     }
     if (it->second.second->value != "infty")
     {
       s << "(assert (<= " << it->first << "_0_0 "
-        << node_to_string_prefix(it->second.second) << "))" << endl;
+        << it->second.second->to_prefix() << "))" << endl;
       s << "(assert (<= " << it->first << "_0_t "
-        << node_to_string_prefix(it->second.second) << "))" << endl;
+        << it->second.second->to_prefix() << "))" << endl;
     }
   }
 
@@ -298,9 +298,9 @@ string smt2_generator::generate_jump_check(
   // declaring time
   s << "; declaring time variable and integration bounds" << endl;
   s << "(declare-fun time () Real)" << endl;
-  s << "(assert (>= time " << pdrh::node_to_string_prefix(m->time.first) << "))"
+  s << "(assert (>= time " << m->time.first->to_prefix() << "))"
     << endl;
-  s << "(assert (<= time " << pdrh::node_to_string_prefix(m->time.second)
+  s << "(assert (<= time " << m->time.second->to_prefix()
     << "))" << endl;
 
   // declaring a variable mocking the time variable
@@ -315,7 +315,7 @@ string smt2_generator::generate_jump_check(
   s << "(define-ode flow_" << m->id << " (";
   for (auto it = m->odes.begin(); it != m->odes.end(); it++)
   {
-    s << "(= d/dt[" << it->first << "] " << node_to_string_prefix(it->second)
+    s << "(= d/dt[" << it->first << "] " << it->second->to_prefix()
       << ")" << endl;
   }
 
@@ -356,7 +356,7 @@ string smt2_generator::generate_jump_check(
   {
     //        if(jump.guard->operands.front()->value != "counter" && jump.guard->operands.back()->value != "counter")
     //        {
-    s << pdrh::node_fix_index(jump.guard, 0, "t") << endl;
+    s << jump.guard->to_prefix(0, "t") << endl;
     //        }
   }
   s << "))" << endl;
@@ -391,16 +391,16 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
       if (it->second.first->value != "-infty")
       {
         s << "(assert (>= " << it->first << "_" << i << "_0 "
-          << pdrh::node_to_string_prefix(it->second.first) << "))" << endl;
+          << it->second.first->to_prefix() << "))" << endl;
         s << "(assert (>= " << it->first << "_" << i << "_t "
-          << pdrh::node_to_string_prefix(it->second.first) << "))" << endl;
+          << it->second.first->to_prefix() << "))" << endl;
       }
       if (it->second.second->value != "infty")
       {
         s << "(assert (<= " << it->first << "_" << i << "_0 "
-          << pdrh::node_to_string_prefix(it->second.second) << "))" << endl;
+          << it->second.second->to_prefix() << "))" << endl;
         s << "(assert (<= " << it->first << "_" << i << "_t "
-          << pdrh::node_to_string_prefix(it->second.second) << "))" << endl;
+          << it->second.second->to_prefix() << "))" << endl;
       }
     }
   }
@@ -409,9 +409,9 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     s << "(declare-fun time_" << i << " () Real)" << endl;
     s << "(assert (>= time_" << i << " "
-      << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+      << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
     s << "(assert (<= time_" << i << " "
-      << pdrh::node_fix_index(path.at(i)->time.second, i, "0") << "))" << endl;
+      << path.at(i)->time.second->to_prefix(i, "0") << "))" << endl;
   }
   s << "\n; defining ODEs\n";
   for (auto path_it = path.cbegin(); path_it != path.cend(); path_it++)
@@ -424,7 +424,7 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
            ode_it++)
       {
         s << "(= d/dt[" << ode_it->first << "] "
-          << pdrh::node_to_string_prefix(ode_it->second) << ")";
+          << ode_it->second->to_prefix() << ")";
       }
       s << "))" << endl;
     }
@@ -459,7 +459,7 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     if (st.id == path.front()->id)
     {
-      s << "\t(" << pdrh::node_fix_index(st.prop, 0, "0") << ")" << endl;
+      s << "\t(" << st.prop->to_prefix(0, "0") << ")" << endl;
     }
   }
   s << "))" << endl;
@@ -483,7 +483,7 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
     for (node *invt : m->invts)
     {
       s << "(assert (forall_t " << m->id << " [0.0 time_" << step << "] "
-        << pdrh::node_fix_index(invt, step, "t") << "))" << endl;
+        << invt->to_prefix(step, "t") << "))" << endl;
     }
     // checking the current depth
     if (step < path.size() - 1)
@@ -496,14 +496,14 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
         {
           s << "; jump from " << m->id << " to " << path.at(step + 1)->id << "\n";
           s << "; guard\n";
-          s << "(assert (" << pdrh::node_fix_index(j.guard, step, "t") << "))\n";
+          s << "(assert (" << j.guard->to_prefix(step, "t") << "))\n";
           s << "; reset\n";
           s << "(assert (and ";
           for (auto reset_it = j.reset.cbegin(); reset_it != j.reset.cend();
                reset_it++)
           {
             s << "(= " << reset_it->first << "_" << step + 1 << "_0 "
-              << pdrh::node_fix_index(reset_it->second, step, "t") << ")";
+              << reset_it->second->to_prefix(step, "t") << ")";
           }
           s << "))\n";
         }
@@ -517,7 +517,7 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     if (st.id == path.back()->id)
     {
-      s << "\t(" << pdrh::node_fix_index(st.prop, path.size() - 1, "t") << ")\n";
+      s << "\t(" << st.prop->to_prefix(path.size() - 1, "t") << ")\n";
     }
   }
   s << "))" << endl;
@@ -544,16 +544,16 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
       if (it->second.first->value != "-infty")
       {
         s << "(assert (>= " << it->first << "_" << i << "_0 "
-          << pdrh::node_to_string_prefix(it->second.first) << "))" << endl;
+          << it->second.first->to_prefix() << "))" << endl;
         s << "(assert (>= " << it->first << "_" << i << "_t "
-          << pdrh::node_to_string_prefix(it->second.first) << "))" << endl;
+          << it->second.first->to_prefix() << "))" << endl;
       }
       if (it->second.second->value != "infty")
       {
         s << "(assert (<= " << it->first << "_" << i << "_0 "
-          << pdrh::node_to_string_prefix(it->second.second) << "))" << endl;
+          << it->second.second->to_prefix() << "))" << endl;
         s << "(assert (<= " << it->first << "_" << i << "_t "
-          << pdrh::node_to_string_prefix(it->second.second) << "))" << endl;
+          << it->second.second->to_prefix() << "))" << endl;
       }
     }
   }
@@ -562,9 +562,9 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     s << "(declare-fun time_" << i << " () Real)" << endl;
     s << "(assert (>= time_" << i << " "
-      << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+      << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
     s << "(assert (<= time_" << i << " "
-      << pdrh::node_fix_index(path.at(i)->time.second, i, "0") << "))" << endl;
+      << path.at(i)->time.second->to_prefix(i, "0") << "))" << endl;
   }
   s << "\n; declaring LOCAL TIME and bounds\n";
   s << "(declare-fun local_time () Real)" << endl;
@@ -573,24 +573,24 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
     s << "(declare-fun local_time_" << i << "_0 () Real)" << endl;
     s << "(declare-fun local_time_" << i << "_t () Real)" << endl;
     s << "(assert (= local_time_" << i << "_0 "
-      << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+      << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
     s << "(assert (>= local_time_" << i << "_t "
-      << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+      << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
     s << "(assert (<= local_time_" << i << "_t "
-      << pdrh::node_fix_index(path.at(i)->time.second, i, "0") << "))" << endl;
+      << path.at(i)->time.second->to_prefix(i, "0") << "))" << endl;
   }
   // last mode
   s << "(declare-fun local_time () Real)" << endl;
   s << "(declare-fun local_time_" << path.size() - 1 << "_0 () Real)" << endl;
   s << "(declare-fun local_time_" << path.size() - 1 << "_t () Real)" << endl;
   s << "(assert (= local_time_" << path.size() - 1 << "_0 "
-    << pdrh::node_fix_index(path.back()->time.first, path.size() - 1, "0")
+    << path.back()->time.first->to_prefix(path.size() - 1, "0")
     << "))" << endl;
   s << "(assert (>= local_time_" << path.size() - 1 << "_t "
-    << pdrh::node_fix_index(path.back()->time.first, path.size() - 1, "0")
+    << path.back()->time.first->to_prefix(path.size() - 1, "0")
     << "))" << endl;
   s << "(assert (<= local_time_" << path.size() - 1 << "_t "
-    << pdrh::node_fix_index(path.back()->time.second, path.size() - 1, "0")
+    << path.back()->time.second->to_prefix(path.size() - 1, "0")
     << "))" << endl;
   s << "\n; defining ODEs\n";
   for (auto path_it = path.cbegin(); path_it != path.cend(); path_it++)
@@ -603,7 +603,7 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
            ode_it++)
       {
         s << "(= d/dt[" << ode_it->first << "] "
-          << pdrh::node_to_string_prefix(ode_it->second) << ")";
+          << ode_it->second->to_prefix() << ")";
       }
       s << "(= d/dt[local_time] 1.0)";
       s << "))" << endl;
@@ -617,7 +617,7 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     if (path.front()->id == st.id)
     {
-      s << "(" << pdrh::node_fix_index(st.prop, 0, "0") << ")";
+      s << "(" << st.prop->to_prefix(0, "0") << ")";
     }
   }
   s << ")" << endl;
@@ -672,7 +672,7 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
     for (node *invt : m->invts)
     {
       s << "(forall_t " << m->id << " [0.0 time_" << step << "] "
-        << pdrh::node_fix_index(invt, step, "t") << ")" << endl;
+        << invt->to_prefix(step, "t") << ")" << endl;
     }
     // checking the current depth
     if (step < path.size() - 1)
@@ -684,14 +684,14 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
         if (j.next_id == path.at(step + 1)->id)
         {
           //cout << "Recording the jumping from " << m->id << " to " << j.next_id << "(control " << path.at(step+1)->id << ")" << endl;
-          s << pdrh::node_fix_index(j.guard, step, "t") << endl;
+          s << j.guard->to_prefix(step, "t") << endl;
           if (step < path.size() - 1)
           {
             for (auto reset_it = j.reset.cbegin(); reset_it != j.reset.cend();
                  reset_it++)
             {
               s << "(= " << reset_it->first << "_" << step + 1 << "_0 "
-                << pdrh::node_fix_index(reset_it->second, step, "t") << ")";
+                << reset_it->second->to_prefix(step, "t") << ")";
             }
           }
         }
@@ -717,14 +717,12 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
         // checking if there is a not in front of the guard predicate because dReal does not work nicely
         // with double negation
         s << "(= local_time_" << path.size() - 1 << "_t "
-          << pdrh::node_fix_index(
-               path.back()->time.second, path.size() - 1, "0")
+          << path.back()->time.second->to_prefix(path.size() - 1, "0")
           << ")" << endl;
         if (st.prop->value == "not")
         {
           s << "(forall_t " << st.id << " [0 time_" << path.size() - 1 << "] ("
-            << pdrh::node_fix_index(
-                 st.prop->operands.front(), path.size() - 1, "t")
+            << st.prop->operands.front()->to_prefix(path.size() - 1, "t")
             << "))";
         }
         // transforming the negation of disjunction into the conjunction of negations
@@ -733,20 +731,20 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
           for (node *n : st.prop->operands)
           {
             s << "(forall_t " << st.id << " [0 time_" << path.size() - 1
-              << "] (not " << pdrh::node_fix_index(n, path.size() - 1, "t")
+              << "] (not " << n->to_prefix(path.size() - 1, "t")
               << "))";
           }
         }
         else
         {
           s << "(forall_t " << st.id << " [0 time_" << path.size() - 1
-            << "] (not " << pdrh::node_fix_index(st.prop, path.size() - 1, "t")
+            << "] (not " << st.prop->to_prefix(path.size() - 1, "t")
             << "))";
         }
       }
       else
       {
-        s << pdrh::node_fix_index(timed_node_neg, path.size() - 1, "t");
+        s << timed_node_neg->to_prefix(path.size() - 1, "t");
         delete timed_node_neg;
       }
     }
@@ -772,17 +770,6 @@ string smt2_generator::reach_c_to_smt2(
     stringstream s;
     // setting logic
     s << "(set-logic QF_NRA_ODE)" << endl;
-    // checking whether either of last jumps have a time node
-    //        node* timed_node_neg;
-    //        for(pdrh::mode::jump j : path.at(depth)->jumps)
-    //        {
-    //            timed_node_neg = pdrh::get_time_node_neg(j.guard);
-    //            if(timed_node_neg)
-    //            {
-    //                //cout << "Found timed node: " << pdrh::node_to_string_prefix(timed_node_neg) << endl;
-    //                break;
-    //            }
-    //        }
     // declaring variables and defining bounds
     for (auto it = pdrh::var_map.cbegin(); it != pdrh::var_map.cend(); it++)
     {
@@ -794,16 +781,16 @@ string smt2_generator::reach_c_to_smt2(
         if (it->second.first->value != "-infty")
         {
           s << "(assert (>= " << it->first << "_" << i << "_0 "
-            << pdrh::node_to_string_prefix(it->second.first) << "))" << endl;
+            << it->second.first->to_prefix() << "))" << endl;
           s << "(assert (>= " << it->first << "_" << i << "_t "
-            << pdrh::node_to_string_prefix(it->second.first) << "))" << endl;
+            << it->second.first->to_prefix() << "))" << endl;
         }
         if (it->second.second->value != "infty")
         {
           s << "(assert (<= " << it->first << "_" << i << "_0 "
-            << pdrh::node_to_string_prefix(it->second.second) << "))" << endl;
+            << it->second.second->to_prefix() << "))" << endl;
           s << "(assert (<= " << it->first << "_" << i << "_t "
-            << pdrh::node_to_string_prefix(it->second.second) << "))" << endl;
+            << it->second.second->to_prefix() << "))" << endl;
         }
       }
     }
@@ -812,9 +799,9 @@ string smt2_generator::reach_c_to_smt2(
     {
       s << "(declare-fun time_" << i << " () Real)" << endl;
       s << "(assert (>= time_" << i << " "
-        << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+        << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
       s << "(assert (<= time_" << i << " "
-        << pdrh::node_fix_index(path.at(i)->time.second, i, "0") << "))"
+        << path.at(i)->time.second->to_prefix(i, "0") << "))"
         << endl;
     }
     // declaring local time and bounds
@@ -827,11 +814,11 @@ string smt2_generator::reach_c_to_smt2(
       s << "(declare-fun local_time_" << i << "_0 () Real)" << endl;
       s << "(declare-fun local_time_" << i << "_t () Real)" << endl;
       s << "(assert (= local_time_" << i << "_0 "
-        << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+        << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
       s << "(assert (>= local_time_" << i << "_t "
-        << pdrh::node_fix_index(path.at(i)->time.first, i, "0") << "))" << endl;
+        << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
       s << "(assert (<= local_time_" << i << "_t "
-        << pdrh::node_fix_index(path.at(i)->time.second, i, "0") << "))"
+        << path.at(i)->time.second->to_prefix(i, "0") << "))"
         << endl;
     }
     // last mode
@@ -839,13 +826,13 @@ string smt2_generator::reach_c_to_smt2(
     s << "(declare-fun local_time_" << depth << "_0 () Real)" << endl;
     s << "(declare-fun local_time_" << depth << "_t () Real)" << endl;
     s << "(assert (= local_time_" << depth << "_0 "
-      << pdrh::node_fix_index(path.at(depth)->time.first, depth, "0") << "))"
+      << path.at(depth)->time.first->to_prefix(depth, "0") << "))"
       << endl;
     s << "(assert (>= local_time_" << depth << "_t "
-      << pdrh::node_fix_index(path.at(depth)->time.first, depth, "0") << "))"
+      << path.at(depth)->time.first->to_prefix(depth, "0") << "))"
       << endl;
     s << "(assert (<= local_time_" << depth << "_t "
-      << pdrh::node_fix_index(path.at(depth)->time.second, depth, "0") << "))"
+      << path.at(depth)->time.second->to_prefix(depth, "0") << "))"
       << endl;
     //        }
     // defining odes
@@ -860,7 +847,7 @@ string smt2_generator::reach_c_to_smt2(
              ode_it++)
         {
           s << "(= d/dt[" << ode_it->first << "] "
-            << pdrh::node_to_string_prefix(ode_it->second) << ")";
+            << ode_it->second->to_prefix() << ")";
         }
         // introducing local time if defined
         //if((!timed_node_neg))
@@ -883,7 +870,7 @@ string smt2_generator::reach_c_to_smt2(
     {
       if (path.front()->id == st.id)
       {
-        s << "(" << pdrh::node_fix_index(st.prop, 0, "0") << ")";
+        s << "(" << st.prop->to_prefix(0, "0") << ")";
       }
     }
     s << ")" << endl;
@@ -936,7 +923,7 @@ string smt2_generator::reach_c_to_smt2(
       for (node *invt : m->invts)
       {
         s << "(forall_t " << m->id << " [0.0 time_" << i << "] "
-          << pdrh::node_fix_index(invt, i, "t") << ")" << endl;
+          << invt->to_prefix(i, "t") << ")" << endl;
       }
       // checking the current depth
       if (i < depth)
@@ -947,14 +934,14 @@ string smt2_generator::reach_c_to_smt2(
           // getting only the jumps leading to the next mode in the path
           if (j.next_id == path.at(i + 1)->id)
           {
-            s << pdrh::node_fix_index(j.guard, i, "t") << endl;
+            s << j.guard->to_prefix(i, "t") << endl;
             if (i < path.size() - 1)
             {
               for (auto reset_it = j.reset.cbegin(); reset_it != j.reset.cend();
                    reset_it++)
               {
                 s << "(= " << reset_it->first << "_" << i + 1 << "_0 "
-                  << pdrh::node_fix_index(reset_it->second, i, "t") << ")";
+                  << reset_it->second->to_prefix(i, "t") << ")";
               }
             }
           }
@@ -979,7 +966,7 @@ string smt2_generator::reach_c_to_smt2(
           // checking if there is a not in front of the guard predicate because dReal does not work nicely
           // with double negation
           s << "(= local_time_" << depth << "_t "
-            << pdrh::node_fix_index(path.at(depth)->time.second, depth, "0")
+            << path.at(depth)->time.second->to_prefix(depth, "0")
             << ")" << endl;
           if (j.guard->value == "not")
           {
@@ -992,7 +979,7 @@ string smt2_generator::reach_c_to_smt2(
                         */
             s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth
               << "] ("
-              << pdrh::node_fix_index(j.guard->operands.front(), depth, "t")
+              << j.guard->operands.front()->to_prefix(depth, "t")
               << "))";
           }
           // transforming the negation of disjunction into the conjunction of negations
@@ -1001,18 +988,18 @@ string smt2_generator::reach_c_to_smt2(
             for (node *n : j.guard->operands)
             {
               s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth
-                << "] (not " << pdrh::node_fix_index(n, depth, "t") << "))";
+                << "] (not " << n->to_prefix(depth, "t") << "))";
             }
           }
           else
           {
             s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth
-              << "] (not " << pdrh::node_fix_index(j.guard, depth, "t") << "))";
+              << "] (not " << j.guard->to_prefix(depth, "t") << "))";
           }
         }
         else
         {
-          s << pdrh::node_fix_index(timed_node_neg, depth, "t");
+          s << timed_node_neg->to_prefix(depth, "t");
           delete timed_node_neg;
         }
       }

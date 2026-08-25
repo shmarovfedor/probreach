@@ -319,8 +319,7 @@ box pdrh::init_to_box(vector<box> boxes)
   {
     if (n->value != "=")
     {
-      cerr << "Invalid assignment in the initial state: "
-           << pdrh::node_to_string_infix(n) << endl;
+      cerr << "Invalid assignment in the initial state: " << n << endl;
       exit(EXIT_FAILURE);
     }
 

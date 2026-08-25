@@ -216,7 +216,7 @@ void naive::simulate(
             // always output the outcome
             cout << "unsat" << endl;
             // report more info
-            cout << "invariant \"" << node_to_string_infix(invt)
+            cout << "invariant \"" << invt
                  << "\" has been violated at:" << endl;
             for (auto it = sol.begin(); it != sol.end(); it++)
               cout << it->first << " : " << it->second << endl;
@@ -240,7 +240,7 @@ void naive::simulate(
               // always output the outcome
               cout << "sat" << endl;
               // report more info
-              cout << "goal \"" << node_to_string_infix(st.prop)
+              cout << "goal \"" << st.prop
                    << "\" has been reached at:" << endl;
               for (auto it = sol.begin(); it != sol.end(); it++)
                 cout << it->first << " : " << it->second << endl;
