@@ -970,13 +970,6 @@ string smt2_generator::reach_c_to_smt2(
             << ")" << endl;
           if (j.guard->value == "not")
           {
-            /*
-                        node *guard_without_negation = new node();
-                        pdrh::copy_tree(guard_without_negation, j.guard->operands.front());
-                        s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth << "] (" <<
-                        pdrh::node_fix_index(guard_without_negation, depth, "t") << "))";
-                        delete guard_without_negation;
-                        */
             s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth
               << "] ("
               << j.guard->operands.front()->to_prefix(depth, "t")

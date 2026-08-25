@@ -41,23 +41,14 @@ public:
   {
   }
 
+  /*
   node &operator=(const node &rhs)
   {
     value = rhs.value;
     operands = rhs.operands;
     return *this;
   }
-
-  // implement the correct comparison of two vectors
-  bool operator==(const node &rhs)
-  {
-    return (value == rhs.value) && (operands == rhs.operands);
-  }
-
-  bool operator!=(const node &rhs)
-  {
-    return !(*this == rhs);
-  }
+  */
 
   friend std::ostream &operator<<(std::ostream &os, const node &n);
 
@@ -74,15 +65,6 @@ node *copy_node(node *);
 void copy_tree(node *&, node *);
 void delete_node(node *);
 
-double node_to_double(node *);
-double node_to_double(node *, std::map<std::string, double>);
-bool node_to_boolean(node *, std::map<std::string, double>);
-bool node_zero_crossing(
-  node *,
-  std::map<std::string, double>,
-  std::map<std::string, double>);
-
-// we might not need these methods in future
 void get_first_node_by_value(node *, node *, std::vector<std::string>);
 node *get_node_neg_by_value(node *, std::vector<std::string>);
 } // namespace pdrh

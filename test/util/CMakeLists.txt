@@ -18,3 +18,14 @@ add_executable(node_test ${PROBREACH_TEST_DIR}/util/node_test.cpp
         ${PROBREACH_SOURCE_DIR}/util/node.cpp)
 target_link_libraries(node_test -lgtest)
 add_test(node_test "${PROBREACH_BINARY_DIR}/test/util/node_test")
+
+# unit test for the methods in node_utils.cpp
+add_executable(node_utils_test ${PROBREACH_TEST_DIR}/util/node_utils_test.cpp
+        ${PROBREACH_TEST_DIR}/main_test.cpp
+        ${PROBREACH_SOURCE_DIR}/util/node.cpp
+        ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
+        ${PROBREACH_SOURCE_DIR}/util/model.cpp
+        ${PROBREACH_SOURCE_DIR}/util/box.cpp
+        )
+target_link_libraries(node_utils_test ${CAPD_LIBRARIES} -lgtest)
+add_test(node_utils_test "${PROBREACH_BINARY_DIR}/test/util/node_utils_test")
