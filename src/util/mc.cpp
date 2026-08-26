@@ -123,9 +123,10 @@ capd::interval algorithm::evaluate_pha_chernoff(
       }
       if (global_config.verbose)
         cout << "CI: "
-        << capd::interval(
-             ((double)sat / (double)sample_size) - acc,
-             ((double)(sample_size - unsat) / (double)sample_size) + acc) << "\n";
+             << capd::interval(
+                  ((double)sat / (double)sample_size) - acc,
+                  ((double)(sample_size - unsat) / (double)sample_size) + acc)
+             << "\n";
       if (global_config.verbose)
         cout << "Progress: " << (double)ctr / (double)sample_size << "\n";
     }
@@ -264,8 +265,10 @@ capd::interval algorithm::evaluate_pha_bayesian(
       if (global_config.verbose)
       {
         cout << "CI: "
-        << capd::interval(
-             max(post_mean_sat - acc, 0.0), min(post_mean_unsat + acc, 1.0)) << "\n";
+             << capd::interval(
+                  max(post_mean_sat - acc, 0.0),
+                  min(post_mean_unsat + acc, 1.0))
+             << "\n";
         cout << "P(SAT) mean: " << post_mean_sat << "\n";
         cout << "P(UNSAT) mean: " << post_mean_unsat << "\n";
         cout << "Random sample size: " << sample_size << "\n";
@@ -291,19 +294,6 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   size_t iter_num,
   double acc,
   double conf)
-{
-  return evaluate_npha_cross_entropy_normal(
-    min_depth, max_depth, size, iter_num, acc, conf, NULL);
-}
-
-pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
-  size_t min_depth,
-  size_t max_depth,
-  size_t size,
-  size_t iter_num,
-  double acc,
-  double conf,
-  bool (*is_stable)(std::map<std::string, node *>, double, box, box))
 {
   // random number generator for cross entropy
   const gsl_rng_type *T;
@@ -365,55 +355,26 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
       {
         if (global_config.verbose_result)
           cout << "The sample is inside the domain\n";
-        // stability test
-        bool resume = true;
-        if (is_stable != NULL)
-        {
-          resume = is_stable(
-            init_mode->odes,
-            pdrh::node_to_interval(init_mode->time.second).rightBound(),
-            pdrh::init_to_box({}),
-            b);
-          if (resume)
-          {
-            if (global_config.verbose_result)
-              cout << "The sample is stable\n";
-          }
-          else
-          {
-            if (global_config.verbose_result)
-              cout << "The sample is unstable";
-          }
-        }
-        if (resume)
-        {
-          // bayesian estimations algorithm by default
-          probability = evaluate_pha_bayesian(
-            min_depth, max_depth, acc, conf, vector<box>{b});
-          // fixing probability value
-          if (probability.leftBound() < 0)
-          {
-            probability.setLeftBound(0);
-          }
-          if (probability.rightBound() > 1)
-          {
-            probability.setRightBound(1);
-          }
-        }
+
+        // bayesian estimations algorithm by default
+        probability = evaluate_pha_bayesian(
+          min_depth, max_depth, acc, conf, vector<box>{b});
+        // fixing probability value
+        if (probability.leftBound() < 0)
+          probability.setLeftBound(0);
+        if (probability.rightBound() > 1)
+          probability.setRightBound(1);
       }
       else
       {
         if (global_config.verbose_result)
           cout << "The sample is outside the domain\n";
+
         outliers++;
         if (global_config.min_prob)
-        {
           probability = capd::interval(numeric_limits<double>::infinity());
-        }
         else
-        {
           probability = capd::interval(-numeric_limits<double>::infinity());
-        }
       }
       if (global_config.verbose_result)
         cout << "Probability: " << probability << "\n";
@@ -432,7 +393,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     vector<pair<box, capd::interval>> elite;
     copy_n(
       samples.begin(),
-      ceil(samples.size() * global_config.elite_ratio),
+      std::max(ceil(samples.size() * global_config.elite_ratio), 2.0),
       back_inserter(elite));
     // getting elite boxes
     vector<box> elite_boxes;

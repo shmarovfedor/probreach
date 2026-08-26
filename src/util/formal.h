@@ -21,11 +21,6 @@ int evaluate_ha(int, int);
 // arg2: max depth
 capd::interval evaluate_pha(int, int);
 
-// evaluating the upper bound of the reachability probability
-// arg1: min depth,
-// arg2: max depth
-capd::interval evaluate_pha_upper_bound(int, int);
-
 // evaluating the reachability probability in
 // a nondeterministic probabilistic hybrid automata
 // arg1: min depth,

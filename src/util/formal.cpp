@@ -112,8 +112,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
           {
             solver_opt = global_config.solver_opt;
             s << solver_opt << " --precision "
-              << rv.volume().leftBound() *
-                   global_config.solver_precision_ratio;
+              << rv.volume().leftBound() * global_config.solver_precision_ratio;
             //global_config.solver_opt = s.str();
           }
           int res = decision_procedure::evaluate(
