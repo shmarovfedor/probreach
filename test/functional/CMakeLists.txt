@@ -4,4 +4,4 @@ configure_file(
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
-include("${CMAKE_CURRENT_LIST_DIR}/formal/CMakeLists.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/tests/CMakeLists.txt")
