@@ -28,7 +28,7 @@ void yyerror(const char *s);
 
 // terminals
 %token MODEL TIME
-%token PDF N_DIST U_DIST E_DIST G_DIST DD_DIST
+%token N_DIST U_DIST E_DIST G_DIST DD_DIST
 %token INFTY
 
 %token MODE INVT FLOW JUMP INIT GOAL 
@@ -151,21 +151,7 @@ var_declaration:
 }
 
 dist_declaration:
-    PDF '(' expr ',' expr ',' expr ',' expr ')' identifier ';'
-{
-  if(!pdrh::var_exists($11))
-  {
-    pdrh::push_var($11, $5, $7);
-    pdrh::push_rv($11, $3, $5, $7, $9);
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $11 << "\"";
-    yyerror(s.str().c_str());
-  }
-}
-  | G_DIST '(' expr ',' expr ')' identifier ';'
+  G_DIST '(' expr ',' expr ')' identifier ';'
 {
   if(!pdrh::var_exists($7))
   {
@@ -243,11 +229,7 @@ dist_declaration:
 }
 
 dist:
-    PDF '(' expr ',' expr ',' expr ',' expr ')'
-{
-  $$ = new node("dist_pdf", {$3, $5, $7, $9}); 
-}
-  | G_DIST '(' expr ',' expr ')'
+  G_DIST '(' expr ',' expr ')'
 { 
   $$ = new node("dist_gamma", {$3, $5}); 
 }

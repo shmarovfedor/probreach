@@ -57,7 +57,6 @@ npha                    { yylval.sval = strdup(yytext); return m_type; }
 
 time                    { return TIME; }
 
-dist_pdf                { return PDF; }
 dist_uniform            { return U_DIST; }
 dist_normal             { return N_DIST; }
 dist_exp                { return E_DIST; }
