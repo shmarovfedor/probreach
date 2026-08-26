@@ -132,19 +132,6 @@ var_declaration:
     yyerror(s.str().c_str());
   }
 }
-	| '[' expr ']' identifier ';'
-{
-  if(!pdrh::var_exists($4))
-  {
-    pdrh::push_var($4, $2, $2);
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $4 << "\"";
-    yyerror(s.str().c_str());
-  }
-}
 	| '[' expr ',' expr ']' TIME ';'
 { 
   pdrh::push_time_bounds($2, $4); 
