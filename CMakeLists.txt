@@ -20,7 +20,7 @@ set(PROBREACH_VERSION_MINOR 0)
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 configure_file(
-  "${PROBREACH_SOURCE_DIR}/util/git_sha1.cpp.in"
+  "${PROBREACH_SOURCE_DIR}/git_sha1.cpp.in"
   "${PROBREACH_BINARY_DIR}/git_sha1.cpp" @ONLY)
 set_source_files_properties(${PROBREACH_BINARY_DIR}/git_sha1.cpp GENERATED PROPERTIES LANGUAGE CXX)
 set(PROBREACH_VERSION ${PROBREACH_VERSION_MAJOR}.${PROBREACH_VERSION_MINOR})

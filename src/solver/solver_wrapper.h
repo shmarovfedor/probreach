@@ -13,7 +13,6 @@ namespace solver
 {
 enum type
 {
-  ISAT,
   DREAL,
   UNKNOWN_SOLVER
 };

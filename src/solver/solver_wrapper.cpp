@@ -9,12 +9,10 @@
 #include <map>
 #include "solver_wrapper.h"
 #include "dreal_wrapper.h"
-#include "isat_wrapper.h"
 
 using namespace std;
 
 const string DREAL_NAME = "dReal";
-const string ISAT_NAME = "iSAT";
 const vector<string> ARGS = {"--version", "--help"};
 
 solver::type parse_version_file(string filename)
@@ -35,10 +33,6 @@ solver::type parse_version_file(string filename)
   if (first_line.find(DREAL_NAME) != string::npos)
   {
     return solver::DREAL;
-  }
-  else if (first_line.find(ISAT_NAME) != string::npos)
-  {
-    return solver::ISAT;
   }
   return solver::UNKNOWN_SOLVER;
 }
@@ -77,9 +71,6 @@ solver::evaluate(string path, string input, string args, type solver_type)
       return solver::SAT;
     }
     return solver::UNSAT;
-
-  case solver::ISAT:
-    return isat::evaluate(path, input, args);
 
   default:
     stringstream s;
