@@ -73,12 +73,6 @@ int check_invariants(
   std::string,
   std::string);
 
-// first argument is the mode
-// second argument is the initial condition
-// third argument is parameter values
-std::pair<capd::interval, box>
-get_jump_time(pdrh::mode *, pdrh::mode::jump, box, std::vector<box>);
-
 } // namespace decision_procedure
 
 #endif //PROBREACH_DECISION_PROCEDURE_H

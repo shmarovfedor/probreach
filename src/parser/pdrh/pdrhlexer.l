@@ -4,8 +4,6 @@
 #include "node.h"
 #include "pdrhparser.h"
 
-#include "symbolt.h"
-
 #define YY_USER_ACTION \
     yylloc.first_line = yylloc.last_line; \
     yylloc.first_column = yylloc.last_column; \

@@ -8,7 +8,7 @@
 #include "git_sha1.h"
 #include "version.h"
 #include "box.h"
-#include "pdrh2box.h"
+#include "node_utils.h"
 #include "decision_procedure.h"
 #include "solver/dreal_wrapper.h"
 #include "test_env.h"
@@ -55,6 +55,7 @@ TEST(formal_good_test_1, testing_good_1_pdrh)
   global_config.partition_prob = true;
   // computing the probability now
   capd::interval probability = formal::evaluate_pha(3, 3);
+  std::cerr << "Probability interval: " << probability << "\n";
   EXPECT_LE(capd::intervals::width(probability), global_config.precision_prob);
   EXPECT_TRUE(capd::interval("0.01", "0.09").contains(probability));
 }

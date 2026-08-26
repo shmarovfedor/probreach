@@ -289,12 +289,13 @@ std::vector<box> measure::get_rv_partition()
     // updating rv bounds
     pdrh::rv_map[it->first] = make_tuple(
       std::get<0>(it->second),
-      new node(bound.first.leftBound()),
-      new node(bound.first.rightBound()),
+      new node(std::to_string(bound.first.leftBound())),
+      new node(std::to_string(bound.first.rightBound())),
       get<3>(it->second));
     // updating var bounds
     pdrh::var_map[it->first] = make_pair(
-      new node(bound.first.leftBound()), new node(bound.first.rightBound()));
+      new node(std::to_string(bound.first.leftBound())),
+      new node(std::to_string(bound.first.rightBound())));
     // updating partition map
     partition_map.insert(make_pair(it->first, bound.second));
   }

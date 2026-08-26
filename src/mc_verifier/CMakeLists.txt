@@ -10,9 +10,7 @@ file(GLOB PROBREACH_MC_SRC
         ${PROBREACH_SOURCE_DIR}/util/node.cpp
         ${PROBREACH_SOURCE_DIR}/util/decision_procedure.cpp
         ${PROBREACH_SOURCE_DIR}/solver/dreal_wrapper.cpp
-        ${PROBREACH_SOURCE_DIR}/util/generators/smt2_generator.cpp
-        
-        ${PROBREACH_SOURCE_DIR}/util/symbolt.cpp)
+        ${PROBREACH_SOURCE_DIR}/util/generators/smt2_generator.cpp)
 
 set(PROBREACH_MC_SRC ${PROBREACH_MC_SRC}
         ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c

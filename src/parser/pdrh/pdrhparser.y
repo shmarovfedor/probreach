@@ -5,8 +5,6 @@
 #include "node.h"
 #include "model.h"
 
-#include "symbolt.h"
-
 // stuff from flex that bison needs to know about:
 extern "C" int yylex();
 extern "C" int yyparse();

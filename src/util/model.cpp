@@ -592,7 +592,7 @@ node *pdrh::distribution::uniform_to_node(node *a, node *b)
   // relaxing the bounds to account for rounding errors (temporary solution)
   double value_double =
     1 / ((b_interval.rightBound() + 1e-14) - (a_interval.leftBound() - 1e-14));
-  return new node(value_double);
+  return new node(std::to_string(value_double));
 }
 
 node *

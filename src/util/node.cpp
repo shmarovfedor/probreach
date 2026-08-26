@@ -12,14 +12,6 @@
 using namespace std;
 using namespace pdrh;
 
-node::node(double v)
-{
-  std::stringstream ss;
-  ss << std::setprecision(16);
-  ss << v;
-  this->value = ss.str();
-}
-
 std::ostream &operator<<(std::ostream &os, const node &n)
 {
   if (n.operands.size() > 1)

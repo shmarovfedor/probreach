@@ -24,14 +24,6 @@ public:
   {
   }
 
-  // Create a "node" from a "double" value. A double is converted to its
-  // string representation using the first 16 digit after the decimal point
-  node(double v);
-
-  node(const node &rhs) : value(rhs.value), operands(rhs.operands)
-  {
-  }
-
   node(const std::string value, const std::vector<node *> operands)
     : value(value), operands(operands)
   {

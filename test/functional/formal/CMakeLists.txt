@@ -55,8 +55,8 @@ add_executable(formal_bad_test_4
 target_link_libraries(formal_bad_test_4 probreach_formal -lgtest)
 add_test(formal_bad_test_4 "${PROBREACH_BINARY_DIR}/test/functional/formal/formal_bad_test_4")
 
-#add_executable(formal_car_stopping_nonlinear_test_1
-#  ${PROBREACH_TEST_DIR}/functional/formal/car_stopping_nonlinear_test_1.cpp
-#  ${PROBREACH_TEST_DIR}/main_test.cpp)
-#target_link_libraries(formal_car_stopping_nonlinear_test_1 probreach_formal -lgtest)
-#add_test(formal_car_stopping_nonlinear_test_1 "${PROBREACH_BINARY_DIR}/test/functional/formal/formal_car_stopping_nonlinear_test_1")
+add_executable(formal_car_stopping_nonlinear_test_1
+  ${PROBREACH_TEST_DIR}/functional/formal/car_stopping_nonlinear_test_1.cpp
+  ${PROBREACH_TEST_DIR}/main_test.cpp)
+target_link_libraries(formal_car_stopping_nonlinear_test_1 probreach_formal -lgtest)
+add_test(formal_car_stopping_nonlinear_test_1 "${PROBREACH_BINARY_DIR}/test/functional/formal/formal_car_stopping_nonlinear_test_1")

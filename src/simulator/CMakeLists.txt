@@ -3,8 +3,7 @@ file(GLOB SIMULATOR_SRC
         ${PROBREACH_SOURCE_DIR}/util/model.cpp
         ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
-        ${PROBREACH_SOURCE_DIR}/util/naive.cpp
-        ${PROBREACH_SOURCE_DIR}/util/symbolt.cpp)
+        ${PROBREACH_SOURCE_DIR}/util/naive.cpp)
 
 set(SIMULATOR_INCLUDE ${SIMULATOR_INCLUDE} ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.h)
 
