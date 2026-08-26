@@ -5,10 +5,10 @@ file(GLOB SIMULATOR_SRC
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
         ${PROBREACH_SOURCE_DIR}/util/naive.cpp)
 
-set(SIMULATOR_INCLUDE ${SIMULATOR_INCLUDE} ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.h)
+set(SIMULATOR_INCLUDE ${SIMULATOR_INCLUDE} ${PROBREACH_BINARY_DIR}/parser/pdrhparser.h)
 
-set(SIMULATOR_SRC ${SIMULATOR_SRC} ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c
-        ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c
+set(SIMULATOR_SRC ${SIMULATOR_SRC} ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
+        ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
         ${PROBREACH_BINARY_DIR}/git_sha1.cpp)
 
 add_library(probreach_naive ${SIMULATOR_SRC})

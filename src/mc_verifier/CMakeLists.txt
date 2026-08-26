@@ -13,8 +13,8 @@ file(GLOB PROBREACH_MC_SRC
         ${PROBREACH_SOURCE_DIR}/generators/smt2_generator.cpp)
 
 set(PROBREACH_MC_SRC ${PROBREACH_MC_SRC}
-        ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c
-        ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c
+        ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
+        ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
         ${PROBREACH_BINARY_DIR}/git_sha1.cpp)
 
 add_library(probreach_mc ${PROBREACH_MC_SRC})

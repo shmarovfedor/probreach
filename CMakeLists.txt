@@ -40,33 +40,33 @@ find_package(FLEX REQUIRED)
 
 # creating a directory for the lexer and parser files
 add_custom_target(pdrhparser
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${PROBREACH_BINARY_DIR}/parser/pdrh
-  COMMENT "Creating directory ${PROBREACH_BINARY_DIR}/parser/pdrh")
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${PROBREACH_BINARY_DIR}/parser
+  COMMENT "Creating directory ${PROBREACH_BINARY_DIR}/parser")
 # create custom command for flex/lex (note the outputs)
 add_custom_command(
   COMMAND ${FLEX_EXECUTABLE}
-  ARGS -o ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c
-  ${PROBREACH_SOURCE_DIR}/parser/pdrh/pdrhlexer.l
+  ARGS -o ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
+  ${PROBREACH_SOURCE_DIR}/parser/pdrhlexer.l
   DEPENDS pdrhparser
-  DEPENDS ${PROBREACH_SOURCE_DIR}/parser/pdrh/pdrhlexer.l
-  OUTPUT  ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c
-  COMMENT "Generating ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c")
+  DEPENDS ${PROBREACH_SOURCE_DIR}/parser/pdrhlexer.l
+  OUTPUT  ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
+  COMMENT "Generating ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c")
 
 # create custom command for bison/yacc (note the DEPENDS)
 add_custom_command(
   COMMAND ${BISON_EXECUTABLE}
-  ARGS -d -y ${PROBREACH_SOURCE_DIR}/parser/pdrh/pdrhparser.y
-  -o ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c
-  DEPENDS ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c
-  DEPENDS ${PROBREACH_SOURCE_DIR}/parser/pdrh/pdrhparser.y
-  OUTPUT  ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c
-  COMMENT "Generating ${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c")
+  ARGS -d -y ${PROBREACH_SOURCE_DIR}/parser/pdrhparser.y
+  -o ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
+  DEPENDS ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
+  DEPENDS ${PROBREACH_SOURCE_DIR}/parser/pdrhparser.y
+  OUTPUT  ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
+  COMMENT "Generating ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c")
 
 # setting propeties for the generated lexer and parser files
-set_source_files_properties(${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhparser.c GENERATED PROPERTIES LANGUAGE CXX)
-set_source_files_properties(${PROBREACH_BINARY_DIR}/parser/pdrh/pdrhlexer.c GENERATED PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${PROBREACH_BINARY_DIR}/parser/pdrhparser.c GENERATED PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c GENERATED PROPERTIES LANGUAGE CXX)
 # including the parser directory
-include_directories("${PROBREACH_BINARY_DIR}/parser/pdrh")
+include_directories("${PROBREACH_BINARY_DIR}/parser")
 
 # searching for CAPD
 find_package(CAPD)
@@ -120,9 +120,7 @@ include_directories("${CAPD_INCLUDE_DIR}")
 include_directories("${PROBREACH_SOURCE_DIR}")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/generators")
-include_directories("${PROBREACH_SOURCE_DIR}/parser/csv")
-include_directories("${PROBREACH_SOURCE_DIR}/parser/output")
-include_directories("${PROBREACH_SOURCE_DIR}/parser/pdrh")
+include_directories("${PROBREACH_SOURCE_DIR}/parser")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
 
 # searching for GSL
