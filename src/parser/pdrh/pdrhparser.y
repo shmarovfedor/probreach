@@ -57,9 +57,6 @@ void yyerror(const char *s);
 %type<nval_list> props dd_pairs
 %type<nval> prop expr dist dd_pair
 
-// to compile
-//bison -d -o pdrhparser.c pdrhparser.y && flex -o pdrhlexer.c pdrhlexer.l && g++ -O2 -std=c++11 `/home/fedor/dreal3/build/release/bin/capd-config --cflags` pdrhparser.h pdrhparser.c pdrhlexer.c ../../model.cpp -lfl `/home/fedor/dreal3/build/release/bin/capd-config --libs` -o pdrh && ./pdrh ../../test/parser/test1.pdrh
-
 // declaring some variables
 %{
 pdrh::mode *cur_mode = new pdrh::mode;
@@ -96,6 +93,7 @@ declaration:
 	var_declaration { ; }
 	| dist_declaration { ; }
 	| const_declaration { ; }
+  | time_declaration { ; }
 
 const_declaration:
     DEFINE identifier expr      
@@ -132,7 +130,9 @@ var_declaration:
     yyerror(s.str().c_str());
   }
 }
-	| '[' expr ',' expr ']' TIME ';'
+
+time_declaration:
+  '[' expr ',' expr ']' TIME ';'
 { 
   pdrh::push_time_bounds($2, $4); 
 }
@@ -387,7 +387,6 @@ ode:
 	free($3);
 }
 
-// ADD INTERVAL INTO THE EXPRESSION
 expr:
     identifier
 {
