@@ -19,8 +19,6 @@ void yyerror(const char *s);
 
 %union
 {
-	int                   ival;
-	float                 fval;
 	char*                 sval;
   node*                 nval;
   std::vector<node*>*   nval_list;
@@ -44,8 +42,6 @@ void yyerror(const char *s);
 %token <sval> m_type
 %token <sval> identifier
 %token <sval> number
-%token <fval> n_float
-%token <ival> n_int
 
 %left EQ LT GT LE GE NE
 %left PLUS MINUS
