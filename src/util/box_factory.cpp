@@ -384,27 +384,6 @@ box box_factory::get_keys_diff(box lhs, box rhs)
   return box(res);
 }
 
-/*
-vector<pair<box, capd::interval>> box_factory::sort(vector<pair<box,
-capd::interval>> q)
-{
-    for(int i = 1; i < q.size(); i++)
-    {
-        for(int j = 0; j < q.size() - 1; j++)
-        {
-            if(q.at(j).second.mid().leftBound() >
-q.at(j+1).second.mid().leftBound())
-            {
-                pair<box, capd::interval> tmp = q.at(j+1);
-                q.at(j+1) = q.at(j);
-                q.at(j) = tmp;
-            }
-        }
-    }
-    return q;
-}
-*/
-
 box box_factory::get_cover(vector<box> q)
 {
   sort(q.begin(), q.end());

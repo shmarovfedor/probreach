@@ -50,17 +50,6 @@ measure::integral(std::string var, std::string fun, capd::interval it, double e)
   return make_pair(value, partition);
 }
 
-capd::interval measure::volume(box b)
-{
-  std::vector<capd::interval> i = b.get_intervals();
-  capd::interval v(1.0);
-  for (capd::interval it : i)
-  {
-    v *= capd::intervals::width(it);
-  }
-  return v;
-}
-
 double measure::precision(double e, int n)
 {
   double xi = e;
@@ -171,6 +160,22 @@ capd::interval measure::p_dd_measure(box b)
   return res;
 }
 
+std::string
+measure::gaussian_pdf(std::string var, capd::interval mu, capd::interval sigma)
+{
+  std::stringstream s;
+  // outputs only 16 numbers. This is a temporary solution. Will need to declare
+  // numbers in scientific notation as parameters
+  s.precision(16);
+  s << fixed;
+  s << "(1 / (" << sigma.leftBound()
+    << " * sqrt(2 * 3.14159265359)) * exp(- (( " << var << " - ("
+    << mu.leftBound() << ")) * (" << var << " - (" << mu.leftBound()
+    << "))) / (2 * (" << sigma.leftBound() << ") * (" << sigma.leftBound()
+    << "))))";
+  return s.str();
+}
+
 capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
 {
   if (!box_factory::compatible({domain, mean, sigma}))
@@ -191,7 +196,7 @@ capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
       //double prec = sigma.get_map()[it->first].leftBound() / 10;
       pair<capd::interval, vector<capd::interval>> itg = measure::integral(
         it->first,
-        measure::distribution::gaussian(
+        measure::gaussian_pdf(
           it->first, mean.get_map()[it->first], sigma.get_map()[it->first]),
         it->second,
         prec);
@@ -201,49 +206,7 @@ capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
   return res;
 }
 
-capd::interval measure::bounds::gaussian(double mu, double sigma, double e)
-{
-  capd::interval i(mu - 3 * sigma, mu + 3 * sigma);
-  std::pair<capd::interval, std::vector<capd::interval>> itg =
-    measure::integral(
-      "x",
-      measure::distribution::gaussian("x", mu, sigma),
-      i,
-      (1 - global_config.integral_inf_coeff) * e);
-  while (1 - itg.first.leftBound() > global_config.integral_inf_coeff * e)
-  {
-    i = capd::interval(i.leftBound() - sigma, i.rightBound() + sigma);
-    itg = measure::integral(
-      "x",
-      measure::distribution::gaussian("x", mu, sigma),
-      i,
-      (1 - global_config.integral_inf_coeff) * e);
-  }
-  return i;
-}
-
-capd::interval measure::bounds::exp(double lambda, double e)
-{
-  capd::interval i(0, 3 / lambda);
-  std::pair<capd::interval, std::vector<capd::interval>> itg =
-    measure::integral(
-      "x",
-      measure::distribution::exp("x", lambda),
-      i,
-      (1 - global_config.integral_inf_coeff) * e);
-  while (1 - itg.first.leftBound() > global_config.integral_inf_coeff * e)
-  {
-    i = capd::interval(0, i.rightBound() + (1 / lambda));
-    itg = measure::integral(
-      "x",
-      measure::distribution::exp("x", lambda),
-      i,
-      (1 - global_config.integral_inf_coeff) * e);
-  }
-  return i;
-}
-
-std::pair<capd::interval, std::vector<capd::interval>> measure::bounds::pdf(
+std::pair<capd::interval, std::vector<capd::interval>> measure::bounds_from_pdf(
   std::string var,
   std::string pdf,
   capd::interval domain,
@@ -297,49 +260,6 @@ std::pair<capd::interval, std::vector<capd::interval>> measure::bounds::pdf(
   }
 }
 
-std::string measure::distribution::gaussian(
-  std::string var,
-  capd::interval mu,
-  capd::interval sigma)
-{
-  std::stringstream s;
-  // outputs only 16 numbers. This is a temporary solution. Will need to declare
-  // numbers in scientific notation as parameters
-  s.precision(16);
-  s << fixed;
-  s << "(1 / (" << sigma.leftBound()
-    << " * sqrt(2 * 3.14159265359)) * exp(- (( " << var << " - ("
-    << mu.leftBound() << ")) * (" << var << " - (" << mu.leftBound()
-    << "))) / (2 * (" << sigma.leftBound() << ") * (" << sigma.leftBound()
-    << "))))";
-  return s.str();
-}
-
-// check whether implemented correctly
-std::string measure::distribution::exp(std::string var, capd::interval lambda)
-{
-  std::stringstream s;
-  // outputs only 16 numbers. This is a temporary solution. Will need to declare
-  // numbers in scientific notation as parameters
-  s.precision(16);
-  s << fixed;
-  s << lambda.leftBound() << " * exp("
-    << "-(" << lambda.leftBound() << ") * " << var << ")";
-  return s.str();
-}
-
-std::string measure::distribution::uniform(capd::interval a, capd::interval b)
-{
-  std::stringstream s;
-  // outputs only 16 numbers. This is a temporary solution. Will need to declare
-  // numbers in scientific notation as parameters
-  s.precision(16);
-  s << fixed;
-  s << "1 / (" << b.rightBound() << " - (" << a.leftBound() << "))";
-  std::cout << "measure: uniform fun = " << s.str() << "\n";
-  return s.str();
-}
-
 std::vector<box> measure::get_rv_partition()
 {
   std::map<std::string, std::vector<capd::interval>> partition_map;
@@ -360,7 +280,7 @@ std::vector<box> measure::get_rv_partition()
     }
     // getting rv bounds
     std::pair<capd::interval, std::vector<capd::interval>> bound =
-      measure::bounds::pdf(
+      measure::bounds_from_pdf(
         it->first,
         get<0>(it->second)->to_infix(),
         init_domain,
@@ -396,7 +316,7 @@ std::vector<box> measure::get_dd_partition()
   return box_factory::cartesian_product(m);
 }
 
-box measure::bounds::get_rv_domain()
+box measure::get_rv_domain()
 {
   map<std::string, vector<capd::interval>> domain_map;
   for (auto it = pdrh::rv_map.cbegin(); it != pdrh::rv_map.cend(); it++)

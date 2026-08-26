@@ -43,11 +43,6 @@ public:
     get_intersection_conflicts(
       std::map<box, capd::interval>,
       std::map<box, capd::interval>);
-
-  // sort a vector of pairs by probability value
-  // first argument -- target unsorted vector
-  // second argument -- order (ascending in true and descending if false)
-  // vector<pair<box, capd::interval>> sort(vector<pair<box, capd::interval>>);
 };
 
 #endif // PROBREACH_BOX_FACTORY_H

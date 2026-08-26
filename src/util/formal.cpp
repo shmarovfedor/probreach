@@ -27,7 +27,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   // getting partition of domain of continuous random variables
   std::vector<box> init_rv_partition = measure::get_rv_partition();
   // getting domain of continuous random variables
-  box rv_domain = measure::bounds::get_rv_domain();
+  box rv_domain = measure::get_rv_domain();
   // here we start with entire domain instead of partition
   if (!global_config.partition_prob)
   {
@@ -112,7 +112,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
           {
             solver_opt = global_config.solver_opt;
             s << solver_opt << " --precision "
-              << measure::volume(rv).leftBound() *
+              << rv.volume().leftBound() *
                    global_config.solver_precision_ratio;
             //global_config.solver_opt = s.str();
           }
@@ -220,7 +220,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
     rv_partition.push_back(box());
   }
   // getting domain of continuous random variables
-  box rv_domain = measure::bounds::get_rv_domain();
+  box rv_domain = measure::get_rv_domain();
   // here we start with entire domain instead of partition
   if (!global_config.partition_prob)
   {
@@ -535,7 +535,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
     rv_partition.push_back(box());
   }
   // getting domain of continuous random variables
-  box rv_domain = measure::bounds::get_rv_domain();
+  box rv_domain = measure::get_rv_domain();
   // here we start with entire domain instead of partition
   if (!global_config.partition_prob)
   {

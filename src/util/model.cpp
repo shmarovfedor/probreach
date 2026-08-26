@@ -23,10 +23,10 @@ map<string, map<node *, node *>> pdrh::dd_map;
 map<string, pair<node *, node *>> pdrh::var_map;
 map<string, string> pdrh::const_map;
 map<string, pair<node *, node *>> pdrh::par_map;
+
 vector<pdrh::mode> pdrh::modes;
 vector<pdrh::state> pdrh::init;
 vector<pdrh::state> pdrh::goal;
-vector<vector<pdrh::mode *>> pdrh::paths;
 
 map<string, pair<node *, node *>> pdrh::distribution::uniform;
 map<string, pair<node *, node *>> pdrh::distribution::normal;
@@ -333,7 +333,8 @@ vector<pdrh::mode *> pdrh::get_successors(pdrh::mode *m)
     {
       stringstream s;
       s << "mode \"" << j.next_id
-        << "\" is not defined but appears in the jump: " << pdrh::print_jump(j);
+        << "\" is not defined but appears in the jump: "
+        << j.guard << " ==>  @" << j.next_id << endl;
       throw invalid_argument(s.str());
     }
   }
@@ -518,14 +519,6 @@ string pdrh::model_to_string()
       out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;
     }
   }
-  return out.str();
-}
-
-// getting string representation of the jump
-string pdrh::print_jump(mode::jump j)
-{
-  stringstream out;
-  out << j.guard << " ==>  @" << j.next_id << endl;
   return out.str();
 }
 

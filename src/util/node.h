@@ -41,15 +41,6 @@ public:
   {
   }
 
-  /*
-  node &operator=(const node &rhs)
-  {
-    value = rhs.value;
-    operands = rhs.operands;
-    return *this;
-  }
-  */
-
   friend std::ostream &operator<<(std::ostream &os, const node &n);
 
   bool is_empty();

@@ -13,7 +13,6 @@ namespace measure
 std::pair<capd::interval, std::vector<capd::interval>>
 integral(std::string, std::string, capd::interval, double);
 
-capd::interval volume(box);
 capd::interval p_measure(box, double);
 capd::interval p_measure(box);
 capd::interval p_dd_measure(box);
@@ -35,24 +34,16 @@ bool compare_boxes_by_p_measure(const box, const box);
 // obtain the partition of the parameter space
 std::vector<box> get_rv_partition();
 std::vector<box> get_dd_partition();
+box get_rv_domain();
 
 double precision(double, int);
 
-namespace bounds
-{
-capd::interval gaussian(double, double, double);
-capd::interval exp(double, double);
 std::pair<capd::interval, std::vector<capd::interval>>
-pdf(std::string, std::string, capd::interval, double, double);
-box get_rv_domain();
-} // namespace bounds
+bounds_from_pdf(std::string, std::string, capd::interval, double, double);
 
-namespace distribution
-{
-std::string gaussian(std::string, capd::interval, capd::interval);
-std::string uniform(capd::interval, capd::interval);
-std::string exp(std::string, capd::interval);
-} // namespace distribution
+std::string
+gaussian_pdf(std::string var, capd::interval mu, capd::interval sigma);
+
 } // namespace measure
 
 #endif //PROBREACH_MEASURE_H

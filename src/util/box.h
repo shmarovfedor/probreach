@@ -85,6 +85,7 @@ public:
   double max_coordinate_value();
   double max_side_width();
   double min_side_width();
+  capd::interval volume();
 
   /// Removes specified variable (together with its interval) from the box
   void erase(std::string);

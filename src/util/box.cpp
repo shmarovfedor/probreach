@@ -394,3 +394,13 @@ box box::log()
   }
   return box(res);
 }
+
+capd::interval box::volume()
+{
+  capd::interval v(1.0);
+  for (auto it = edges.cbegin(); it != edges.cend(); it++)
+  {
+    v *= capd::intervals::width(it->second);
+  }
+  return v;
+}
