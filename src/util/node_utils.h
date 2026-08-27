@@ -33,13 +33,5 @@ bool node_zero_crossing(
   std::map<std::string, double>,
   std::map<std::string, double>);
 
-// used only in a handful of cases
-node *copy_node(node *);
-void copy_tree(node *&, node *);
-void delete_node(node *);
-
-// we might not need these methods in future
-void get_first_node_by_value(node *, node *, std::vector<std::string>);
-node *get_node_neg_by_value(node *, std::vector<std::string>);
 } // namespace pdrh
 #endif // PROBREACH_NODE_UTILS_H

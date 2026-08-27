@@ -17,27 +17,26 @@ TEST(node_copy_and_delete, normal_test)
   node *const1 = new node("1");
   node *const2 = new node("3");
   node *x = new node("x");
-  node *res = new node("/", {new node("+", {x, const1}), const2});
+  node *src = new node("/", {new node("+", {x, const1}), const2});
 
-  node *copy = copy_node(res);
-  EXPECT_TRUE(res->value == copy->value);
-  EXPECT_TRUE(res->operands.size() == copy->operands.size());
-  for (int i = 0; i < res->operands.size(); i++)
-    EXPECT_TRUE(res->operands[i]->value == copy->operands[i]->value);
+  // deep copy
+  node *copy = src->copy();
+  EXPECT_EQ(src->to_infix(), copy->to_infix());
 
-  node other(*copy);
-  other.value = "*";
-  other.operands[0]->value = "-";
+  // using copy constructor
+  node *copy2(src);
+  EXPECT_EQ(src->to_infix(), copy2->to_infix());
+  EXPECT_EQ(copy->to_infix(), copy2->to_infix());
   
-  cerr << "res(infix) : " << res->to_infix() << "\n";
-  cerr << "res(prefix) : " << res->to_prefix() << "\n";
-  cerr << "res(stream) : " << *res << "\n";
-  cerr << "copy(infix) : " << copy->to_infix() << "\n";
-  cerr << "copy(prefix) : " << copy->to_prefix() << "\n";
-  cerr << "copy(stream) : " << *copy << "\n";
-  cerr << "other(infix) : " << other.to_infix() << "\n";
-  cerr << "other(prefix) : " << other.to_prefix() << "\n";
-  cerr << "other(stream) : " << other << "\n";
+  src->operands[0]->value = "-";
+  
+  EXPECT_EQ(src->to_infix(), copy2->to_infix());
+  EXPECT_NE(copy->to_infix(), copy2->to_infix());
 
+  cerr << "SRC: " << src->to_infix() << "\n";
+  cerr << "COPY (copy): " << copy->to_infix() << "\n";
+  cerr << "COPY2 (constructor): " << copy2->to_infix() << "\n";
 
+  delete src;
+  delete copy;
 }

@@ -110,47 +110,14 @@ string node::to_prefix(int step, string index)
   return s.str();
 }
 
-/**
- * Copies the entire tree given its root
- *
- * @param copy - root node for the copy of the tree
- * @param origin - root node for the original tree
- */
-void pdrh::copy_tree(node *&copy, node *origin)
+node* node::copy()
 {
-  copy->value = origin->value;
-  for (node *child : origin->operands)
-  {
-    node *copy_operand = new node;
-    pdrh::copy_tree(copy_operand, child);
-    copy->operands.push_back(copy_operand);
+  node *copy = new node(this->value);
+  for (node* op : this->operands) {
+    node *op_copy = op->copy();
+    copy->operands.push_back(op_copy);
   }
-}
-
-/**
- * Creates a copy of the node.
- *
- * @param origin - original node
- * @return the copy of the node
- */
-node *pdrh::copy_node(node *origin)
-{
-  node *copy = new node();
-  copy_tree(copy, origin);
   return copy;
-}
-
-/**
- * Creating a string representation of the node in prefix notation
- * @param n - node to delete
- */
-void pdrh::delete_node(node *n)
-{
-  for (node *op : n->operands)
-  {
-    delete_node(op);
-  }
-  delete n;
 }
 
 /**
@@ -210,8 +177,7 @@ void pdrh::get_first_node_by_value(
  */
 node *pdrh::get_node_neg_by_value(node *root, vector<string> values)
 {
-  node *root_copy = new node();
-  pdrh::copy_tree(root_copy, root);
+  node *root_copy = root->copy();
   node *time_node = new node;
   pdrh::get_first_node_by_value(root_copy, time_node, values);
   if (time_node->is_empty())

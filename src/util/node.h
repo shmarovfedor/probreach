@@ -33,9 +33,16 @@ public:
   {
   }
 
+  ~node()
+  {
+    for (node *op : this->operands)
+      delete op;
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const node &n);
 
   bool is_empty();
+  node* copy();
 
   std::string to_infix();
   std::string to_prefix();
@@ -44,10 +51,6 @@ public:
 
 namespace pdrh
 {
-node *copy_node(node *);
-void copy_tree(node *&, node *);
-void delete_node(node *);
-
 void get_first_node_by_value(node *, node *, std::vector<std::string>);
 node *get_node_neg_by_value(node *, std::vector<std::string>);
 } // namespace pdrh
