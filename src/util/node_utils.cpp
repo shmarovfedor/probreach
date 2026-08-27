@@ -4,7 +4,6 @@
 
 #include "node_utils.h"
 #include <iomanip>
-#include "model.h"
 #include <random>
 
 using namespace std;
@@ -272,79 +271,6 @@ node *pdrh::box_to_node(box b)
     res->operands.push_back(node_right);
   }
   return res;
-}
-
-// domain of nondeterministic parameters
-box pdrh::get_nondet_domain()
-{
-  map<std::string, capd::interval> m;
-  for (auto it = pdrh::par_map.cbegin(); it != pdrh::par_map.cend(); it++)
-  {
-    m.insert(make_pair(
-      it->first,
-      capd::interval(
-        pdrh::node_to_interval(it->second.first).leftBound(),
-        pdrh::node_to_interval(it->second.second).rightBound())));
-  }
-  return box(m);
-}
-
-// domain of system variables
-box pdrh::get_domain()
-{
-  map<std::string, capd::interval> m;
-  for (auto it = pdrh::var_map.cbegin(); it != pdrh::var_map.cend(); it++)
-  {
-    m.insert(make_pair(
-      it->first,
-      capd::interval(
-        pdrh::node_to_interval(it->second.first).leftBound(),
-        pdrh::node_to_interval(it->second.second).rightBound())));
-  }
-  return box(m);
-}
-
-// only the first initial state is taken
-box pdrh::init_to_box(vector<box> boxes)
-{
-  node *init_node = pdrh::init.front().prop;
-  if (init_node->value != "and")
-  {
-    cerr << "Invalid initial state format: " << pdrh::init.front() << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  map<string, capd::interval> b_map;
-  for (node *n : init_node->operands)
-  {
-    if (n->value != "=")
-    {
-      cerr << "Invalid assignment in the initial state: " << n << endl;
-      exit(EXIT_FAILURE);
-    }
-
-    if (
-      (pdrh::var_map.find(n->operands.front()->value) != pdrh::var_map.end()) ||
-      (pdrh::par_map.find(n->operands.front()->value) != pdrh::par_map.end()) ||
-      (pdrh::rv_map.find(n->operands.front()->value) != pdrh::rv_map.end()) ||
-      (pdrh::dd_map.find(n->operands.front()->value) != pdrh::dd_map.end()))
-    {
-      b_map.insert(make_pair(
-        n->operands.front()->value,
-        pdrh::node_to_interval(n->operands.back(), boxes)));
-    }
-    else if (
-      (pdrh::var_map.find(n->operands.back()->value) != pdrh::var_map.end()) ||
-      (pdrh::par_map.find(n->operands.back()->value) != pdrh::par_map.end()) ||
-      (pdrh::rv_map.find(n->operands.back()->value) != pdrh::rv_map.end()) ||
-      (pdrh::dd_map.find(n->operands.back()->value) != pdrh::dd_map.end()))
-    {
-      b_map.insert(make_pair(
-        n->operands.back()->value,
-        pdrh::node_to_interval(n->operands.front(), boxes)));
-    }
-  }
-  return box(b_map);
 }
 
 /**

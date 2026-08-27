@@ -202,7 +202,7 @@ std::map<box, capd::interval>
 formal::evaluate_npha(int min_depth, int max_depth)
 {
   // getting parameter domain
-  box nd_domain = pdrh::get_nondet_domain();
+  box nd_domain = measure::get_nondet_domain();
   // initially partition is the entire parameter domain
   std::vector<box> nd_partition{nd_domain};
   // if flag is enabled the domain is partitioned up to precision_nondet
@@ -517,7 +517,7 @@ std::map<box, capd::interval>
 formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
 {
   // getting parameter domain
-  box nd_domain = pdrh::get_nondet_domain();
+  box nd_domain = measure::get_nondet_domain();
   // initially partition is the entire parameter domain
   std::vector<box> nd_partition{nd_domain};
   // if flag is enabled the domain is partitioned up to precision_nondet

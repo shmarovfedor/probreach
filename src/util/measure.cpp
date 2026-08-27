@@ -317,6 +317,7 @@ std::vector<box> measure::get_dd_partition()
   return box_factory::cartesian_product(m);
 }
 
+// domain of continuous random parameters
 box measure::get_rv_domain()
 {
   map<std::string, vector<capd::interval>> domain_map;
@@ -335,6 +336,22 @@ box measure::get_rv_domain()
   std::vector<box> domain = box_factory::cartesian_product(domain_map);
   return domain.front();
 }
+
+// domain of nondeterministic parameters
+box measure::get_nondet_domain()
+{
+  map<std::string, capd::interval> m;
+  for (auto it = pdrh::par_map.cbegin(); it != pdrh::par_map.cend(); it++)
+  {
+    m.insert(make_pair(
+      it->first,
+      capd::interval(
+        pdrh::node_to_interval(it->second.first).leftBound(),
+        pdrh::node_to_interval(it->second.second).rightBound())));
+  }
+  return box(m);
+}
+
 
 // comparing the medians of the intervals
 bool measure::compare_pairs::ascending(

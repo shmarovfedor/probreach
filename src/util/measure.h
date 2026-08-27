@@ -35,6 +35,7 @@ bool compare_boxes_by_p_measure(const box, const box);
 std::vector<box> get_rv_partition();
 std::vector<box> get_dd_partition();
 box get_rv_domain();
+box get_nondet_domain();
 
 double precision(double, int);
 

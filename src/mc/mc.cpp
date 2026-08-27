@@ -305,7 +305,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     r,
     std::chrono::system_clock::now().time_since_epoch() /
       std::chrono::milliseconds(1));
-  box domain = pdrh::get_nondet_domain();
+  box domain = measure::get_nondet_domain();
   //initializing probability value
   pair<box, capd::interval> res(domain, capd::interval(0.0));
   if (global_config.min_prob)
