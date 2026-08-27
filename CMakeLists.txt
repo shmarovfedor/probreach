@@ -33,41 +33,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++14 -fopenmp -frounding-math 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -Wno-unused-variable -Wno-return-type -Wno-unused-function")
 #set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
-
-# building and installing PDRH lexer and parser
-find_package(BISON REQUIRED)
-find_package(FLEX REQUIRED)
-
-# creating a directory for the lexer and parser files
-add_custom_target(pdrhparser
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${PROBREACH_BINARY_DIR}/parser
-  COMMENT "Creating directory ${PROBREACH_BINARY_DIR}/parser")
-# create custom command for flex/lex (note the outputs)
-add_custom_command(
-  COMMAND ${FLEX_EXECUTABLE}
-  ARGS -o ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
-  ${PROBREACH_SOURCE_DIR}/parser/pdrhlexer.l
-  DEPENDS pdrhparser
-  DEPENDS ${PROBREACH_SOURCE_DIR}/parser/pdrhlexer.l
-  OUTPUT  ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
-  COMMENT "Generating ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c")
-
-# create custom command for bison/yacc (note the DEPENDS)
-add_custom_command(
-  COMMAND ${BISON_EXECUTABLE}
-  ARGS -d -y ${PROBREACH_SOURCE_DIR}/parser/pdrhparser.y
-  -o ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
-  DEPENDS ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
-  DEPENDS ${PROBREACH_SOURCE_DIR}/parser/pdrhparser.y
-  OUTPUT  ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
-  COMMENT "Generating ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c")
-
-# setting propeties for the generated lexer and parser files
-set_source_files_properties(${PROBREACH_BINARY_DIR}/parser/pdrhparser.c GENERATED PROPERTIES LANGUAGE CXX)
-set_source_files_properties(${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c GENERATED PROPERTIES LANGUAGE CXX)
-# including the parser directory
-include_directories("${PROBREACH_BINARY_DIR}/parser")
-
 # searching for CAPD
 find_package(CAPD)
 IF(CAPD_FOUND)
@@ -121,8 +86,9 @@ include_directories("${PROBREACH_SOURCE_DIR}")
 include_directories("${PROBREACH_SOURCE_DIR}/config")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/generators")
-include_directories("${PROBREACH_SOURCE_DIR}/parser")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/irep")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/parser")
 
 # searching for GSL
 find_package(GSL)
@@ -167,10 +133,11 @@ configure_file(
   "${PROBREACH_SOURCE_DIR}/config/env_config.h")
 
 # adding CMakeLists.txt files that specify executables
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/formal/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/mc/CMakeLists.txt)
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/config/CMakeLists.txt)
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/CMakeLists.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/CMakeLists.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/formal/CMakeLists.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/mc/CMakeLists.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/config/CMakeLists.txt")
 
 # enabling testing
 find_package(GTest)
