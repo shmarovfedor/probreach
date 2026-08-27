@@ -59,8 +59,8 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
            ode_it != (*path_it)->odes.cend();
            ode_it++)
       {
-        s << "(= d/dt[" << ode_it->first << "] "
-          << ode_it->second->to_prefix() << ")";
+        s << "(= d/dt[" << ode_it->first << "] " << ode_it->second->to_prefix()
+          << ")";
       }
       s << "))" << endl;
     }
@@ -68,7 +68,7 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   for (box b : boxes)
   {
     // skipping if there are any empty boxes
-    if(b.empty())
+    if (b.empty())
       continue;
     s << "\n; defining parameter box: " << b << "\n";
     std::map<string, capd::interval> m = b.get_map();
@@ -77,14 +77,14 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
       s << "(assert (and \n";
       for (auto it = m.cbegin(); it != m.cend(); it++)
       {
-        s << "\t(>= " << it->first << "_" << i << "_0 " << it->second.leftBound()
-          << ")" << endl;
-        s << "\t(<= " << it->first << "_" << i << "_0 " << it->second.rightBound()
-          << ")" << endl;
-        s << "\t(>= " << it->first << "_" << i << "_t " << it->second.leftBound()
-          << ")" << endl;
-        s << "\t(<= " << it->first << "_" << i << "_t " << it->second.rightBound()
-          << ")" << endl;
+        s << "\t(>= " << it->first << "_" << i << "_0 "
+          << it->second.leftBound() << ")" << endl;
+        s << "\t(<= " << it->first << "_" << i << "_0 "
+          << it->second.rightBound() << ")" << endl;
+        s << "\t(>= " << it->first << "_" << i << "_t "
+          << it->second.leftBound() << ")" << endl;
+        s << "\t(<= " << it->first << "_" << i << "_t "
+          << it->second.rightBound() << ")" << endl;
       }
       s << "))\n";
     }
@@ -130,7 +130,8 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
         // only the jumps to the next mode in the path
         if (j.next_id == path.at(step + 1)->id)
         {
-          s << "; jump from " << m->id << " to " << path.at(step + 1)->id << "\n";
+          s << "; jump from " << m->id << " to " << path.at(step + 1)->id
+            << "\n";
           s << "; guard\n";
           s << "(assert (" << j.guard->to_prefix(step, "t") << "))\n";
           s << "; reset\n";
@@ -162,6 +163,66 @@ smt2_generator::reach_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   s << "(exit)" << endl;
   return s.str();
 }
+
+
+/**
+ * Returns the first node matching the pattern (root->value == values[i]) and (expr).
+ *
+ * @param root - root of the tree.
+ * @param res_node - resulting node.
+ * @param values - list of values to check.
+ */
+void get_first_node_by_value(
+  node *root,
+  node *res_node,
+  vector<string> values)
+{
+  if (root->value == "=")
+  {
+    for (node *child : root->operands)
+    {
+      if (find(values.begin(), values.end(), child->value) != values.end())
+      {
+        *res_node = *root;
+        root->value = "true";
+        root->operands.clear();
+      }
+      else
+      {
+        get_first_node_by_value(child, res_node, values);
+      }
+    }
+  }
+  else
+  {
+    for (node *child : root->operands)
+    {
+      get_first_node_by_value(child, res_node, values);
+    }
+  }
+}
+
+/**
+ * Returns the first node matching the pattern (root->value == values[i]) and (!expr)
+ *
+ * @param root - root of the tree.
+ * @param values - resulting node.
+ * @return
+ */
+node *get_node_neg_by_value(node *root, vector<string> values)
+{
+  node *root_copy = root->copy();
+  node *time_node = new node;
+  get_first_node_by_value(root_copy, time_node, values);
+  if (time_node->is_empty())
+    return NULL;
+  // creating a negation node
+  node *not_node = new node("not", {root_copy});
+  // creating a resulting node
+  node *res_node = new node("and", {time_node, not_node});
+  return res_node;
+}
+
 
 string
 smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
@@ -220,14 +281,12 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   s << "(declare-fun local_time_" << path.size() - 1 << "_0 () Real)" << endl;
   s << "(declare-fun local_time_" << path.size() - 1 << "_t () Real)" << endl;
   s << "(assert (= local_time_" << path.size() - 1 << "_0 "
-    << path.back()->time.first->to_prefix(path.size() - 1, "0")
-    << "))" << endl;
+    << path.back()->time.first->to_prefix(path.size() - 1, "0") << "))" << endl;
   s << "(assert (>= local_time_" << path.size() - 1 << "_t "
-    << path.back()->time.first->to_prefix(path.size() - 1, "0")
-    << "))" << endl;
+    << path.back()->time.first->to_prefix(path.size() - 1, "0") << "))" << endl;
   s << "(assert (<= local_time_" << path.size() - 1 << "_t "
-    << path.back()->time.second->to_prefix(path.size() - 1, "0")
-    << "))" << endl;
+    << path.back()->time.second->to_prefix(path.size() - 1, "0") << "))"
+    << endl;
   s << "\n; defining ODEs\n";
   for (auto path_it = path.cbegin(); path_it != path.cend(); path_it++)
   {
@@ -238,8 +297,8 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
            ode_it != (*path_it)->odes.cend();
            ode_it++)
       {
-        s << "(= d/dt[" << ode_it->first << "] "
-          << ode_it->second->to_prefix() << ")";
+        s << "(= d/dt[" << ode_it->first << "] " << ode_it->second->to_prefix()
+          << ")";
       }
       s << "(= d/dt[local_time] 1.0)";
       s << "))" << endl;
@@ -287,22 +346,14 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
       s << ode_it->first << "_" << step << "_t ";
     }
     // defining local time if enabled
-    //if((step == path.size() - 1) && (!timed_node_neg))
-    //if(!timed_node_neg)
-    //{
     s << "local_time_" << step << "_t";
-    //}
     s << "] (integral 0.0 time_" << step << " [";
     for (auto ode_it = m->odes.cbegin(); ode_it != m->odes.cend(); ode_it++)
     {
       s << ode_it->first << "_" << step << "_0 ";
     }
     // defining local time if enabled
-    //if((step == path.size() - 1) && (!timed_node_neg))
-    //if(!timed_node_neg)
-    //{
     s << "local_time_" << step << "_0";
-    //}
     s << "] flow_" << m->id << "))" << endl;
     // defining invariants
     for (node *invt : m->invts)
@@ -316,10 +367,8 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
       // defining jumps
       for (pdrh::mode::jump j : m->jumps)
       {
-        //cout << "Jumping from " << m->id << " to " << j.next_id << "(control " << path.at(step+1)->id << ")" << endl;
         if (j.next_id == path.at(step + 1)->id)
         {
-          //cout << "Recording the jumping from " << m->id << " to " << j.next_id << "(control " << path.at(step+1)->id << ")" << endl;
           s << j.guard->to_prefix(step, "t") << endl;
           if (step < path.size() - 1)
           {
@@ -342,19 +391,17 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
   {
     if (path.back()->id == st.id)
     {
-      //node* timed_node_neg = ap::get_time_node_neg(st.prop);
       // defining time vars
       vector<string> time_vars = global_config.time_var_name;
       time_vars.push_back(global_config.sample_time);
-      node *timed_node_neg =
-        pdrh::get_node_neg_by_value(st.prop, time_vars);
+      node *timed_node_neg = get_node_neg_by_value(st.prop, time_vars);
       if (!timed_node_neg)
       {
         // checking if there is a not in front of the guard predicate because dReal does not work nicely
         // with double negation
         s << "(= local_time_" << path.size() - 1 << "_t "
-          << path.back()->time.second->to_prefix(path.size() - 1, "0")
-          << ")" << endl;
+          << path.back()->time.second->to_prefix(path.size() - 1, "0") << ")"
+          << endl;
         if (st.prop->value == "not")
         {
           s << "(forall_t " << st.id << " [0 time_" << path.size() - 1 << "] ("
@@ -367,20 +414,22 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
           for (node *n : st.prop->operands)
           {
             s << "(forall_t " << st.id << " [0 time_" << path.size() - 1
-              << "] (not " << n->to_prefix(path.size() - 1, "t")
-              << "))";
+              << "] (not " << n->to_prefix(path.size() - 1, "t") << "))";
           }
         }
         else
         {
           s << "(forall_t " << st.id << " [0 time_" << path.size() - 1
-            << "] (not " << st.prop->to_prefix(path.size() - 1, "t")
-            << "))";
+            << "] (not " << st.prop->to_prefix(path.size() - 1, "t") << "))";
         }
       }
       else
       {
         s << timed_node_neg->to_prefix(path.size() - 1, "t");
+        std::cout << "NODE ORIGINAL (GOAL): "
+                  << st.prop->to_prefix(path.size() - 1, "t") << "\n";
+        std::cout << "NODE NEG (GOAL): "
+                  << timed_node_neg->to_prefix(path.size() - 1, "t") << "\n";
         delete timed_node_neg;
       }
     }
@@ -437,12 +486,9 @@ string smt2_generator::reach_c_to_smt2(
       s << "(assert (>= time_" << i << " "
         << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
       s << "(assert (<= time_" << i << " "
-        << path.at(i)->time.second->to_prefix(i, "0") << "))"
-        << endl;
+        << path.at(i)->time.second->to_prefix(i, "0") << "))" << endl;
     }
     // declaring local time and bounds
-    //        if (!timed_node_neg)
-    //        {
     s << "(declare-fun local_time () Real)" << endl;
     //cout << "HERE" << endl;
     for (unsigned long i = 0; i < depth; i++)
@@ -454,23 +500,17 @@ string smt2_generator::reach_c_to_smt2(
       s << "(assert (>= local_time_" << i << "_t "
         << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
       s << "(assert (<= local_time_" << i << "_t "
-        << path.at(i)->time.second->to_prefix(i, "0") << "))"
-        << endl;
+        << path.at(i)->time.second->to_prefix(i, "0") << "))" << endl;
     }
     // last mode
-    //s << "(declare-fun local_time () Real)" << endl;
     s << "(declare-fun local_time_" << depth << "_0 () Real)" << endl;
     s << "(declare-fun local_time_" << depth << "_t () Real)" << endl;
     s << "(assert (= local_time_" << depth << "_0 "
-      << path.at(depth)->time.first->to_prefix(depth, "0") << "))"
-      << endl;
+      << path.at(depth)->time.first->to_prefix(depth, "0") << "))" << endl;
     s << "(assert (>= local_time_" << depth << "_t "
-      << path.at(depth)->time.first->to_prefix(depth, "0") << "))"
-      << endl;
+      << path.at(depth)->time.first->to_prefix(depth, "0") << "))" << endl;
     s << "(assert (<= local_time_" << depth << "_t "
-      << path.at(depth)->time.second->to_prefix(depth, "0") << "))"
-      << endl;
-    //        }
+      << path.at(depth)->time.second->to_prefix(depth, "0") << "))" << endl;
     // defining odes
     int step = 0;
     for (auto path_it = path.cbegin(); path_it != path.cend(); path_it++)
@@ -486,10 +526,7 @@ string smt2_generator::reach_c_to_smt2(
             << ode_it->second->to_prefix() << ")";
         }
         // introducing local time if defined
-        //if((!timed_node_neg))
-        //{
         s << "(= d/dt[local_time] 1.0)";
-        //}
         s << "))" << endl;
       }
       if (step >= depth)
@@ -540,20 +577,14 @@ string smt2_generator::reach_c_to_smt2(
         s << ode_it->first << "_" << i << "_t ";
       }
       // defining local time if enabled
-      //if(!timed_node_neg)
-      //{
       s << "local_time_" << i << "_t";
-      //}
       s << "] (integral 0.0 time_" << i << " [";
       for (auto ode_it = m->odes.cbegin(); ode_it != m->odes.cend(); ode_it++)
       {
         s << ode_it->first << "_" << i << "_0 ";
       }
       // defining local time if enabled
-      //if(!timed_node_neg)
-      //{
       s << "local_time_" << i << "_0";
-      //}
       s << "] flow_" << m->id << "))" << endl;
       // defining invariants
       for (node *invt : m->invts)
@@ -591,24 +622,21 @@ string smt2_generator::reach_c_to_smt2(
     {
       if (j.next_id == path.at(depth + 1)->id)
       {
-        //node* timed_node_neg = ap::get_time_node_neg(j.guard);
         // extracting time variables
         vector<string> time_vars = global_config.time_var_name;
         time_vars.push_back(global_config.sample_time);
-        node *timed_node_neg =
-          pdrh::get_node_neg_by_value(j.guard, time_vars);
+        node *timed_node_neg = get_node_neg_by_value(j.guard, time_vars);
         if (!timed_node_neg)
         {
           // checking if there is a not in front of the guard predicate because dReal does not work nicely
           // with double negation
           s << "(= local_time_" << depth << "_t "
-            << path.at(depth)->time.second->to_prefix(depth, "0")
-            << ")" << endl;
+            << path.at(depth)->time.second->to_prefix(depth, "0") << ")"
+            << endl;
           if (j.guard->value == "not")
           {
             s << "(forall_t " << path.at(depth)->id << " [0 time_" << depth
-              << "] ("
-              << j.guard->operands.front()->to_prefix(depth, "t")
+              << "] (" << j.guard->operands.front()->to_prefix(depth, "t")
               << "))";
           }
           // transforming the negation of disjunction into the conjunction of negations
@@ -629,6 +657,10 @@ string smt2_generator::reach_c_to_smt2(
         else
         {
           s << timed_node_neg->to_prefix(depth, "t");
+          std::cout << "NODE ORIGINAL (LAST JUMP): "
+                    << j.guard->to_prefix(depth, "t") << "\n";
+          std::cout << "NODE NEG (LAST JUMP): "
+                    << timed_node_neg->to_prefix(depth, "t") << "\n";
           delete timed_node_neg;
         }
       }

@@ -10,7 +10,7 @@
 #include <iomanip>
 
 using namespace std;
-using namespace pdrh;
+//using namespace pdrh;
 
 std::ostream &operator<<(std::ostream &os, const node &n)
 {
@@ -129,62 +129,4 @@ node* node::copy()
 bool node::is_empty()
 {
   return this->value.empty() && this->operands.empty();
-}
-
-/**
- * Returns the first node matching the pattern (root->value == values[i]) and (expr).
- *
- * @param root - root of the tree.
- * @param res_node - resulting node.
- * @param values - list of values to check.
- */
-void pdrh::get_first_node_by_value(
-  node *root,
-  node *res_node,
-  vector<string> values)
-{
-  if (root->value == "=")
-  {
-    for (node *child : root->operands)
-    {
-      if (find(values.begin(), values.end(), child->value) != values.end())
-      {
-        *res_node = *root;
-        root->value = "true";
-        root->operands.clear();
-      }
-      else
-      {
-        pdrh::get_first_node_by_value(child, res_node, values);
-      }
-    }
-  }
-  else
-  {
-    for (node *child : root->operands)
-    {
-      pdrh::get_first_node_by_value(child, res_node, values);
-    }
-  }
-}
-
-/**
- * Returns the first node matching the pattern (root->value == values[i]) and (!expr)
- *
- * @param root - root of the tree.
- * @param values - resulting node.
- * @return
- */
-node *pdrh::get_node_neg_by_value(node *root, vector<string> values)
-{
-  node *root_copy = root->copy();
-  node *time_node = new node;
-  pdrh::get_first_node_by_value(root_copy, time_node, values);
-  if (time_node->is_empty())
-    return NULL;
-  // creating a negation node
-  node *not_node = new node("not", {root_copy});
-  // creating a resulting node
-  node *res_node = new node("and", {time_node, not_node});
-  return res_node;
 }

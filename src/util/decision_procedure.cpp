@@ -147,8 +147,6 @@ int decision_procedure::evaluate_delta_sat(
   // will work for one initial and one state only
   smt_file << smt2_generator::reach_to_smt2(path, boxes);
   smt_file.close();
-  //    cout << pdrh2box::reach_to_smt2(pdrh::init.front(), pdrh::goal.front(), path, boxes) << endl;
-  //    exit(EXIT_SUCCESS);
 
   if (global_config.debug)
   {
@@ -157,9 +155,6 @@ int decision_procedure::evaluate_delta_sat(
     cout << smt2_generator::reach_to_smt2(path, boxes) << endl;
   }
 
-  //    cout << "Solver options: " << solver_opt << endl;
-  // calling dreal here
-  // solver_opt.append(" --model");
   int first_res = dreal::execute(solver_bin, smt_filename, solver_opt);
 
   if (global_config.debug)
@@ -189,21 +184,6 @@ int decision_procedure::evaluate_delta_sat(
       (std::remove(smt_filename.c_str()) == 0) &&
       (std::remove(std::string(smt_filename + ".output").c_str()) == 0))
     {
-      //            box b = dreal::parse_model(string(smt_filename + ".model"));
-      //            cout << "Solution box: " << b << endl;
-      //            std::remove(string(smt_filename + ".model").c_str());
-      //            map<string, pdrh::node*> reset_map = pdrh::modes.front().jumps.front().reset;
-      //            map<string, capd::interval> init_map;
-      //            for(auto it = reset_map.begin(); it != reset_map.end(); it++)
-      //            {
-      //                init_map.insert(make_pair(it->first, pdrh::node_to_interval(it->second, b)));
-      //            }
-      //            box init_box(init_map);
-      //            cout << "New init box: " << init_box << endl;
-      //            pdrh::state new_init_state;
-      //            new_init_state.id = pdrh::modes.front().jumps.front().next_id;
-      //            new_init_state.prop = pdrh::box_to_node(init_box);
-      //            cout << "New init state: " << new_init_state.id << ": " << pdrh::node_to_string_prefix(new_init_state.prop) << endl;
       return decision_procedure::SAT;
     }
     else

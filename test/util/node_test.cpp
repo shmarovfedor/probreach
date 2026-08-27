@@ -7,7 +7,6 @@
 #include <cmath>
 
 using namespace std;
-using namespace pdrh;
 
 /**
  * Testing node copying
