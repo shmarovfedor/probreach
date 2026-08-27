@@ -6,8 +6,7 @@ file(GLOB SIMULATOR_SRC
         ${PROBREACH_SOURCE_DIR}/simulator/naive.cpp)
 
 set(SIMULATOR_SRC ${SIMULATOR_SRC} ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
-        ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
-        ${PROBREACH_BINARY_DIR}/git_sha1.cpp)
+        ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c)
 
 add_library(probreach_simulator ${SIMULATOR_SRC})
 add_dependencies(probreach_simulator capd)
@@ -21,4 +20,4 @@ endif(APPLE)
 target_link_libraries(probreach_simulator ${CAPD_LIBRARIES})
 
 add_executable(simulator ${PROBREACH_SOURCE_DIR}/simulator/main.cpp)
-target_link_libraries(simulator probreach_simulator)
+target_link_libraries(simulator probreach_simulator probreach_config)

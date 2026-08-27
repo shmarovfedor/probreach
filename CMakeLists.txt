@@ -20,13 +20,13 @@ set(PROBREACH_VERSION_MINOR 0)
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 configure_file(
-  "${PROBREACH_SOURCE_DIR}/git_sha1.cpp.in"
-  "${PROBREACH_BINARY_DIR}/git_sha1.cpp" @ONLY)
+  "${PROBREACH_SOURCE_DIR}/config/git_sha1.cpp.in"
+  "${PROBREACH_BINARY_DIR}/config/git_sha1.cpp" @ONLY)
 set_source_files_properties(${PROBREACH_BINARY_DIR}/git_sha1.cpp GENERATED PROPERTIES LANGUAGE CXX)
 set(PROBREACH_VERSION ${PROBREACH_VERSION_MAJOR}.${PROBREACH_VERSION_MINOR})
 configure_file(
-  "${PROBREACH_SOURCE_DIR}/version.h.in"
-  "${PROBREACH_SOURCE_DIR}/version.h")
+  "${PROBREACH_SOURCE_DIR}/config/version.h.in"
+  "${PROBREACH_SOURCE_DIR}/config/version.h")
 
 # setting compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++14 -fopenmp -frounding-math -fPIC")
@@ -118,6 +118,7 @@ include_directories("${CAPD_INCLUDE_DIR}")
 
 # including all the ProbReach headers
 include_directories("${PROBREACH_SOURCE_DIR}")
+include_directories("${PROBREACH_SOURCE_DIR}/config")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/generators")
 include_directories("${PROBREACH_SOURCE_DIR}/parser")
@@ -162,13 +163,14 @@ else(DREAL_FOUND AND DREAL_WORKS)
 endif(DREAL_FOUND AND DREAL_WORKS)
 
 configure_file(
-  "${PROBREACH_SOURCE_DIR}/env_config.h.in"
-  "${PROBREACH_SOURCE_DIR}/env_config.h")
+  "${PROBREACH_SOURCE_DIR}/config/env_config.h.in"
+  "${PROBREACH_SOURCE_DIR}/config/env_config.h")
 
 # adding CMakeLists.txt files that specify executables
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/formal/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/src/mc/CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/src/config/CMakeLists.txt)
 
 # enabling testing
 find_package(GTest)

@@ -1,0 +1,5 @@
+// ProbReach version
+#define PROBREACH_VERSION_MAJOR "2"
+#define PROBREACH_VERSION_MINOR "0"
+
+#define PROBREACH_VERSION "2.0"
