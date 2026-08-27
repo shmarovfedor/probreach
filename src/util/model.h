@@ -138,8 +138,6 @@ void push_time_bounds(node *, node *);
 
 void output_traj(std::vector<std::map<std::string, double>>, std::ostream &);
 
-std::map<std::string, double> init_to_map(pdrh::state);
-
 mode *get_mode(int);
 std::vector<mode *> get_init_modes();
 std::vector<mode *> get_goal_modes();

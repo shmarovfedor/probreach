@@ -3,7 +3,6 @@
 //
 
 #include "model.h"
-#include "node_utils.h"
 #include <string.h>
 #include <iomanip>
 #include <cmath>
@@ -522,44 +521,6 @@ string pdrh::model_to_string()
   return out.str();
 }
 
-/**
- * Translates an initial state specified as (and (x1 = v1) ... (xn = vn)) into map<string, double>
- *
- * @param init
- * @return
- */
-std::map<std::string, double> pdrh::init_to_map(pdrh::state init)
-{
-  node *prop = init.prop;
-  // checking if init is a conjunction of assignments
-  if (prop->value != "and")
-  {
-    cerr << "could not translate init into a map: the outer operation is not "
-            "an \"and\""
-         << endl;
-    exit(EXIT_FAILURE);
-  }
-  // setting up some auxiliary variables
-  map<string, double> res;
-  res[".mode"] = init.id;
-  res[".time"] = 0;
-  res[".step"] = 0;
-  res[".global_time"] = 0;
-  // parsing the assignments in the init
-  for (node *n : prop->operands)
-  {
-    if (n->value != ("="))
-    {
-      cerr << "could not translate init into a map: on of the operations is "
-              "not an \"=\""
-           << endl;
-      exit(EXIT_FAILURE);
-    }
-    res[n->operands.front()->to_infix()] =
-      node_to_double(n->operands.back());
-  }
-  return res;
-}
 
 void pdrh::distribution::push_uniform(string var, node *a, node *b)
 {
@@ -586,13 +547,8 @@ void pdrh::distribution::push_exp(string var, node *lambda)
 
 node *pdrh::distribution::uniform_to_node(node *a, node *b)
 {
-  capd::interval support(a->to_infix(), b->to_infix());
-  capd::interval a_interval = node_to_interval(a);
-  capd::interval b_interval = node_to_interval(b);
-  // relaxing the bounds to account for rounding errors (temporary solution)
-  double value_double =
-    1 / ((b_interval.rightBound() + 1e-14) - (a_interval.leftBound() - 1e-14));
-  return new node(std::to_string(value_double));
+  node *minus_node = new node("+", {b, a});
+  return new node("/", {new node("1"), minus_node});
 }
 
 node *

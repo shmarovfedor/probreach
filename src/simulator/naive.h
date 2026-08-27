@@ -11,6 +11,8 @@
 
 namespace naive
 {
+std::map<std::string, double> init_to_map(pdrh::state);
+
 std::map<std::string, double> solve_ivp(
   std::map<std::string, node *>,
   std::map<std::string, double>,

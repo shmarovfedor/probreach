@@ -10,6 +10,44 @@ using namespace std;
 using namespace pdrh;
 
 /**
+ * Translates an initial state specified as (and (x1 = v1) ... (xn = vn)) into map<string, double>
+ *
+ * @param init
+ * @return
+ */
+std::map<std::string, double> naive::init_to_map(pdrh::state init)
+{
+  node *prop = init.prop;
+  // checking if init is a conjunction of assignments
+  if (prop->value != "and")
+  {
+    cerr << "could not translate init into a map: the outer operation is not "
+            "an \"and\""
+         << endl;
+    exit(EXIT_FAILURE);
+  }
+  // setting up some auxiliary variables
+  map<string, double> res;
+  res[".mode"] = init.id;
+  res[".time"] = 0;
+  res[".step"] = 0;
+  res[".global_time"] = 0;
+  // parsing the assignments in the init
+  for (node *n : prop->operands)
+  {
+    if (n->value != ("="))
+    {
+      cerr << "could not translate init into a map: on of the operations is "
+              "not an \"=\""
+           << endl;
+      exit(EXIT_FAILURE);
+    }
+    res[n->operands.front()->to_infix()] = node_to_double(n->operands.back());
+  }
+  return res;
+}
+
+/**
  * Solve an IVP using the first term of Taylor series. This method performs a deterministic evaluation.
  *
  * @param odes - ODE system.
@@ -240,8 +278,7 @@ void naive::simulate(
               // always output the outcome
               cout << "sat" << endl;
               // report more info
-              cout << "goal \"" << st.prop
-                   << "\" has been reached at:" << endl;
+              cout << "goal \"" << st.prop << "\" has been reached at:" << endl;
               for (auto it = sol.begin(); it != sol.end(); it++)
                 cout << it->first << " : " << it->second << endl;
               // adding the computed trajectory to the end of the current path
