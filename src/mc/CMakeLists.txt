@@ -1,5 +1,6 @@
-file(GLOB PROBREACH_FORMAL_SRC
-        ${PROBREACH_SOURCE_DIR}/util/formal.cpp
+file(GLOB PROBREACH_MC_SRC
+        ${PROBREACH_SOURCE_DIR}/mc/mc.cpp
+        ${PROBREACH_SOURCE_DIR}/util/rnd.cpp
         ${PROBREACH_SOURCE_DIR}/util/model.cpp
         ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
@@ -11,21 +12,20 @@ file(GLOB PROBREACH_FORMAL_SRC
         ${PROBREACH_SOURCE_DIR}/solver/dreal_wrapper.cpp
         ${PROBREACH_SOURCE_DIR}/generators/smt2_generator.cpp)
 
-set(PROBREACH_FORMAL_SRC ${PROBREACH_FORMAL_SRC}
+set(PROBREACH_MC_SRC ${PROBREACH_MC_SRC}
         ${PROBREACH_BINARY_DIR}/parser/pdrhparser.c
         ${PROBREACH_BINARY_DIR}/parser/pdrhlexer.c
         ${PROBREACH_BINARY_DIR}/git_sha1.cpp)
 
-add_library(probreach_formal ${PROBREACH_FORMAL_SRC})
-add_dependencies(probreach_formal capd)
+add_library(probreach_mc ${PROBREACH_MC_SRC})
+add_dependencies(probreach_mc capd)
 
 if(APPLE)
-    target_link_libraries(probreach_formal -ll)
+    target_link_libraries(probreach_mc -ll)
 else(APPLE)
-    target_link_libraries(probreach_formal -lfl)
+    target_link_libraries(probreach_mc -lfl)
 endif(APPLE)
+target_link_libraries(probreach_mc ${GSL_LIBRARIES} ${CAPD_LIBRARIES})
 
-target_link_libraries(probreach_formal ${CAPD_LIBRARIES})
-
-add_executable(formal_verifier ${PROBREACH_SOURCE_DIR}/formal_verifier/main.cpp)
-target_link_libraries(formal_verifier probreach_formal)
+add_executable(mc_verifier ${PROBREACH_SOURCE_DIR}/mc/main.cpp)
+target_link_libraries(mc_verifier probreach_mc)

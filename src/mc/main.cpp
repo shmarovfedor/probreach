@@ -10,8 +10,6 @@
 #include <solver/dreal_wrapper.h>
 #include "node.h"
 #include "model.h"
-#include "git_sha1.h"
-#include "version.h"
 #include "box.h"
 #include "node_utils.h"
 #include "mc.h"

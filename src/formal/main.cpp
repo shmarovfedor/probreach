@@ -7,13 +7,8 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
-#include <solver/dreal_wrapper.h>
-#include "node.h"
 #include "model.h"
-#include "git_sha1.h"
-#include "version.h"
 #include "box.h"
-#include "node_utils.h"
 #include "formal.h"
 #include "pdrh_config.h"
 

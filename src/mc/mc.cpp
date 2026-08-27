@@ -15,8 +15,6 @@
 #include <omp.h>
 #include "rnd.h"
 #include "node_utils.h"
-#include "naive.h"
-#include "solver/dreal_wrapper.h"
 
 using namespace std;
 

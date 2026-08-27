@@ -3,6 +3,8 @@ enable_testing()
 include_directories("${PROBREACH_SOURCE_DIR}/")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/parser")
+include_directories("${PROBREACH_SOURCE_DIR}/formal")
+include_directories("${PROBREACH_SOURCE_DIR}/mc")
 
 # setting the output directory for ProbReach
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROBREACH_BINARY_DIR}/test/functional/tests")
