@@ -26,8 +26,6 @@
 <COMMENT>\n    			{ ; }
 <COMMENT>.    			;
 
-"#define"           { return DEFINE; }
-
 "+"                 { return PLUS; }
 "-"                 { return MINUS; }
 "*"                 { return TIMES; }

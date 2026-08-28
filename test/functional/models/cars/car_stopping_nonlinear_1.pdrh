@@ -1,13 +1,13 @@
 /*
  * the model is accurate for 0-100 km/h range
  */
-#define v_max 55.56 // [200 km/h] maximum speed of a car (m/s)
-#define v_100 27.78 // m/s
-#define drag 3.028e-4 // some average value (1/m)
-#define a_d 5.25
-#define mu 1
-#define alpha 0.05776 
-#define t_react 1.2
+[55.56] v_max;  // [200 km/h] maximum speed of a car (m/s)
+[27.78] v_100;  // m/s
+[3.028e-4] drag; // some average value (1/m)
+[5.25] a_d; 
+[1.0] mu; 
+[0.05776] alpha; 
+[1.2] t_react;
 
 [0,1000] s; // distance m
 [0,27.78] v; // velocity m/s (16.67 m/s = 60 km/h)

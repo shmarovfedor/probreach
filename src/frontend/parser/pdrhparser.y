@@ -35,7 +35,6 @@ void yyerror(const char *s);
 %token PLUS MINUS TIMES DIVIDE POWER
 %token EQ GT LT GE LE NE
 %token TRUE FALSE
-%token DEFINE
 
 %token <sval> identifier
 %token <sval> number
@@ -58,7 +57,7 @@ model::mode::jump *cur_jump = new model::mode::jump;
 std::vector<model::state> cur_states;
 std::vector<model::mode*> cur_path;
 std::map<node*, node*> cur_dd;
-std::map<std::string, node*> define_map;
+std::map<std::string, node*> const_map;
 %}
 
 %%
@@ -76,21 +75,21 @@ declaration:
   | time_declaration { ; }
 
 const_declaration:
-  DEFINE identifier number 
+  '[' number ']' identifier ';' 
 {
   // adding the value into the map
-  define_map[$2] = new node($3);
+  const_map[$4] = new node($2);
   // scanning the define map for the constants defined before
-  for(auto it = define_map.begin(); it != define_map.end(); it++)
+  for(auto it = const_map.begin(); it != const_map.end(); it++)
   {
     // if the value is a terminal node
     if(it->second->operands.size() == 0)
     {
       // if the value is an identifier
-      if(it->second->value == $2)
+      if(it->second->value == $4)
       {
-        define_map[it->first] = new node($3);
-        define_map.erase($2);
+        const_map[it->first] = new node($2);
+        const_map.erase($4);
       }
     }
   }
@@ -145,7 +144,8 @@ dist_declaration:
   if(!model::var_exists($7))
   {
     model::push_var($7, new node("-infty"), new node("infty"));
-    model::push_rv($7, model::distribution::normal_to_node($7, new node($3), new node($5)),
+    model::push_rv($7, 
+      model::distribution::normal_to_node($7, new node($3), new node($5)),
       new node("-infty"), new node("infty"), new node($3));
     model::distribution::push_normal($7, new node($3), new node($5));
   }
@@ -161,7 +161,8 @@ dist_declaration:
   if(!model::var_exists($7))
   {
     model::push_var($7, new node($3), new node($5));
-    model::push_rv($7, model::distribution::uniform_to_node(new node($3), new node($5)), 
+    model::push_rv($7, 
+      model::distribution::uniform_to_node(new node($3), new node($5)), 
       new node($3), new node($5), new node($3));
     model::distribution::push_uniform($7, new node($3), new node($5));
   }
@@ -177,7 +178,8 @@ dist_declaration:
   if(!model::var_exists($5))
   {
     model::push_var($5, new node("0"), new node("infty"));
-    model::push_rv($5, model::distribution::exp_to_node($5, new node($3)),
+    model::push_rv($5,
+      model::distribution::exp_to_node($5, new node($3)),
       new node("0"), new node("infty"), new node("0"));
     model::distribution::push_exp($5, new node($3));
   }
@@ -350,7 +352,7 @@ ode:
 expr:
   identifier
 {
-  if(define_map.find($1) != define_map.end()) $$ = define_map[$1];
+  if(const_map.find($1) != const_map.end()) $$ = const_map[$1];
   else $$ = new node($1);
 }
   | number                    { $$ = new node($1); }
