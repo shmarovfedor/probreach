@@ -223,38 +223,6 @@ vector<box> box_factory::bisect(box b, map<std::string, capd::interval> e)
   return box_factory::cartesian_product(tmp_m);
 }
 
-/**
- * Dividing the box in all n dimensions producing 2^n boxes of the same size
- * according to the precision vector e
- */
-vector<box> box_factory::bisect(box b, map<string, node *> e)
-{
-  std::map<std::string, std::vector<capd::interval>> tmp_m;
-  std::map<std::string, capd::interval> m = b.get_map();
-  // cout << "BISECTING ";
-  for (auto it = m.cbegin(); it != m.cend(); it++)
-  {
-    // cout << it->first << ":" << it->second;
-    if (
-      capd::intervals::width(it->second) >
-      pdrh::node_to_interval(e[it->first]).leftBound())
-    {
-      // cout << " yes" << endl;
-      std::vector<capd::interval> tmp_v;
-      tmp_v.push_back(capd::interval(
-        (it->second).leftBound(), (it->second).mid().rightBound()));
-      tmp_v.push_back(capd::interval(
-        (it->second).mid().leftBound(), (it->second).rightBound()));
-      tmp_m.insert(make_pair(it->first, tmp_v));
-    }
-    else
-    {
-      // cout << " no" << endl;
-    }
-  }
-  return box_factory::cartesian_product(tmp_m);
-}
-
 std::vector<box> box_factory::merge(std::vector<box> boxes)
 {
   unsigned long i = 0;

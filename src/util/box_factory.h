@@ -5,7 +5,6 @@
 #include <capd/intervals/lib.h>
 
 #include "box.h"
-#include "node.h"
 
 #ifndef PROBREACH_BOX_FACTORY_H
 #define PROBREACH_BOX_FACTORY_H
@@ -15,14 +14,13 @@ class box_factory
 public:
   static std::vector<box>
     cartesian_product(std::map<std::string, std::vector<capd::interval>>);
-  static std::vector<box> bisect(box);
   static std::vector<box> partition(box, double);
   static std::vector<box> partition(box, std::map<std::string, capd::interval>);
   static std::vector<box> partition(box, std::map<std::string, std::string>);
   static std::vector<box> partition(box, int);
+  static std::vector<box> bisect(box);
   static std::vector<box> bisect(box, std::map<std::string, capd::interval>);
   static std::vector<box> bisect(box, std::map<std::string, std::string>);
-  static std::vector<box> bisect(box, std::map<std::string, node *>);
   static std::vector<box> bisect(box, std::vector<std::string>, double);
   static std::vector<box> bisect(box, std::vector<std::string>);
   static std::vector<box> merge(std::vector<box>);
