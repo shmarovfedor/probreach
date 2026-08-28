@@ -426,10 +426,10 @@ smt2_generator::reach_c_to_smt2(vector<pdrh::mode *> path, vector<box> boxes)
       else
       {
         s << timed_node_neg->to_prefix(path.size() - 1, "t");
-        std::cout << "NODE ORIGINAL (GOAL): "
-                  << st.prop->to_prefix(path.size() - 1, "t") << "\n";
-        std::cout << "NODE NEG (GOAL): "
-                  << timed_node_neg->to_prefix(path.size() - 1, "t") << "\n";
+        //std::cout << "NODE ORIGINAL (GOAL): "
+        //          << st.prop->to_prefix(path.size() - 1, "t") << "\n";
+        //std::cout << "NODE NEG (GOAL): "
+        //          << timed_node_neg->to_prefix(path.size() - 1, "t") << "\n";
         delete timed_node_neg;
       }
     }
@@ -657,10 +657,10 @@ string smt2_generator::reach_c_to_smt2(
         else
         {
           s << timed_node_neg->to_prefix(depth, "t");
-          std::cout << "NODE ORIGINAL (LAST JUMP): "
-                    << j.guard->to_prefix(depth, "t") << "\n";
-          std::cout << "NODE NEG (LAST JUMP): "
-                    << timed_node_neg->to_prefix(depth, "t") << "\n";
+          //std::cout << "NODE ORIGINAL (LAST JUMP): "
+          //          << j.guard->to_prefix(depth, "t") << "\n";
+          //std::cout << "NODE NEG (LAST JUMP): "
+          //          << timed_node_neg->to_prefix(depth, "t") << "\n";
           delete timed_node_neg;
         }
       }

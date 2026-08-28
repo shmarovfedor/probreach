@@ -474,13 +474,6 @@ string pdrh::model_to_string()
         out << "|   |   |   " << it->first
             << " := " << it->second->to_prefix() << endl;
       }
-      out << "|   |   RESETS NONDET:" << endl;
-      for (auto it = j.reset_nondet.cbegin(); it != j.reset_nondet.cend(); it++)
-      {
-        out << "|   |   |   " << it->first << " := ["
-            << it->second.first->to_prefix() << ", "
-            << it->second.second->to_prefix() << "]" << endl;
-      }
       out << "|   |   RESETS RV:" << endl;
       for (auto it = j.reset_rv.cbegin(); it != j.reset_rv.cend(); it++)
       {

@@ -10,7 +10,7 @@
 #define t_react 1.2
 
 [0,1000] s; // distance m
-[0,v_100] v; // velocity m/s (16.67 m/s = 60 km/h)
+[0,27.78] v; // velocity m/s (16.67 m/s = 60 km/h)
 [0,30] tau; // time in seconds
 [0,30] time;
 dist_normal(4,0.1) beta;

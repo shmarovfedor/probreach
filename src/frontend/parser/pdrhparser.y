@@ -78,10 +78,10 @@ declaration:
   | time_declaration { ; }
 
 const_declaration:
-    DEFINE identifier expr      
+    DEFINE identifier number 
 {
   // adding the value into the map
-  define_map[$2] = $3;
+  define_map[$2] = new node($3);
   // scanning the define map for the constants defined before
   for(auto it = define_map.begin(); it != define_map.end(); it++)
   {
@@ -91,7 +91,7 @@ const_declaration:
       // if the value is an identifier
       if(it->second->value == $2)
       {
-        define_map[it->first] = $3;
+        define_map[it->first] = new node($3);
         define_map.erase($2);
       }
     }
@@ -99,11 +99,11 @@ const_declaration:
 }
 
 var_declaration:
-	'[' expr ',' expr ']' identifier ';'
+	'[' number ',' number ']' identifier ';'
 {
   if(!pdrh::var_exists($6))
   {
-    pdrh::push_var($6, $2, $4);
+    pdrh::push_var($6, new node($2), new node($4));
   }
   else
   {
@@ -114,18 +114,18 @@ var_declaration:
 }
 
 time_declaration:
-  '[' expr ',' expr ']' TIME ';'
+  '[' number ',' number ']' TIME ';'
 { 
-  pdrh::push_time_bounds($2, $4); 
+  pdrh::push_time_bounds(new node($2), new node($4)); 
 }
 
 dist_declaration:
-  G_DIST '(' expr ',' expr ')' identifier ';'
+  G_DIST '(' number ',' number ')' identifier ';'
 {
   if(!pdrh::var_exists($7))
   {
     pdrh::push_var($7, new node("-infty"), new node("infty"));
-    pdrh::distribution::push_gamma($7, $3, $5);
+    pdrh::distribution::push_gamma($7, new node($3), new node($5));
   }
   else
   {
@@ -134,14 +134,14 @@ dist_declaration:
     yyerror(s.str().c_str());
   }
 }
-  | N_DIST '(' expr ',' expr ')' identifier ';'
+  | N_DIST '(' number ',' number ')' identifier ';'
 {
   if(!pdrh::var_exists($7))
   {
     pdrh::push_var($7, new node("-infty"), new node("infty"));
-    pdrh::push_rv($7, pdrh::distribution::normal_to_node($7, $3, $5),
-      new node("-infty"), new node("infty"), $3);
-    pdrh::distribution::push_normal($7, $3, $5);
+    pdrh::push_rv($7, pdrh::distribution::normal_to_node($7, new node($3), new node($5)),
+      new node("-infty"), new node("infty"), new node($3));
+    pdrh::distribution::push_normal($7, new node($3), new node($5));
   }
   else
   {
@@ -150,13 +150,14 @@ dist_declaration:
     yyerror(s.str().c_str());
   }
 }
-  | U_DIST '(' expr ',' expr ')' identifier ';'
+  | U_DIST '(' number ',' number ')' identifier ';'
 {
   if(!pdrh::var_exists($7))
   {
-    pdrh::push_var($7, $3, $5);
-    pdrh::push_rv($7, pdrh::distribution::uniform_to_node($3, $5), $3, $5, $3);
-    pdrh::distribution::push_uniform($7, $3, $5);
+    pdrh::push_var($7, new node($3), new node($5));
+    pdrh::push_rv($7, pdrh::distribution::uniform_to_node(new node($3), new node($5)), 
+      new node($3), new node($5), new node($3));
+    pdrh::distribution::push_uniform($7, new node($3), new node($5));
   }
   else
   {
@@ -165,14 +166,14 @@ dist_declaration:
     yyerror(s.str().c_str());
   }
 }
-  | E_DIST '(' expr ')' identifier ';'
+  | E_DIST '(' number ')' identifier ';'
 {
   if(!pdrh::var_exists($5))
   {
     pdrh::push_var($5, new node("0"), new node("infty"));
-    pdrh::push_rv($5, pdrh::distribution::exp_to_node($5, $3),
+    pdrh::push_rv($5, pdrh::distribution::exp_to_node($5, new node($3)),
       new node("0"), new node("infty"), new node("0"));
-    pdrh::distribution::push_exp($5, $3);
+    pdrh::distribution::push_exp($5, new node($3));
   }
   else
   {
@@ -197,34 +198,6 @@ dist_declaration:
   }
 }
 
-dist:
-  G_DIST '(' expr ',' expr ')'
-{ 
-  $$ = new node("dist_gamma", {$3, $5}); 
-}
-  | N_DIST '(' expr ',' expr ')'
-{
-  $$ = new node("dist_normal", {$3, $5});
-}
-  | U_DIST '(' expr ',' expr ')'
-{
-  $$ = new node("dist_uniform", {$3, $5});
-}
-  | E_DIST '(' expr ')'
-{
-  $$ = new node("dist_exp", {$3});
-}
-  | DD_DIST '(' dd_pairs ')'
-{
-  vector<node*> tmp;
-  for(size_t i = 0; i < $3->size(); i++)
-  {
-    tmp.push_back($3->at(i));
-  }
-  delete $3;
-  $$ = new node("dist_discrete", tmp);
-}
-
 dd_pairs:
     dd_pairs ',' dd_pair        
 {
@@ -239,10 +212,10 @@ dd_pairs:
 }
 
 dd_pair:
-    expr ':' expr
+    number ':' number
 {
-  $$ = new node(":", {$1, $3});
-  cur_dd.insert(std::make_pair($1, $3));
+  $$ = new node(":", {new node($1), new node($3)});
+  cur_dd.insert(std::make_pair(new node($1), new node($3)));
 }
 
 modes:
@@ -376,7 +349,6 @@ expr:
   else $$ = new node($1);
 }
   | number                    { $$ = new node($1); }
-  | dist                      { $$ = $1; }
   | MINUS expr %prec UMINUS   { $$ = new node("-", {$2}); }
   | PLUS expr %prec UPLUS     { $$ = $2; }
   | expr MINUS expr           { $$ = new node("-", {$1, $3}); }
@@ -402,10 +374,6 @@ reset_props:
 
 reset_prop:
   reset_var EQ expr { push_reset(*cur_mode, *cur_jump, $1, $3); }
-  | reset_var EQ '[' expr ',' expr ']'
-{
-  cur_jump->reset_nondet.insert(make_pair($1, make_pair($4, $6)));
-}
   | TRUE                                  { ; }
   | FALSE                                 { ; }
   | '(' reset_prop ')'                    { ; }
