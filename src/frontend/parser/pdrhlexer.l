@@ -47,12 +47,6 @@
 true                    { return TRUE; }
 false                   { return FALSE; }
 
-model                   { return MODEL; }
-ha                      { yylval.sval = strdup(yytext); return m_type; }
-pha                     { yylval.sval = strdup(yytext); return m_type; }
-nha                     { yylval.sval = strdup(yytext); return m_type; }
-npha                    { yylval.sval = strdup(yytext); return m_type; }
-
 time                    { return TIME; }
 
 dist_uniform            { return U_DIST; }

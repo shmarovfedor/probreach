@@ -23,7 +23,7 @@ void yyerror(const char *s);
 }
 
 // terminals
-%token MODEL TIME
+%token TIME
 %token N_DIST U_DIST E_DIST G_DIST DD_DIST
 %token INFTY
 
@@ -37,7 +37,6 @@ void yyerror(const char *s);
 %token TRUE FALSE
 %token DEFINE
 
-%token <sval> m_type
 %token <sval> identifier
 %token <sval> number
 
@@ -66,18 +65,7 @@ using namespace pdrh;
 
 %%
 pdrh:
-	| declarations modes init goal      { ; }
-	| model declarations modes init goal { ; }
-
-model:
-    MODEL ':' m_type ';' 
-{
-  std::string type_str($3);
-  if(type_str == "ha")           pdrh::model_type = pdrh::HA;
-  else if(type_str == "pha")     pdrh::model_type = pdrh::PHA;
-  else if(type_str == "nha")     pdrh::model_type = pdrh::NHA;
-  else if(type_str == "npha")    pdrh::model_type = pdrh::NPHA;
-}
+	| declarations modes init goal { ; }
 
 declarations:
 	declarations declaration { ; }
