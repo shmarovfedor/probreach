@@ -7,7 +7,6 @@
 #include "node_utils.h"
 
 using namespace std;
-using namespace pdrh;
 
 /**
  * Translates an initial state specified as (and (x1 = v1) ... (xn = vn)) into map<string, double>
@@ -42,7 +41,8 @@ std::map<std::string, double> naive::init_to_map(model::state init)
            << endl;
       exit(EXIT_FAILURE);
     }
-    res[n->operands.front()->to_infix()] = node_to_double(n->operands.back());
+    res[n->operands.front()->to_infix()] =
+      node_utils::node_to_double(n->operands.back());
   }
   return res;
 }
@@ -76,7 +76,7 @@ std::map<std::string, double> naive::solve_ivp(
     // iterating through all ODEs and
     // obtaining a new initial value for the next iteration
     for (auto it = odes.begin(); it != odes.end(); it++)
-      init[it->first] += node_to_double(it->second, init) * dt;
+      init[it->first] += node_utils::node_to_double(it->second, init) * dt;
     t += dt;
   }
   return init;
@@ -141,30 +141,6 @@ std::vector<std::map<std::string, double>> naive::trajectory(
  * @param init - initial state
  * @param goal - goal to check
  * @param depth - exact depth of simulation
- * @param num_points - number of points used for discretisation in IVP solving
- * @param filename - path to the output file
- * @return
- */
-void naive::simulate(
-  std::vector<model::mode> modes,
-  std::vector<model::state> init,
-  std::vector<model::state> goal,
-  bool verify,
-  size_t min_depth,
-  size_t max_depth,
-  size_t max_paths,
-  size_t num_points,
-  std::ostream &os)
-{
-  //    simulate(modes, init, goal, verify, min_depth, max_depth, max_paths, node_to_double(cur_mode.time.second) / num_points, os);
-}
-
-/**
- *
- * @param modes - modes of the hybrid system
- * @param init - initial state
- * @param goal - goal to check
- * @param depth - exact depth of simulation
  * @param ode_step - time step in IVP solving
  * @param filename - path to the output file
  * @return
@@ -216,7 +192,10 @@ void naive::simulate(
     //        // getting the trajectory up to the time bound
     //        double dt = node_to_double(cur_mode.time.second) / num_points;
     vector<map<string, double>> traj = trajectory(
-      cur_mode.odes, init_map, node_to_double(cur_mode.time.second), ode_step);
+      cur_mode.odes,
+      init_map,
+      node_utils::node_to_double(cur_mode.time.second),
+      ode_step);
     // checking if the maximum depth for the path has been reached
     // if the maximum depth is reached; in simulation mode
     // the lower bound is ignored
@@ -249,7 +228,7 @@ void naive::simulate(
         {
           // if an invariant does not hold then we break,
           // report the witness and output the trajectory
-          if (!node_to_boolean(invt, sol))
+          if (!node_utils::node_to_boolean(invt, sol))
           {
             // always output the outcome
             cout << "unsat" << endl;
@@ -273,7 +252,9 @@ void naive::simulate(
           {
             // if a goal is satisfied we break,
             // report the witness and output the trajectory
-            if (st.id == (int)sol[".mode"] && node_to_boolean(st.prop, sol))
+            if (
+              st.id == (int)sol[".mode"] &&
+              node_utils::node_to_boolean(st.prop, sol))
             {
               // always output the outcome
               cout << "sat" << endl;
@@ -294,7 +275,7 @@ void naive::simulate(
       for (model::mode::jump j : cur_mode.jumps)
       {
         // jump condition is satisfied
-        if (node_to_boolean(j.guard, sol))
+        if (node_utils::node_to_boolean(j.guard, sol))
         {
           // setting the jump flag to true
           jump_enabled = true;
@@ -306,7 +287,8 @@ void naive::simulate(
           for (auto it = init_map.begin(); it != init_map.end(); it++)
             // the variable is not reset; its current value is carried to the next mode
             if (j.reset.find(it->first) != j.reset.end())
-              init_map[it->first] = node_to_double(j.reset[it->first], sol);
+              init_map[it->first] =
+                node_utils::node_to_double(j.reset[it->first], sol);
           // resetting the auxiliary variables
           init_map[".step"]++;
           init_map[".time"] = 0;

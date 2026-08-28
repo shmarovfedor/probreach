@@ -35,17 +35,6 @@ void simulate(
   size_t,
   size_t,
   size_t,
-  size_t,
-  std::ostream &);
-
-void simulate(
-  std::vector<model::mode>,
-  std::vector<model::state>,
-  std::vector<model::state>,
-  bool,
-  size_t,
-  size_t,
-  size_t,
   double,
   std::ostream &);
 } // namespace naive

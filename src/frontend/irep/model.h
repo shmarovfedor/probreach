@@ -131,6 +131,9 @@ mode *get_mode(int);
 std::vector<mode *> get_init_modes();
 std::vector<mode *> get_goal_modes();
 std::vector<mode *> get_successors(mode *);
+
+// this actually generates paths of the given length (like symbolic execution);
+// this should not be part of the irep
 std::vector<std::vector<mode *>> get_paths(mode *, mode *, int);
 std::vector<std::vector<mode *>> get_all_paths(int);
 std::vector<std::vector<mode *>> get_all_paths(int, int);

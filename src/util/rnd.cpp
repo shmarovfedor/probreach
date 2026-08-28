@@ -23,11 +23,11 @@ box rnd::get_random_sample(gsl_rng *r)
     {
       edges.insert(make_pair(
         it->first,
-        pdrh::node_to_interval(model::distribution::uniform[it->first].first) +
+        node_utils::node_to_interval(model::distribution::uniform[it->first].first) +
           gsl_rng_uniform(r) *
-            (pdrh::node_to_interval(
+            (node_utils::node_to_interval(
                model::distribution::uniform[it->first].second) -
-             pdrh::node_to_interval(
+             node_utils::node_to_interval(
                model::distribution::uniform[it->first].first))));
     }
     else if (
@@ -36,21 +36,23 @@ box rnd::get_random_sample(gsl_rng *r)
     {
       edges.insert(make_pair(
         it->first,
-        pdrh::node_to_interval(model::distribution::normal[it->first].first) +
+        node_utils::node_to_interval(model::distribution::normal[it->first].first) +
           gsl_ran_gaussian_ziggurat(
             r,
-            pdrh::node_to_interval(model::distribution::normal[it->first].second)
+            node_utils::node_to_interval(
+              model::distribution::normal[it->first].second)
               .mid()
               .leftBound())));
     }
     else if (
-      model::distribution::exp.find(it->first) != model::distribution::exp.cend())
+      model::distribution::exp.find(it->first) !=
+      model::distribution::exp.cend())
     {
       edges.insert(make_pair(
         it->first,
         gsl_ran_exponential(
           r,
-          1 / pdrh::node_to_interval(model::distribution::exp[it->first])
+          1 / node_utils::node_to_interval(model::distribution::exp[it->first])
                 .mid()
                 .leftBound())));
     }
@@ -62,10 +64,10 @@ box rnd::get_random_sample(gsl_rng *r)
         it->first,
         gsl_ran_gamma(
           r,
-          pdrh::node_to_interval(model::distribution::gamma[it->first].first)
+          node_utils::node_to_interval(model::distribution::gamma[it->first].first)
             .mid()
             .leftBound(),
-          pdrh::node_to_interval(model::distribution::gamma[it->first].second)
+          node_utils::node_to_interval(model::distribution::gamma[it->first].second)
             .mid()
             .leftBound())));
     }
@@ -86,7 +88,7 @@ box rnd::get_random_sample(gsl_rng *r)
     for (auto it2 = mass_map.cbegin(); it2 != mass_map.cend(); it2++)
     {
       p_value[i] = it2->first;
-      p_mass[i] = pdrh::node_to_interval(it2->second).mid().leftBound();
+      p_mass[i] = node_utils::node_to_interval(it2->second).mid().leftBound();
       i++;
     }
     // getting a pointer to the look up table
@@ -94,7 +96,7 @@ box rnd::get_random_sample(gsl_rng *r)
     // getting a value index
     size_t index = gsl_ran_discrete(r, g);
     edges.insert(
-      std::make_pair(it->first, pdrh::node_to_interval(p_value[index])));
+      std::make_pair(it->first, node_utils::node_to_interval(p_value[index])));
     // releasing memory
     delete[] p_value;
     delete[] p_mass;
@@ -130,9 +132,8 @@ box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
     else
     {
       edges.insert(make_pair(
-        it->first, pdrh::node_to_interval(it->second.first).mid().leftBound()));
+        it->first, node_utils::node_to_interval(it->second.first).mid().leftBound()));
     }
   }
   return box(edges);
 }
-

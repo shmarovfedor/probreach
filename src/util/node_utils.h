@@ -13,7 +13,7 @@
 #include "box.h"
 #include "node.h"
 
-namespace pdrh
+namespace node_utils
 {
 capd::interval node_to_interval(node *);
 capd::interval node_to_interval(node *, std::vector<box>);
