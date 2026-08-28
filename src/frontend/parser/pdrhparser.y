@@ -16,9 +16,10 @@ void yyerror(const char *s);
 
 %union
 {
-	char*                 sval;
-  node*                 nval;
-  std::vector<node*>*   nval_list;
+	char*                     sval;
+  node*                     node_val;
+  std::vector<node*>*       node_val_list;
+  std::pair<node*, node*>*  node_val_pair;
 }
 
 // terminals
@@ -46,8 +47,9 @@ void yyerror(const char *s);
 %right POWER
 
 %type<sval> reset_var
-%type<nval_list> props dd_pairs
-%type<nval> prop expr dist dd_pair
+%type<node_val_list> props dd_pairs
+%type<node_val> prop expr dist dd_pair
+%type<node_val_pair> interval
 
 // declaring some variables
 %{
@@ -74,7 +76,7 @@ declaration:
   | time_declaration { ; }
 
 const_declaration:
-    DEFINE identifier number 
+  DEFINE identifier number 
 {
   // adding the value into the map
   define_map[$2] = new node($3);
@@ -94,25 +96,33 @@ const_declaration:
   }
 }
 
-var_declaration:
-	'[' number ',' number ']' identifier ';'
+interval:
+  '[' number ',' number ']'
 {
-  if(!model::var_exists($6))
+  $$ = new std::pair<node*, node*>();
+  $$->first = new node($2);
+  $$->second = new node($4);
+}
+
+var_declaration:
+	interval identifier ';'
+{
+  if(!model::var_exists($2))
   {
-    model::push_var($6, new node($2), new node($4));
+    model::push_var($2, $1->first, $1->second);
   }
   else
   {
     std::stringstream s;
-    s << "multiple declaration of variable \"" << $6 << "\"";
+    s << "multiple declaration of variable \"" << $2 << "\"";
     yyerror(s.str().c_str());
   }
 }
 
 time_declaration:
-  '[' number ',' number ']' TIME ';'
-{ 
-  model::push_time_bounds(new node($2), new node($4)); 
+  interval TIME ';'
+{
+  model::push_time_bounds($1->first, $1->second); 
 }
 
 dist_declaration:
@@ -202,9 +212,8 @@ dd_pairs:
 }
   | dd_pair
 {
-  std::vector<node*>* tmp = new std::vector<node*>();
-  tmp->push_back($1);
-  $$ = tmp;
+  $$ = new std::vector<node*>();
+  $$->push_back($1);
 }
 
 dd_pair:
@@ -255,13 +264,13 @@ mode:
     yyerror(s.str().c_str());
   }
 }
-  | '{' MODE number ';' TIME ':' '[' expr ',' expr ']' ';' flow jumps_section '}'
+  | '{' MODE number ';' TIME ':' interval ';' flow jumps_section '}'
 {
   if(model::get_mode(atoi($3)) == NULL)
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
-    cur_mode->time = std::make_pair($8, $10);
+    cur_mode->time = std::make_pair($7->first, $7->second);
     model::push_mode(*cur_mode);
     delete cur_mode;
     cur_mode = new model::mode;
@@ -273,13 +282,13 @@ mode:
     yyerror(s.str().c_str());
   }
 }
-  | '{' MODE number ';' TIME ':' '[' expr ',' expr ']' ';'  invt flow jumps_section '}'
+  | '{' MODE number ';' TIME ':' interval ';'  invt flow jumps_section '}'
 {
   if(model::get_mode(atoi($3)) == NULL)
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
-    cur_mode->time = std::make_pair($8, $10);
+    cur_mode->time = std::make_pair($7->first, $7->second);
     model::push_mode(*cur_mode);
     delete cur_mode;
     cur_mode = new model::mode;
@@ -339,7 +348,7 @@ ode:
 }
 
 expr:
-    identifier
+  identifier
 {
   if(define_map.find($1) != define_map.end()) $$ = define_map[$1];
   else $$ = new node($1);

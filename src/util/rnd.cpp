@@ -23,7 +23,8 @@ box rnd::get_random_sample(gsl_rng *r)
     {
       edges.insert(make_pair(
         it->first,
-        node_utils::node_to_interval(model::distribution::uniform[it->first].first) +
+        node_utils::node_to_interval(
+          model::distribution::uniform[it->first].first) +
           gsl_rng_uniform(r) *
             (node_utils::node_to_interval(
                model::distribution::uniform[it->first].second) -
@@ -36,7 +37,8 @@ box rnd::get_random_sample(gsl_rng *r)
     {
       edges.insert(make_pair(
         it->first,
-        node_utils::node_to_interval(model::distribution::normal[it->first].first) +
+        node_utils::node_to_interval(
+          model::distribution::normal[it->first].first) +
           gsl_ran_gaussian_ziggurat(
             r,
             node_utils::node_to_interval(
@@ -64,10 +66,12 @@ box rnd::get_random_sample(gsl_rng *r)
         it->first,
         gsl_ran_gamma(
           r,
-          node_utils::node_to_interval(model::distribution::gamma[it->first].first)
+          node_utils::node_to_interval(
+            model::distribution::gamma[it->first].first)
             .mid()
             .leftBound(),
-          node_utils::node_to_interval(model::distribution::gamma[it->first].second)
+          node_utils::node_to_interval(
+            model::distribution::gamma[it->first].second)
             .mid()
             .leftBound())));
     }
@@ -132,7 +136,8 @@ box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
     else
     {
       edges.insert(make_pair(
-        it->first, node_utils::node_to_interval(it->second.first).mid().leftBound()));
+        it->first,
+        node_utils::node_to_interval(it->second.first).mid().leftBound()));
     }
   }
   return box(edges);
