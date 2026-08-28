@@ -16,8 +16,8 @@ using namespace std;
 
 int formal::evaluate_ha(int min_depth, int max_depth)
 {
-  vector<vector<pdrh::mode *>> paths =
-    pdrh::get_all_paths(min_depth, max_depth);
+  vector<vector<model::mode *>> paths =
+    model::get_all_paths(min_depth, max_depth);
   return decision_procedure::evaluate(
     paths, {}, global_config.solver_bin, global_config.solver_opt);
 }
@@ -43,14 +43,14 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   capd::interval probability(0, 1);
   // checking if there are any continuous random variables
   // generating all paths of lengths [min_depth, max_depth]
-  std::vector<std::vector<pdrh::mode *>> paths =
-    pdrh::get_all_paths(min_depth, max_depth);
+  std::vector<std::vector<model::mode *>> paths =
+    model::get_all_paths(min_depth, max_depth);
   //resulting probability
   capd::interval res_prob(0.0);
   // evaluating boxes
   for (box dd : dd_partition)
   {
-    if (pdrh::rv_map.size() > 0)
+    if (model::rv_map.size() > 0)
       probability = capd::interval(
         0,
         2 - measure::p_measure(rv_domain, global_config.precision_prob)
@@ -97,11 +97,11 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
         bool sat_flag = false;
         // evaluating all paths for all dd and rv
         //cout << "Before evaluate loop " << omp_get_thread_num() << endl;
-        for (std::vector<pdrh::mode *> path : paths)
+        for (std::vector<model::mode *> path : paths)
         {
           std::string solver_opt;
           std::stringstream p_stream;
-          for (pdrh::mode *m : path)
+          for (model::mode *m : path)
           {
             p_stream << m->id << " ";
           }
@@ -179,7 +179,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
       rv_partition = rv_stack;
       rv_stack.clear();
       // breaking out of the loop if there are no continuous random variables
-      if (pdrh::rv_map.size() == 0)
+      if (model::rv_map.size() == 0)
       {
         rv_partition.push_back(box());
         break;
@@ -256,8 +256,8 @@ formal::evaluate_npha(int min_depth, int max_depth)
     dd_partition.push_back(box());
   }
   // generating all paths of lengths [min_depth, max_depth]
-  std::vector<std::vector<pdrh::mode *>> paths =
-    pdrh::get_all_paths(min_depth, max_depth);
+  std::vector<std::vector<model::mode *>> paths =
+    model::get_all_paths(min_depth, max_depth);
   // initializing probability map
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =
@@ -570,8 +570,8 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
     dd_partition.push_back(box());
   }
   // generating all paths of lengths [min_depth, max_depth]
-  std::vector<std::vector<pdrh::mode *>> paths =
-    pdrh::get_all_paths(min_depth, max_depth);
+  std::vector<std::vector<model::mode *>> paths =
+    model::get_all_paths(min_depth, max_depth);
   // initializing probability map
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =

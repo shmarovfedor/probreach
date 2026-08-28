@@ -52,15 +52,14 @@ void yyerror(const char *s);
 
 // declaring some variables
 %{
-pdrh::mode *cur_mode = new pdrh::mode;
-pdrh::mode::jump *cur_jump = new pdrh::mode::jump;
-std::vector<pdrh::state> cur_states;
-std::vector<pdrh::mode*> cur_path;
+model::mode *cur_mode = new model::mode;
+model::mode::jump *cur_jump = new model::mode::jump;
+std::vector<model::state> cur_states;
+std::vector<model::mode*> cur_path;
 std::map<node*, node*> cur_dd;
 std::map<std::string, node*> define_map;
 
 using namespace std;
-using namespace pdrh;
 %}
 
 %%
@@ -101,9 +100,9 @@ const_declaration:
 var_declaration:
 	'[' number ',' number ']' identifier ';'
 {
-  if(!pdrh::var_exists($6))
+  if(!model::var_exists($6))
   {
-    pdrh::push_var($6, new node($2), new node($4));
+    model::push_var($6, new node($2), new node($4));
   }
   else
   {
@@ -116,16 +115,16 @@ var_declaration:
 time_declaration:
   '[' number ',' number ']' TIME ';'
 { 
-  pdrh::push_time_bounds(new node($2), new node($4)); 
+  model::push_time_bounds(new node($2), new node($4)); 
 }
 
 dist_declaration:
   G_DIST '(' number ',' number ')' identifier ';'
 {
-  if(!pdrh::var_exists($7))
+  if(!model::var_exists($7))
   {
-    pdrh::push_var($7, new node("-infty"), new node("infty"));
-    pdrh::distribution::push_gamma($7, new node($3), new node($5));
+    model::push_var($7, new node("-infty"), new node("infty"));
+    model::distribution::push_gamma($7, new node($3), new node($5));
   }
   else
   {
@@ -136,12 +135,12 @@ dist_declaration:
 }
   | N_DIST '(' number ',' number ')' identifier ';'
 {
-  if(!pdrh::var_exists($7))
+  if(!model::var_exists($7))
   {
-    pdrh::push_var($7, new node("-infty"), new node("infty"));
-    pdrh::push_rv($7, pdrh::distribution::normal_to_node($7, new node($3), new node($5)),
+    model::push_var($7, new node("-infty"), new node("infty"));
+    model::push_rv($7, model::distribution::normal_to_node($7, new node($3), new node($5)),
       new node("-infty"), new node("infty"), new node($3));
-    pdrh::distribution::push_normal($7, new node($3), new node($5));
+    model::distribution::push_normal($7, new node($3), new node($5));
   }
   else
   {
@@ -152,12 +151,12 @@ dist_declaration:
 }
   | U_DIST '(' number ',' number ')' identifier ';'
 {
-  if(!pdrh::var_exists($7))
+  if(!model::var_exists($7))
   {
-    pdrh::push_var($7, new node($3), new node($5));
-    pdrh::push_rv($7, pdrh::distribution::uniform_to_node(new node($3), new node($5)), 
+    model::push_var($7, new node($3), new node($5));
+    model::push_rv($7, model::distribution::uniform_to_node(new node($3), new node($5)), 
       new node($3), new node($5), new node($3));
-    pdrh::distribution::push_uniform($7, new node($3), new node($5));
+    model::distribution::push_uniform($7, new node($3), new node($5));
   }
   else
   {
@@ -168,12 +167,12 @@ dist_declaration:
 }
   | E_DIST '(' number ')' identifier ';'
 {
-  if(!pdrh::var_exists($5))
+  if(!model::var_exists($5))
   {
-    pdrh::push_var($5, new node("0"), new node("infty"));
-    pdrh::push_rv($5, pdrh::distribution::exp_to_node($5, new node($3)),
+    model::push_var($5, new node("0"), new node("infty"));
+    model::push_rv($5, model::distribution::exp_to_node($5, new node($3)),
       new node("0"), new node("infty"), new node("0"));
-    pdrh::distribution::push_exp($5, new node($3));
+    model::distribution::push_exp($5, new node($3));
   }
   else
   {
@@ -184,10 +183,10 @@ dist_declaration:
 }
   | DD_DIST '(' dd_pairs ')' identifier ';'
 {
-  if(!pdrh::var_exists($5))
+  if(!model::var_exists($5))
   {
-    push_var($5, new node("-infty"), new node("infty"));
-    push_dd($5, cur_dd);
+    model::push_var($5, new node("-infty"), new node("infty"));
+    model::push_dd($5, cur_dd);
     cur_dd.clear();
   }
   else
@@ -225,14 +224,14 @@ modes:
 mode:
 	'{' MODE number ';' invt flow jumps_section '}'
 {
-  if(pdrh::get_mode(atoi($3)) == NULL)
+  if(model::get_mode(atoi($3)) == NULL)
 	{
     cur_dd.clear();
     cur_mode->id = atoi($3);
-    cur_mode->time = pdrh::time;
-    pdrh::push_mode(*cur_mode);
+    cur_mode->time = model::time;
+    model::push_mode(*cur_mode);
     delete cur_mode;
-    cur_mode = new pdrh::mode;
+    cur_mode = new model::mode;
   }
   else
   {
@@ -243,14 +242,14 @@ mode:
 }
   | '{' MODE number ';' flow jumps_section '}'
 {
-  if(pdrh::get_mode(atoi($3)) == NULL)
+  if(model::get_mode(atoi($3)) == NULL)
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
-    cur_mode->time = pdrh::time;
-    pdrh::push_mode(*cur_mode);
+    cur_mode->time = model::time;
+    model::push_mode(*cur_mode);
     delete cur_mode;
-    cur_mode = new pdrh::mode;
+    cur_mode = new model::mode;
   }
   else
   {
@@ -261,14 +260,14 @@ mode:
 }
   | '{' MODE number ';' TIME ':' '[' expr ',' expr ']' ';' flow jumps_section '}'
 {
-  if(pdrh::get_mode(atoi($3)) == NULL)
+  if(model::get_mode(atoi($3)) == NULL)
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
     cur_mode->time = make_pair($8, $10);
-    pdrh::push_mode(*cur_mode);
+    model::push_mode(*cur_mode);
     delete cur_mode;
-    cur_mode = new pdrh::mode;
+    cur_mode = new model::mode;
   }
   else
   {
@@ -279,14 +278,14 @@ mode:
 }
   | '{' MODE number ';' TIME ':' '[' expr ',' expr ']' ';'  invt flow jumps_section '}'
 {
-  if(pdrh::get_mode(atoi($3)) == NULL)
+  if(model::get_mode(atoi($3)) == NULL)
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
     cur_mode->time = make_pair($8, $10);
-    pdrh::push_mode(*cur_mode);
+    model::push_mode(*cur_mode);
     delete cur_mode;
-    cur_mode = new pdrh::mode;
+    cur_mode = new model::mode;
   }
   else
   {
@@ -301,8 +300,8 @@ invt:
 	| INVT ':'
 
 prop_list:
-	prop_list prop ';'  { pdrh::push_invt(*cur_mode, $2); }
-	| prop ';'          { pdrh::push_invt(*cur_mode, $1); }
+	prop_list prop ';'  { model::push_invt(*cur_mode, $2); }
+	| prop ';'          { model::push_invt(*cur_mode, $1); }
 
 props:
 	props prop { $$->push_back($2); }
@@ -382,7 +381,7 @@ reset_prop:
 reset_var:
   identifier PRIME 	
 {
-  if(pdrh::var_exists($1))
+  if(model::var_exists($1))
   {
     $$ = $1;
   }
@@ -400,7 +399,7 @@ reset_state:
   cur_jump->next_id = atoi($2);
 	// updating resets
   // variables
-  for(auto it = pdrh::var_map.begin(); it != pdrh::var_map.end(); it++)
+  for(auto it = model::var_map.begin(); it != model::var_map.end(); it++)
   {
     if(cur_jump->reset.find(it->first) == cur_jump->reset.end())
     {
@@ -408,17 +407,17 @@ reset_state:
     }
   }
   // nondeterministic parameters
-  for(auto it = pdrh::par_map.begin(); it != pdrh::par_map.end(); it++)
+  for(auto it = model::par_map.begin(); it != model::par_map.end(); it++)
   {
     cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
   }
   // discrete random parameters
-  for(auto it = pdrh::dd_map.begin(); it != pdrh::dd_map.end(); it++)
+  for(auto it = model::dd_map.begin(); it != model::dd_map.end(); it++)
   {
     cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
   }
   // continuous random parameters
-  for(auto it = pdrh::rv_map.begin(); it != pdrh::rv_map.end(); it++)
+  for(auto it = model::rv_map.begin(); it != model::rv_map.end(); it++)
   {
     cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
   }
@@ -436,9 +435,9 @@ jump:
 	prop TRANS reset_state
 {
   cur_jump->guard = $1;
-	pdrh::push_jump(*cur_mode, *cur_jump);
+	model::push_jump(*cur_mode, *cur_jump);
 	delete cur_jump;
-	cur_jump = new pdrh::mode::jump;
+	cur_jump = new model::mode::jump;
 }
 
 init:
@@ -446,23 +445,23 @@ init:
 {
   delete cur_mode;
   delete cur_jump;
-	pdrh::push_init(cur_states);
+	model::push_init(cur_states);
 	cur_states.clear();
 }
 
 goal:
 	GOAL ':' states
 {
-  pdrh::push_goal(cur_states);
+  model::push_goal(cur_states);
   cur_states.clear();
 }
 
 state:
 	'@' number prop ';' 
 {
-  if(get_mode(atoi($2)) != NULL)
+  if(model::get_mode(atoi($2)) != NULL)
   {
-    state *s = new state;
+    model::state *s = new model::state;
     s->id = atoi($2);
     s->prop = $3;
     cur_states.push_back(*s);

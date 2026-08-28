@@ -15,57 +15,57 @@ box rnd::get_random_sample(gsl_rng *r)
 {
   map<std::string, capd::interval> edges;
   // continuous distributions
-  for (auto it = pdrh::rv_map.cbegin(); it != pdrh::rv_map.cend(); it++)
+  for (auto it = model::rv_map.cbegin(); it != model::rv_map.cend(); it++)
   {
     if (
-      pdrh::distribution::uniform.find(it->first) !=
-      pdrh::distribution::uniform.cend())
+      model::distribution::uniform.find(it->first) !=
+      model::distribution::uniform.cend())
     {
       edges.insert(make_pair(
         it->first,
-        pdrh::node_to_interval(pdrh::distribution::uniform[it->first].first) +
+        pdrh::node_to_interval(model::distribution::uniform[it->first].first) +
           gsl_rng_uniform(r) *
             (pdrh::node_to_interval(
-               pdrh::distribution::uniform[it->first].second) -
+               model::distribution::uniform[it->first].second) -
              pdrh::node_to_interval(
-               pdrh::distribution::uniform[it->first].first))));
+               model::distribution::uniform[it->first].first))));
     }
     else if (
-      pdrh::distribution::normal.find(it->first) !=
-      pdrh::distribution::normal.cend())
+      model::distribution::normal.find(it->first) !=
+      model::distribution::normal.cend())
     {
       edges.insert(make_pair(
         it->first,
-        pdrh::node_to_interval(pdrh::distribution::normal[it->first].first) +
+        pdrh::node_to_interval(model::distribution::normal[it->first].first) +
           gsl_ran_gaussian_ziggurat(
             r,
-            pdrh::node_to_interval(pdrh::distribution::normal[it->first].second)
+            pdrh::node_to_interval(model::distribution::normal[it->first].second)
               .mid()
               .leftBound())));
     }
     else if (
-      pdrh::distribution::exp.find(it->first) != pdrh::distribution::exp.cend())
+      model::distribution::exp.find(it->first) != model::distribution::exp.cend())
     {
       edges.insert(make_pair(
         it->first,
         gsl_ran_exponential(
           r,
-          1 / pdrh::node_to_interval(pdrh::distribution::exp[it->first])
+          1 / pdrh::node_to_interval(model::distribution::exp[it->first])
                 .mid()
                 .leftBound())));
     }
     else if (
-      pdrh::distribution::gamma.find(it->first) !=
-      pdrh::distribution::gamma.cend())
+      model::distribution::gamma.find(it->first) !=
+      model::distribution::gamma.cend())
     {
       edges.insert(make_pair(
         it->first,
         gsl_ran_gamma(
           r,
-          pdrh::node_to_interval(pdrh::distribution::gamma[it->first].first)
+          pdrh::node_to_interval(model::distribution::gamma[it->first].first)
             .mid()
             .leftBound(),
-          pdrh::node_to_interval(pdrh::distribution::gamma[it->first].second)
+          pdrh::node_to_interval(model::distribution::gamma[it->first].second)
             .mid()
             .leftBound())));
     }
@@ -76,9 +76,9 @@ box rnd::get_random_sample(gsl_rng *r)
     }
   }
   //discrete distributions
-  for (auto it = pdrh::dd_map.cbegin(); it != pdrh::dd_map.cend(); it++)
+  for (auto it = model::dd_map.cbegin(); it != model::dd_map.cend(); it++)
   {
-    map<node *, node *> mass_map = pdrh::dd_map[it->first];
+    map<node *, node *> mass_map = model::dd_map[it->first];
     double *p_mass = new double[mass_map.size()];
     node **p_value = new node *[mass_map.size()];
     size_t i = 0;
@@ -106,7 +106,7 @@ box rnd::get_random_sample(gsl_rng *r)
 box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
 {
   map<std::string, capd::interval> edges;
-  for (auto it = pdrh::par_map.cbegin(); it != pdrh::par_map.cend(); it++)
+  for (auto it = model::par_map.cbegin(); it != model::par_map.cend(); it++)
   {
     if (it->second.first->value != it->second.second->value)
     {

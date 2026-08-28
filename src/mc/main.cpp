@@ -29,7 +29,6 @@ extern "C" int yyparse();
 extern "C" FILE *yyin;
 
 using namespace std;
-using namespace pdrh;
 
 int main(int argc, char *argv[])
 {
@@ -54,10 +53,10 @@ int main(int argc, char *argv[])
   } while (!feof(yyin));
 
   // setting the model type
-  pdrh::set_model_type();
+  model::set_model_type();
 
   // only the following cases are supported in the formal setting
-  if (pdrh::model_type == pdrh::PHA)
+  if (model::model_type == model::PHA)
   {
     capd::interval probability = algorithm::evaluate_pha_bayesian(
       global_config.reach_depth_min,
@@ -68,7 +67,7 @@ int main(int argc, char *argv[])
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (pdrh::model_type == pdrh::NPHA)
+  else if (model::model_type == model::NPHA)
   {
     pair<box, capd::interval> probability =
       algorithm::evaluate_npha_cross_entropy_normal(

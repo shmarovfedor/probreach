@@ -21,7 +21,6 @@ extern "C" int yyparse();
 extern "C" FILE *yyin;
 
 using namespace std;
-using namespace pdrh;
 using namespace naive;
 
 // the minimum depth of each path
@@ -190,7 +189,7 @@ int main(int argc, char *argv[])
   // simulating the model
   //    simulate(modes, init, goal, false, min_depth, max_depth, max_paths, num_points, ofs);
   simulate(
-    modes, init, goal, false, min_depth, max_depth, max_paths, ode_step, ofs);
+    model::modes, model::init, model::goal, false, min_depth, max_depth, max_paths, ode_step, ofs);
 
   // finalising the output file here
   ofs << "]}" << endl;

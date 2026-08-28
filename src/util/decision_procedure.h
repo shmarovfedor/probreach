@@ -20,14 +20,14 @@ enum result
 
 // evaluating all paths
 int evaluate(
-  std::vector<std::vector<pdrh::mode *>>,
+  std::vector<std::vector<model::mode *>>,
   std::vector<box>,
   std::string,
   std::string);
 
 // evaluates a path
 int evaluate(
-  std::vector<pdrh::mode *>,
+  std::vector<model::mode *>,
   std::vector<box>,
   std::string,
   std::string);
@@ -37,7 +37,7 @@ int evaluate(
 // third argument is the path to the solver binary
 // fourt argument is the string of solver options
 int evaluate_delta_sat(
-  std::vector<pdrh::mode *>,
+  std::vector<model::mode *>,
   std::vector<box>,
   std::string,
   std::string);
@@ -47,7 +47,7 @@ int evaluate_delta_sat(
 // third argument is the path to the solver binary
 // fourt argument is the string of solver options
 int evaluate_delta_sat(
-  std::vector<std::vector<pdrh::mode *>>,
+  std::vector<std::vector<model::mode *>>,
   std::vector<box>,
   std::string,
   std::string);
@@ -57,7 +57,7 @@ int evaluate_delta_sat(
 // third argument is the path to the solver binary
 // fourt argument is the string of solver options
 int evaluate_complement(
-  std::vector<pdrh::mode *>,
+  std::vector<model::mode *>,
   std::vector<box>,
   std::string,
   std::string);

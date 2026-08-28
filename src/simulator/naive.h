@@ -11,7 +11,9 @@
 
 namespace naive
 {
-std::map<std::string, double> init_to_map(pdrh::state);
+std::map<std::string, double> init_to_map(model::state);
+
+void output_traj(std::vector<std::map<std::string, double>>, std::ostream &);
 
 std::map<std::string, double> solve_ivp(
   std::map<std::string, node *>,
@@ -26,9 +28,9 @@ std::vector<std::map<std::string, double>> trajectory(
   double);
 
 void simulate(
-  std::vector<pdrh::mode>,
-  std::vector<pdrh::state>,
-  std::vector<pdrh::state>,
+  std::vector<model::mode>,
+  std::vector<model::state>,
+  std::vector<model::state>,
   bool,
   size_t,
   size_t,
@@ -37,9 +39,9 @@ void simulate(
   std::ostream &);
 
 void simulate(
-  std::vector<pdrh::mode>,
-  std::vector<pdrh::state>,
-  std::vector<pdrh::state>,
+  std::vector<model::mode>,
+  std::vector<model::state>,
+  std::vector<model::state>,
   bool,
   size_t,
   size_t,

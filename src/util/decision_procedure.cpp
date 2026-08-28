@@ -21,13 +21,13 @@ using namespace std;
  * @return satisfiability of reachability for the given set of paths and parameter boxes.
  */
 int decision_procedure::evaluate(
-  vector<vector<pdrh::mode *>> paths,
+  vector<vector<model::mode *>> paths,
   vector<box> boxes,
   string solver_bin,
   string solver_opt)
 {
   int undet_counter = 0;
-  for (vector<pdrh::mode *> path : paths)
+  for (vector<model::mode *> path : paths)
   {
     int res = evaluate(path, boxes, solver_bin, solver_opt);
     if (res == decision_procedure::result::SAT)
@@ -56,7 +56,7 @@ int decision_procedure::evaluate(
  * @return satisfiability of reachability for the given path and parameter boxes.
  */
 int decision_procedure::evaluate(
-  vector<pdrh::mode *> path,
+  vector<model::mode *> path,
   vector<box> boxes,
   string solver_bin,
   string solver_opt)
@@ -94,13 +94,13 @@ int decision_procedure::evaluate(
  * @return satisfiability of reachability for the given set of paths and parameter boxes.
  */
 int decision_procedure::evaluate_delta_sat(
-  vector<vector<pdrh::mode *>> paths,
+  vector<vector<model::mode *>> paths,
   vector<box> boxes,
   string solver_bin,
   string solver_opt)
 {
   int undet_counter = 0;
-  for (vector<pdrh::mode *> path : paths)
+  for (vector<model::mode *> path : paths)
   {
     int res = evaluate_delta_sat(path, boxes, solver_bin, solver_opt);
     if (res == decision_procedure::result::SAT)
@@ -121,7 +121,7 @@ int decision_procedure::evaluate_delta_sat(
  * @return delta-satisfiability of reachability for the given path and parameter boxes.
  */
 int decision_procedure::evaluate_delta_sat(
-  vector<pdrh::mode *> path,
+  vector<model::mode *> path,
   vector<box> boxes,
   string solver_bin,
   string solver_opt)
@@ -205,7 +205,7 @@ int decision_procedure::evaluate_delta_sat(
  * @return delta-satisfiability of non-reachability for the given path and parameter boxes.
  */
 int decision_procedure::evaluate_complement(
-  vector<pdrh::mode *> path,
+  vector<model::mode *> path,
   vector<box> boxes,
   string solver_bin,
   string solver_opt)

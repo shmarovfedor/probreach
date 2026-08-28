@@ -26,7 +26,7 @@ extern "C" int yyparse();
 extern "C" FILE *yyin;
 
 using namespace std;
-using namespace pdrh;
+
 
 
 
@@ -53,17 +53,17 @@ int main(int argc, char *argv[])
   } while (!feof(yyin));
 
   // setting the model type
-  pdrh::set_model_type();
+  model::set_model_type();
 
   // only the following cases are supported in the formal setting
-  if (pdrh::model_type == pdrh::PHA)
+  if (model::model_type == model::PHA)
   {
     capd::interval probability = formal::evaluate_pha(
       global_config.reach_depth_min, global_config.reach_depth_max);
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (pdrh::model_type == pdrh::NPHA)
+  else if (model::model_type == model::NPHA)
   {
     map<box, capd::interval> probability_map;
     if(global_config.upper_p_bound_flag)

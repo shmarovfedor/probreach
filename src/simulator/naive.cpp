@@ -15,7 +15,7 @@ using namespace pdrh;
  * @param init
  * @return
  */
-std::map<std::string, double> naive::init_to_map(pdrh::state init)
+std::map<std::string, double> naive::init_to_map(model::state init)
 {
   node *prop = init.prop;
   // checking if init is a conjunction of assignments
@@ -146,9 +146,9 @@ std::vector<std::map<std::string, double>> naive::trajectory(
  * @return
  */
 void naive::simulate(
-  std::vector<pdrh::mode> modes,
-  std::vector<pdrh::state> init,
-  std::vector<pdrh::state> goal,
+  std::vector<model::mode> modes,
+  std::vector<model::state> init,
+  std::vector<model::state> goal,
   bool verify,
   size_t min_depth,
   size_t max_depth,
@@ -170,9 +170,9 @@ void naive::simulate(
  * @return
  */
 void naive::simulate(
-  std::vector<pdrh::mode> modes,
-  std::vector<pdrh::state> init,
-  std::vector<pdrh::state> goal,
+  std::vector<model::mode> modes,
+  std::vector<model::state> init,
+  std::vector<model::state> goal,
   bool verify,
   size_t min_depth,
   size_t max_depth,
@@ -183,7 +183,7 @@ void naive::simulate(
   // the main path queue
   vector<vector<map<string, double>>> paths;
   // parsing the initial states
-  for (state st : init)
+  for (model::state st : init)
   {
     map<string, double> init_map = init_to_map(st);
     // setting setting the step, time and mode values
@@ -206,8 +206,8 @@ void naive::simulate(
     map<string, double> init_map = path.back();
     path.erase(path.end());
     // getting current mode
-    mode cur_mode;
-    for (mode m : modes)
+    model::mode cur_mode;
+    for (model::mode m : modes)
       if (m.id == (int)init_map[".mode"])
       {
         cur_mode = m;
@@ -227,7 +227,7 @@ void naive::simulate(
       if (path_count > 0)
         os << ",";
       // outputting a trajectory
-      output_traj(path, os);
+      naive::output_traj(path, os);
       path_count++;
     }
     // flag for checking if at least one jump condition has been satisfied
@@ -261,7 +261,7 @@ void naive::simulate(
             // adding the computed trajectory to the end of the current path
             path.insert(path.end(), traj.begin(), traj.begin() + i + 1);
             // outputting the unsatisfying trajectory
-            output_traj(path, os);
+            naive::output_traj(path, os);
             return;
           }
         }
@@ -269,7 +269,7 @@ void naive::simulate(
         if (sol[".step"] >= min_depth && sol[".step"] <= max_depth)
         {
           // checking goal conditions here
-          for (state st : goal)
+          for (model::state st : goal)
           {
             // if a goal is satisfied we break,
             // report the witness and output the trajectory
@@ -284,14 +284,14 @@ void naive::simulate(
               // adding the computed trajectory to the end of the current path
               path.insert(path.end(), traj.begin(), traj.begin() + i + 1);
               // outputting the unsatisfying trajectory
-              output_traj(path, os);
+              naive::output_traj(path, os);
               return;
             }
           }
         }
       }
       // checking the jumps guards
-      for (mode::jump j : cur_mode.jumps)
+      for (model::mode::jump j : cur_mode.jumps)
       {
         // jump condition is satisfied
         if (node_to_boolean(j.guard, sol))
@@ -335,7 +335,7 @@ void naive::simulate(
       // outputting the incomplete path
       path.insert(path.end(), traj.begin(), traj.end());
       // outputting the unsatisfying trajectory
-      output_traj(path, os);
+      naive::output_traj(path, os);
     }
   }
   if (verify)
@@ -345,4 +345,34 @@ void naive::simulate(
     // report more info
     cout << "goals could not be reached" << endl;
   }
+}
+
+/**
+ * Outputs trajectory into a stream
+ *
+ * @param traj
+ * @param os
+ */
+void naive::output_traj(
+  std::vector<std::map<std::string, double>> traj,
+  std::ostream &os)
+{
+  os << "[" << endl;
+  // outputting the path into the file
+  for (map<string, double> val : traj)
+  {
+    os << "{" << endl;
+    for (auto it = val.begin(); it != val.end(); it++)
+    {
+      os << "\"" << it->first << "\" : " << it->second;
+      if (it != prev(val.end()))
+        os << ",";
+      os << endl;
+    }
+    os << "}";
+    if (val != traj[traj.size() - 1])
+      os << ",";
+    os << endl;
+  }
+  os << "]" << endl;
 }
