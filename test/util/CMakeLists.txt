@@ -13,6 +13,14 @@ add_executable(box_test ${PROBREACH_TEST_DIR}/util/box_test.cpp
 target_link_libraries(box_test ${CAPD_LIBRARIES} -lgtest)
 add_test(box_test "${PROBREACH_BINARY_DIR}/test/util/box_test")
 
+# unit test for box_factory.cpp
+add_executable(box_factory_test ${PROBREACH_TEST_DIR}/util/box_factory_test.cpp
+        ${PROBREACH_TEST_DIR}/main_test.cpp
+        ${PROBREACH_SOURCE_DIR}/util/box.cpp
+        ${PROBREACH_SOURCE_DIR}/util/box_factory.cpp)
+target_link_libraries(box_factory_test ${CAPD_LIBRARIES} -lgtest)
+add_test(box_factory_test "${PROBREACH_BINARY_DIR}/test/util/box_factory_test")
+
 # unit test for the methods in node.cpp
 add_executable(node_test ${PROBREACH_TEST_DIR}/util/node_test.cpp
         ${PROBREACH_TEST_DIR}/main_test.cpp
@@ -26,7 +34,6 @@ add_executable(node_utils_test ${PROBREACH_TEST_DIR}/util/node_utils_test.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/irep/node.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/irep/model.cpp
         ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
-        ${PROBREACH_SOURCE_DIR}/util/box.cpp
-        )
+        ${PROBREACH_SOURCE_DIR}/util/box.cpp)
 target_link_libraries(node_utils_test ${CAPD_LIBRARIES} -lgtest)
 add_test(node_utils_test "${PROBREACH_BINARY_DIR}/test/util/node_utils_test")

@@ -18,19 +18,20 @@ public:
   static std::vector<box> partition(box, std::map<std::string, capd::interval>);
   static std::vector<box> partition(box, std::map<std::string, std::string>);
   static std::vector<box> partition(box, int);
+  
   static std::vector<box> bisect(box);
   static std::vector<box> bisect(box, std::map<std::string, capd::interval>);
   static std::vector<box> bisect(box, std::map<std::string, std::string>);
   static std::vector<box> bisect(box, std::vector<std::string>, double);
   static std::vector<box> bisect(box, std::vector<std::string>);
   static std::vector<box> merge(std::vector<box>);
+  
   static box merge(box, box);
   static box get_mean(std::vector<box>);
   static box get_stddev(std::vector<box>);
   static box get_keys_diff(box, box);
   static box get_cover(std::vector<box>);
   static bool compatible(std::vector<box>);
-  static box map_box(box, box);
   static bool intersect(capd::interval, capd::interval);
   static box box_hull(std::vector<box>);
 

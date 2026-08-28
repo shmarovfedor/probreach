@@ -6,6 +6,8 @@
 #include "box_factory.h"
 #include "box.h"
 
+using namespace std;
+
 TEST(get_intersection_conflicts, no_conflicts)
 {
   map<box, capd::interval> lhs, rhs;

@@ -3,7 +3,6 @@
 //
 
 #include "box_factory.h"
-#include "node_utils.h"
 
 using namespace std;
 
@@ -389,20 +388,6 @@ bool box_factory::compatible(vector<box> q)
     }
   }
   return true;
-}
-
-box box_factory::map_box(box ratio, box b)
-{
-  map<string, capd::interval> b_map = b.get_map();
-  map<string, capd::interval> res_map;
-  for (auto it = b_map.cbegin(); it != b_map.cend(); it++)
-  {
-    res_map.insert(make_pair(
-      it->first,
-      it->second.leftBound() +
-        ratio.get_map()[it->first] * capd::intervals::width(it->second)));
-  }
-  return box(res_map);
 }
 
 pair<map<box, capd::interval>, map<box, capd::interval>>
