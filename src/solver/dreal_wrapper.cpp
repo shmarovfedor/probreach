@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <sstream>
 #include "dreal_wrapper.h"
-#include <algorithm>
 #include "box.h"
 
 using namespace std;

@@ -5,7 +5,6 @@
 #ifndef PROBREACH_MODEL_H
 #define PROBREACH_MODEL_H
 
-#include <iostream>
 #include <vector>
 #include <map>
 #include <tuple>
@@ -141,7 +140,7 @@ std::vector<std::string> get_keys_diff(
   std::map<std::string, std::pair<node *, node *>>,
   std::map<std::string, std::pair<node *, node *>>);
 
-std::string model_to_string();
+std::string to_string();
 
 } // namespace model
 

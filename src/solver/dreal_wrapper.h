@@ -4,11 +4,8 @@
 
 #ifndef PROBREACH_DREAL_WRAPPER_H
 #define PROBREACH_DREAL_WRAPPER_H
-#include <iostream>
-#include <vector>
-#include "util/box.h"
 
-using namespace std;
+#include "box.h"
 
 namespace dreal
 {

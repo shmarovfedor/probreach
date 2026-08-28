@@ -6,7 +6,6 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
-#include "node.h"
 #include "model.h"
 #include "naive.h"
 #include "git_sha1.h"

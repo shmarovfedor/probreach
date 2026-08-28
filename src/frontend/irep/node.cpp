@@ -4,10 +4,6 @@
 
 #include "node.h"
 #include <sstream>
-#include <random>
-#include <cmath>
-#include <algorithm>
-#include <iomanip>
 
 using namespace std;
 //using namespace pdrh;

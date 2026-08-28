@@ -1,6 +1,5 @@
 %{
 #include <iostream>
-#include <string>
 #include <sstream>
 #include "node.h"
 #include "model.h"
@@ -58,8 +57,6 @@ std::vector<model::state> cur_states;
 std::vector<model::mode*> cur_path;
 std::map<node*, node*> cur_dd;
 std::map<std::string, node*> define_map;
-
-using namespace std;
 %}
 
 %%
@@ -191,7 +188,7 @@ dist_declaration:
   }
   else
   {
-    stringstream s;
+    std::stringstream s;
     s << "multiple declaration of variable \"" << $5 << "\"";
     yyerror(s.str().c_str());
   }
@@ -264,7 +261,7 @@ mode:
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
-    cur_mode->time = make_pair($8, $10);
+    cur_mode->time = std::make_pair($8, $10);
     model::push_mode(*cur_mode);
     delete cur_mode;
     cur_mode = new model::mode;
@@ -282,7 +279,7 @@ mode:
   {
     cur_dd.clear();
     cur_mode->id = atoi($3);
-    cur_mode->time = make_pair($8, $10);
+    cur_mode->time = std::make_pair($8, $10);
     model::push_mode(*cur_mode);
     delete cur_mode;
     cur_mode = new model::mode;
@@ -307,7 +304,7 @@ props:
 	props prop { $$->push_back($2); }
 	| prop                  
 {
-  $$ = new vector<node*>;
+  $$ = new std::vector<node*>;
 	$$->push_back($1);
 }
 
@@ -469,7 +466,7 @@ state:
 	}
 	else
 	{
-	  stringstream s;
+	  std::stringstream s;
     s << "mode \"" << $2 << "\" does not exist";
     yyerror(s.str().c_str());
 	}
@@ -483,7 +480,7 @@ states:
 
 void yyerror(const char *s)
 {
-  cerr << "error at " << yylloc.first_line << ":" 
+  std::cerr << "error at " << yylloc.first_line << ":" 
     << (yylloc.first_column + 1) << ":" << s << "\n";
   exit(EXIT_FAILURE);
 }

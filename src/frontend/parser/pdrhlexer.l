@@ -1,5 +1,4 @@
 %{
-#include <iostream>
 #define YY_DECL extern "C" int yylex()
 #include "node.h"
 #include "pdrhparser.h"

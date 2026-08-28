@@ -82,7 +82,6 @@ ENDIF(CAPD_FOUND)
 include_directories("${CAPD_INCLUDE_DIR}")
 
 # including all the ProbReach headers
-include_directories("${PROBREACH_SOURCE_DIR}")
 include_directories("${PROBREACH_SOURCE_DIR}/config")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/generators")

@@ -5,7 +5,8 @@
 #ifndef PROBREACH_NODE_H
 #define PROBREACH_NODE_H
 
-#include <iostream>
+#include <string>
+#include <ostream>
 #include <map>
 #include <vector>
 

@@ -3,13 +3,8 @@
 //
 
 #include "model.h"
-#include <string.h>
-#include <iomanip>
-#include <cmath>
 #include <sstream>
 #include <algorithm>
-#include <capd/capdlib.h>
-#include <capd/intervals/lib.h>
 
 using namespace std;
 
@@ -385,7 +380,7 @@ vector<string> model::get_keys_diff(
 }
 
 // getting string representation of the model
-string model::model_to_string()
+string model::to_string()
 {
   stringstream out;
   out << "MODEL TYPE: " << model::model_type << endl;
@@ -415,8 +410,6 @@ string model::model_to_string()
     out << "|   dd(" << it->first << ") = (";
     for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)
     {
-      cout << it2->first->to_prefix() << " : " << it2->second->to_prefix()
-           << endl;
       out << it2->first->to_prefix() << " : " << it2->second->to_prefix()
           << ", ";
     }

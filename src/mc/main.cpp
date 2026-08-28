@@ -4,17 +4,12 @@
 
 #include <iomanip>
 #include <iostream>
-#include <cstring>
 #include <sstream>
 #include <fstream>
-#include <solver/dreal_wrapper.h>
-#include "node.h"
 #include "model.h"
 #include "box.h"
-#include "node_utils.h"
 #include "mc.h"
 #include "pdrh_config.h"
-#include "decision_procedure.h"
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -4,17 +4,16 @@
 
 #include <iomanip>
 #include <iostream>
-#include <cstring>
 #include <sstream>
 #include <fstream>
 #include "model.h"
 #include "box.h"
 #include "formal.h"
 #include "pdrh_config.h"
+#include "decision_procedure.h"
 
 #ifdef _OPENMP
 #include <omp.h>
-#include <util/decision_procedure.h>
 #endif
 
 extern "C"
