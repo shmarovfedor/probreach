@@ -21,74 +21,74 @@
 %x COMMENT
 
 %%
-"//".*\n	 		  	{ ; }
+"//".*\n	 		  	  { ; }
 "/*"            		{ BEGIN(COMMENT); }
 <COMMENT>"*/" 			{ BEGIN(INITIAL); }
 <COMMENT>\n    			{ ; }
 <COMMENT>.    			;
 
-"#define"               { return DEFINE; }
+"#define"           { return DEFINE; }
 
-"+"                     { return PLUS; }
-"-"                     { return MINUS; }
-"*"                     { return TIMES; }
-"/"                     { return DIVIDE; }
-"^"                     { return POWER; }
+"+"                 { return PLUS; }
+"-"                 { return MINUS; }
+"*"                 { return TIMES; }
+"/"                 { return DIVIDE; }
+"^"                 { return POWER; }
 
-"="                     { return EQ; }
-">"                     { return GT; }
-"<"                     { return LT; }
-">="                    { return GE; }
-"<="                    { return LE; }
-"!="                    { return NE; }
+"="                 { return EQ; }
+">"                 { return GT; }
+"<"                 { return LT; }
+">="                { return GE; }
+"<="                { return LE; }
+"!="                { return NE; }
 
-"'"                     { return PRIME; }
+"'"                 { return PRIME; }
 
-true                    { return TRUE; }
-false                   { return FALSE; }
+true                { return TRUE; }
+false               { return FALSE; }
 
-time                    { return TIME; }
+time                { return TIME; }
 
-dist_uniform            { return U_DIST; }
-dist_normal             { return N_DIST; }
-dist_exp                { return E_DIST; }
-dist_gamma              { return G_DIST; }
-dist_discrete           { return DD_DIST; }
-infty                   { return INFTY; }
+dist_uniform        { return U_DIST; }
+dist_normal         { return N_DIST; }
+dist_exp            { return E_DIST; }
+dist_gamma          { return G_DIST; }
+dist_discrete       { return DD_DIST; }
+infty               { return INFTY; }
 
-mode                    { return MODE; }
-invt                    { return INVT; }
-flow                    { return FLOW; }
-"d/dt"                  { return D_DT; }
-jump                    { return JUMP; }
-init                    { return INIT; }
-goal                    { return GOAL; }
+mode                { return MODE; }
+invt                { return INVT; }
+flow                { return FLOW; }
+"d/dt"              { return D_DT; }
+jump                { return JUMP; }
+init                { return INIT; }
+goal                { return GOAL; }
 
 not	            		{ return NOT; }
-and                    	{ return AND; }
-or                    	{ return OR; }
-xor                    	{ return XOR; }
-"=>"                   	{ return IMPLY; }
+and                 { return AND; }
+or                  { return OR; }
+xor                 { return XOR; }
+"=>"                { return IMPLY; }
 
-abs                     { return ABS; }
-sqrt              	    { return SQRT; }
-exp              	    { return EXP; }
-log              	    { return LOGN; }
-sin              	    { return SIN; }
-cos              	    { return COS; }
-tan              	    { return TAN; }
-asin              	    { return ASIN; }
-acos              	    { return ACOS; }
-atan              	    { return ATAN; }
+abs                 { return ABS; }
+sqrt              	{ return SQRT; }
+exp              	  { return EXP; }
+log              	  { return LOGN; }
+sin              	  { return SIN; }
+cos              	  { return COS; }
+tan              	  { return TAN; }
+asin              	{ return ASIN; }
+acos              	{ return ACOS; }
+atan              	{ return ATAN; }
 
 [0-9]+          	                { yylval.sval = strdup(yytext); return number; }
 [0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?	{ yylval.sval = strdup(yytext); return number; }
-[a-zA-Z_][a-zA-Z0-9_]*              { yylval.sval = strdup(yytext); return identifier; }
+[a-zA-Z_][a-zA-Z0-9_]*            { yylval.sval = strdup(yytext); return identifier; }
 
-[\[\]\(\):;,\{\}@]	    { return yytext[0]; }
-"==>"	                { return TRANS; }
+[\[\]\(\):;,\{\}@]	{ return yytext[0]; }
+"==>"	              { return TRANS; }
 
-\n                      { ; }
-[ \t]+				    ;
+\n                  { ; }
+[ \t]+				      ;
 
 %%

@@ -517,6 +517,6 @@ states:
 void yyerror(const char *s)
 {
   cerr << "error at " << yylloc.first_line << ":" 
-    << yylloc.first_column << ":" << s << "\n";
+    << (yylloc.first_column + 1) << ":" << s << "\n";
   exit(EXIT_FAILURE);
 }
