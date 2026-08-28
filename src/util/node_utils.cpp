@@ -3,109 +3,9 @@
 //
 
 #include "node_utils.h"
-#include <iomanip>
 #include <random>
 
 using namespace std;
-
-// throws exception in case if one of the terminal modes is not a number
-// evaluates the value of arithmetic expression
-bool pdrh::node_to_boolean(node *expr, vector<box> boxes)
-{
-  // comparison operators
-  if (expr->value == ">=")
-  {
-    return pdrh::node_to_interval(expr->operands.front(), boxes) >=
-           pdrh::node_to_interval(expr->operands.back(), boxes);
-  }
-  else if (expr->value == ">")
-  {
-    return pdrh::node_to_interval(expr->operands.front(), boxes) >
-           pdrh::node_to_interval(expr->operands.back(), boxes);
-  }
-  else if (expr->value == "=")
-  {
-    return pdrh::node_to_interval(expr->operands.front(), boxes) ==
-           pdrh::node_to_interval(expr->operands.back(), boxes);
-  }
-  else if (expr->value == "<")
-  {
-    return pdrh::node_to_interval(expr->operands.front(), boxes) <
-           pdrh::node_to_interval(expr->operands.back(), boxes);
-  }
-  else if (expr->value == "<=")
-  {
-    return pdrh::node_to_interval(expr->operands.front(), boxes) <=
-           pdrh::node_to_interval(expr->operands.back(), boxes);
-  }
-  else if (expr->value == "and")
-  {
-    bool res = true;
-    for (node *n : expr->operands)
-    {
-      res = res && pdrh::node_to_boolean(n, boxes);
-    }
-    return res;
-  }
-  else if (expr->value == "or")
-  {
-    bool res = true;
-    for (node *n : expr->operands)
-    {
-      res = res || pdrh::node_to_boolean(n, boxes);
-    }
-    return res;
-  }
-  else
-  {
-    cerr << "Unrecognised or unsupported operation \"" << expr->value << "\"";
-    exit(EXIT_FAILURE);
-  }
-}
-
-// throws exception in case if one of the terminal modes is not a number
-// evaluates the value of arithmetic expression
-bool pdrh::check_zero_crossing(
-  node *expr,
-  vector<box> boxes,
-  box first,
-  box last)
-{
-  // comparison operators
-  if (
-    expr->value == ">=" || expr->value == ">" || expr->value == "=" ||
-    expr->value == "<" || expr->value == "<=")
-  {
-    return (pdrh::node_to_interval(expr->operands.front(), {boxes, first}) -
-            pdrh::node_to_interval(expr->operands.back(), {boxes, first})) *
-             (pdrh::node_to_interval(
-                expr->operands.front(), {boxes, last}) -
-              pdrh::node_to_interval(
-                expr->operands.back(), {boxes, last})) <
-           0;
-  }
-  else if (expr->value == "and")
-  {
-    bool res = true;
-    for (node *n : expr->operands)
-    {
-      res = res && pdrh::check_zero_crossing(n, boxes, first, last);
-    }
-  }
-  else if (expr->value == "or")
-  {
-    bool res = true;
-    for (node *n : expr->operands)
-    {
-      res = res || pdrh::check_zero_crossing(n, boxes, first, last);
-    }
-  }
-  else
-  {
-    cerr << "Unrecognised or unsupported operation \"" << expr->value << "\"";
-    exit(EXIT_FAILURE);
-  }
-}
 
 // throws exception in case if one of the terminal modes is not a number
 // evaluates the value of arithmetic expression
@@ -244,33 +144,6 @@ capd::interval pdrh::node_to_interval(node *expr, vector<box> boxes)
 capd::interval pdrh::node_to_interval(node *expr)
 {
   return pdrh::node_to_interval(expr, {box()});
-}
-
-node *pdrh::box_to_node(box b)
-{
-  node *res = new node();
-  res->value = "and";
-  map<string, capd::interval> b_map = b.get_map();
-  for (auto it = b_map.begin(); it != b_map.end(); it++)
-  {
-    // adding left node
-    node *node_left = new node();
-    node_left->value = ">=";
-    node_left->operands.push_back(new node(it->first));
-    stringstream ss;
-    ss << std::setprecision(16) << it->second.leftBound();
-    node_left->operands.push_back(new node(ss.str()));
-    res->operands.push_back(node_left);
-    // adding right node
-    node *node_right = new node();
-    node_right->value = "<=";
-    node_right->operands.push_back(new node(it->first));
-    ss.str("");
-    ss << std::setprecision(16) << it->second.rightBound();
-    node_right->operands.push_back(new node(ss.str()));
-    res->operands.push_back(node_right);
-  }
-  return res;
 }
 
 /**
@@ -521,56 +394,6 @@ bool pdrh::node_to_boolean(node *n, std::map<std::string, double> vals)
   else
   {
     cerr << "Unrecognised or unsupported operation \"" << n->value << "\"";
-    exit(EXIT_FAILURE);
-  }
-}
-
-/**
- * Returns true if zero-crossing happens between the left-handside and the right-handside points.
- *
- *
- * @param expr - expression to check.
- * @param left - left point.
- * @param right - right point.
- * @return the result of zero-crossing check
- */
-bool pdrh::node_zero_crossing(
-  node *expr,
-  std::map<std::string, double> left,
-  std::map<std::string, double> right)
-{
-  // comparison operators
-  if (
-    expr->value == ">=" || expr->value == ">" || expr->value == "=" ||
-    expr->value == "<" || expr->value == "<=")
-  {
-    return (node_to_double(expr->operands.front(), left) -
-            node_to_double(expr->operands.back(), left)) *
-             (node_to_double(expr->operands.front(), right) -
-              node_to_double(expr->operands.back(), right)) <
-           0;
-  }
-  else if (expr->value == "and")
-  {
-    bool res = true;
-    for (node *n : expr->operands)
-    {
-      res = res && node_zero_crossing(n, left, right);
-    }
-    return res;
-  }
-  else if (expr->value == "or")
-  {
-    bool res = true;
-    for (node *n : expr->operands)
-    {
-      res = res || node_zero_crossing(n, left, right);
-    }
-    return res;
-  }
-  else
-  {
-    cerr << "Unrecognised or unsupported operation \"" << expr->value << "\"";
     exit(EXIT_FAILURE);
   }
 }
