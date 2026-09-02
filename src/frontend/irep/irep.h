@@ -105,7 +105,7 @@ public:
   minust(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "minust";
@@ -118,7 +118,8 @@ public:
 
   void print(std::ostream &out) const override
   {
-    out << "( - " << "(" << *value << "))";
+    out << "( - "
+        << "(" << *value << "))";
   }
 };
 
@@ -297,7 +298,7 @@ public:
   sqrtt(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "sqrtt";
@@ -323,7 +324,7 @@ public:
   abst(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "abst";
@@ -349,7 +350,7 @@ public:
   sint(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "sint";
@@ -375,7 +376,7 @@ public:
   cost(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "cost";
@@ -401,7 +402,7 @@ public:
   tant(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "tant";
@@ -427,7 +428,7 @@ public:
   asint(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "asint";
@@ -453,7 +454,7 @@ public:
   acost(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "acost";
@@ -479,7 +480,7 @@ public:
   atant(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "atant";
@@ -505,7 +506,7 @@ public:
   expt(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "expt";
@@ -531,7 +532,7 @@ public:
   logt(std::unique_ptr<real_exprt> value) : value(std::move(value))
   {
   }
-  
+
   std::string get_type() const override
   {
     return "logt";
@@ -730,9 +731,7 @@ private:
   std::unique_ptr<real_exprt> right;
 
 public:
-  equalt(
-    std::unique_ptr<real_exprt> left,
-    std::unique_ptr<real_exprt> right)
+  equalt(std::unique_ptr<real_exprt> left, std::unique_ptr<real_exprt> right)
     : left(std::move(left)), right(std::move(right))
   {
   }
@@ -808,12 +807,12 @@ public:
   {
     return *value;
   }
-  
+
   std::string get_type() const override
   {
     return "nott";
   }
-  
+
   void print(std::ostream &out) const override
   {
     out << "(not " << *value << ")";
@@ -827,9 +826,7 @@ private:
   std::unique_ptr<bool_exprt> right;
 
 public:
-  implyt(
-    std::unique_ptr<bool_exprt> left,
-    std::unique_ptr<bool_exprt> right)
+  implyt(std::unique_ptr<bool_exprt> left, std::unique_ptr<bool_exprt> right)
     : left(std::move(left)), right(std::move(right))
   {
   }
@@ -861,8 +858,7 @@ private:
   std::vector<std::unique_ptr<bool_exprt>> operands;
 
 public:
-  andt(
-    std::vector<std::unique_ptr<bool_exprt>> operands)
+  andt(std::vector<std::unique_ptr<bool_exprt>> operands)
     : operands(std::move(operands))
   {
   }
@@ -892,8 +888,7 @@ private:
   std::vector<std::unique_ptr<bool_exprt>> operands;
 
 public:
-  ort(
-    std::vector<std::unique_ptr<bool_exprt>> operands)
+  ort(std::vector<std::unique_ptr<bool_exprt>> operands)
     : operands(std::move(operands))
   {
   }
@@ -923,8 +918,7 @@ private:
   std::vector<std::unique_ptr<bool_exprt>> operands;
 
 public:
-  xort(
-    std::vector<std::unique_ptr<bool_exprt>> operands)
+  xort(std::vector<std::unique_ptr<bool_exprt>> operands)
     : operands(std::move(operands))
   {
   }
@@ -946,6 +940,125 @@ public:
       out << *operands[i] << " ";
     out << *operands.back() << ")";
   }
+};
+
+/// Intervals and distributions
+class intervalt
+{
+private:
+  std::unique_ptr<numbert> left;
+  std::unique_ptr<numbert> right;
+
+public:
+  intervalt(std::unique_ptr<numbert> left, std::unique_ptr<numbert> right)
+    : left(std::move(left)), right(std::move(right))
+  {
+  }
+
+  std::string get_type() const
+  {
+    return "intervalt";
+  }
+
+  numbert &get_left()
+  {
+    return *left;
+  }
+
+  numbert &get_right()
+  {
+    return *right;
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << "[" << *left << ", " << *right << "]";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const intervalt &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
+class distt
+{
+public:
+  virtual std::string get_type() const = 0;
+  virtual ~distt() = default;
+  virtual void print(std::ostream &out) const = 0;
+
+  friend std::ostream &operator<<(std::ostream &os, const distt &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
+class cont_distt : public distt
+{
+public:
+  virtual std::unique_ptr<real_exprt>
+  pdf(const std::unique_ptr<symbolt> sym) const = 0;
+};
+
+class uniform_distt : public cont_distt
+{
+private:
+  std::unique_ptr<numbert> left;
+  std::unique_ptr<numbert> right;
+
+public:
+  uniform_distt(std::unique_ptr<numbert> left, std::unique_ptr<numbert> right)
+    : left(std::move(left)), right(std::move(right))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "uniform_distt";
+  }
+
+  numbert &get_left()
+  {
+    return *left;
+  }
+
+  numbert &get_right()
+  {
+    return *right;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "dist_uniform(" << *left << ", " << *right << ")";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const uniform_distt &e)
+  {
+    e.print(os);
+    return os;
+  }
+
+  std::unique_ptr<real_exprt>
+  pdf(const std::unique_ptr<symbolt> sym) const override
+  {
+    return std::make_unique<divt>(
+        std::make_unique<numbert>("1"),
+        std::make_unique<subt>(
+          std::make_unique<numbert>(*right),
+          std::make_unique<numbert>(*left)));
+  }
+
+  std::unique_ptr<real_exprt> pdf()
+  {
+    return pdf(std::make_unique<symbolt>(""));
+  }
+};
+
+class discrete_distt : public distt
+{
 };
 
 #endif // PROBREACH_IREP_H

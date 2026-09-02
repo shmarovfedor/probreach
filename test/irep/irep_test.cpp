@@ -153,3 +153,31 @@ TEST(andt_ostream, normal_test)
     "(and ((a1 + 0.456771) >= (b_2 + 3.1415)) ((a1 + 0.456771) <= (b_2 + "
     "3.1415)) (true))");
 }
+
+TEST(intrevalt_ostream, normal_test)
+{
+  auto intreval = std::make_unique<intervalt>(
+    std::make_unique<numbert>("-0.176"), 
+    std::make_unique<numbert>("0.456771"));
+
+  stringstream s;
+  s << *intreval;
+  EXPECT_EQ(s.str(), "[-0.176, 0.456771]");
+}
+
+TEST(uniform_distt_ostream, normal_test)
+{
+  auto u_dist = std::make_unique<uniform_distt>(
+    std::make_unique<numbert>("0.176"), 
+    std::make_unique<numbert>("0.456771"));
+
+  stringstream s;
+  s << *u_dist;
+  EXPECT_EQ(s.str(), "dist_uniform(0.176, 0.456771)");
+
+  s.str("");
+  s.clear();
+
+  s << *(u_dist->pdf());
+  EXPECT_EQ(s.str(), "(1 / (0.456771 - 0.176))");
+}
