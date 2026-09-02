@@ -1282,6 +1282,11 @@ public:
 };
 
 // Other model components
+class invtt : public bool_exprt
+{
+  // Finish the implemetation
+};
+
 class odet
 {
 private:
@@ -1318,6 +1323,39 @@ public:
   std::string get_type() const
   {
     return "odet";
+  }
+};
+
+class flowt
+{
+private:
+  std::vector<std::unique_ptr<odet>> odes;
+
+public:
+  flowt(std::vector<std::unique_ptr<odet>> odes) : odes(std::move(odes))
+  {
+  }
+
+  std::string get_type() const
+  {
+    return "flowt";
+  }
+
+  std::vector<std::unique_ptr<odet>> &get_odes()
+  {
+    return odes;
+  }
+
+  void print(std::ostream &out) const
+  {
+    for (size_t i = 0; i < odes.size(); i++)
+      out << *odes[i] << "\n";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const flowt &e)
+  {
+    e.print(os);
+    return os;
   }
 };
 
