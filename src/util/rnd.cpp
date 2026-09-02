@@ -14,72 +14,68 @@ using namespace std;
 box rnd::get_random_sample(gsl_rng *r)
 {
   map<std::string, capd::interval> edges;
-  // continuous distributions
-  for (auto it = model::rv_map.cbegin(); it != model::rv_map.cend(); it++)
+
+  // uniform distributions
+  for (auto it = model::distribution::uniform.cbegin();
+       it != model::distribution::uniform.cend();
+       it++)
   {
-    if (
-      model::distribution::uniform.find(it->first) !=
-      model::distribution::uniform.cend())
-    {
-      edges.insert(make_pair(
-        it->first,
-        node_utils::node_to_interval(
-          model::distribution::uniform[it->first].first) +
-          gsl_rng_uniform(r) *
-            (node_utils::node_to_interval(
-               model::distribution::uniform[it->first].second) -
-             node_utils::node_to_interval(
-               model::distribution::uniform[it->first].first))));
-    }
-    else if (
-      model::distribution::normal.find(it->first) !=
-      model::distribution::normal.cend())
-    {
-      edges.insert(make_pair(
-        it->first,
-        node_utils::node_to_interval(
-          model::distribution::normal[it->first].first) +
-          gsl_ran_gaussian_ziggurat(
-            r,
-            node_utils::node_to_interval(
-              model::distribution::normal[it->first].second)
-              .mid()
-              .leftBound())));
-    }
-    else if (
-      model::distribution::exp.find(it->first) !=
-      model::distribution::exp.cend())
-    {
-      edges.insert(make_pair(
-        it->first,
-        gsl_ran_exponential(
-          r,
-          1 / node_utils::node_to_interval(model::distribution::exp[it->first])
-                .mid()
-                .leftBound())));
-    }
-    else if (
-      model::distribution::gamma.find(it->first) !=
-      model::distribution::gamma.cend())
-    {
-      edges.insert(make_pair(
-        it->first,
-        gsl_ran_gamma(
+    edges.insert(make_pair(
+      it->first,
+      node_utils::node_to_interval(
+        model::distribution::uniform[it->first].first) +
+        gsl_rng_uniform(r) *
+          (node_utils::node_to_interval(
+             model::distribution::uniform[it->first].second) -
+           node_utils::node_to_interval(
+             model::distribution::uniform[it->first].first))));
+  }
+  // normal distributions
+  for (auto it = model::distribution::normal.cbegin();
+       it != model::distribution::normal.cend();
+       it++)
+  {
+    edges.insert(make_pair(
+      it->first,
+      node_utils::node_to_interval(
+        model::distribution::normal[it->first].first) +
+        gsl_ran_gaussian_ziggurat(
           r,
           node_utils::node_to_interval(
-            model::distribution::gamma[it->first].first)
-            .mid()
-            .leftBound(),
-          node_utils::node_to_interval(
-            model::distribution::gamma[it->first].second)
+            model::distribution::normal[it->first].second)
             .mid()
             .leftBound())));
-    }
-    else
-    {
-      cerr << "Random number generator for the variable \"" << it->first
-           << "\" is not supported\n";
-    }
+  }
+  // exponential distributions
+  for (auto it = model::distribution::exp.cbegin();
+       it != model::distribution::exp.cend();
+       it++)
+  {
+    edges.insert(make_pair(
+      it->first,
+      gsl_ran_exponential(
+        r,
+        1 / node_utils::node_to_interval(model::distribution::exp[it->first])
+              .mid()
+              .leftBound())));
+  }
+  // gamma distributions
+  for (auto it = model::distribution::gamma.cbegin();
+       it != model::distribution::gamma.cend();
+       it++)
+  {
+    edges.insert(make_pair(
+      it->first,
+      gsl_ran_gamma(
+        r,
+        node_utils::node_to_interval(
+          model::distribution::gamma[it->first].first)
+          .mid()
+          .leftBound(),
+        node_utils::node_to_interval(
+          model::distribution::gamma[it->first].second)
+          .mid()
+          .leftBound())));
   }
   //discrete distributions
   for (auto it = model::dd_map.cbegin(); it != model::dd_map.cend(); it++)
