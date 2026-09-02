@@ -4,6 +4,7 @@
 
 #include "node.h"
 #include <sstream>
+#include <regex>
 
 using namespace std;
 //using namespace pdrh;
@@ -91,9 +92,10 @@ string node::to_prefix(int step, string index)
   }
   else
   {
-    // only performing a soft check here whether the value is digit or an identifier
+    // checking if the value is a constant or an identifier
+    static const std::regex re(R"(^[+-]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$)");
     if (
-      isdigit(this->value.front()) || this->value == "true" ||
+      std::regex_match(this->value, re) || this->value == "true" ||
       this->value == "false")
     {
       s << " " << this->value;

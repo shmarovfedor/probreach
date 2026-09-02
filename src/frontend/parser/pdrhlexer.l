@@ -78,8 +78,7 @@ asin              	{ return ASIN; }
 acos              	{ return ACOS; }
 atan              	{ return ATAN; }
 
-[0-9]+          	                { yylval.sval = strdup(yytext); return number; }
-[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?	{ yylval.sval = strdup(yytext); return number; }
+[+-]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?	{ yylval.sval = strdup(yytext); return number; }
 [a-zA-Z_][a-zA-Z0-9_]*            { yylval.sval = strdup(yytext); return identifier; }
 
 [\[\]\(\):;,\{\}@]	{ return yytext[0]; }
