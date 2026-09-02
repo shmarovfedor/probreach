@@ -9,6 +9,7 @@
 #include <ostream>
 #include <vector>
 #include <memory>
+#include <map>
 
 /// General representation of an expression in ProbReach
 class exprt
@@ -955,6 +956,12 @@ public:
   {
   }
 
+  intervalt(const intervalt &other)
+    : left(other.left ? std::make_unique<numbert>(*other.left) : nullptr),
+      right(other.right ? std::make_unique<numbert>(*other.right) : nullptr)
+  {
+  }
+
   std::string get_type() const
   {
     return "intervalt";
@@ -988,7 +995,8 @@ public:
   virtual std::string get_type() const = 0;
   virtual ~distt() = default;
   virtual void print(std::ostream &out) const = 0;
-
+  virtual std::unique_ptr<distt> clone() const = 0;
+  
   friend std::ostream &operator<<(std::ostream &os, const distt &e)
   {
     e.print(os);
@@ -1035,20 +1043,20 @@ public:
     out << "dist_uniform(" << *left << ", " << *right << ")";
   }
 
-  friend std::ostream &operator<<(std::ostream &os, const uniform_distt &e)
-  {
-    e.print(os);
-    return os;
-  }
-
   std::unique_ptr<real_exprt>
   pdf(const std::unique_ptr<symbolt> sym) const override
   {
     return std::make_unique<divt>(
-        std::make_unique<numbert>("1"),
-        std::make_unique<subt>(
-          std::make_unique<numbert>(*right),
-          std::make_unique<numbert>(*left)));
+      std::make_unique<numbert>("1"),
+      std::make_unique<subt>(
+        std::make_unique<numbert>(*right), std::make_unique<numbert>(*left)));
+  }
+
+  std::unique_ptr<distt> clone() const override
+  {
+    return std::make_unique<uniform_distt>(
+        std::make_unique<numbert>(*left),
+        std::make_unique<numbert>(*right));
   }
 
   std::unique_ptr<real_exprt> pdf()
@@ -1057,8 +1065,240 @@ public:
   }
 };
 
+class normal_distt : public cont_distt
+{
+private:
+  std::unique_ptr<numbert> mu;
+  std::unique_ptr<numbert> sigma;
+
+public:
+  normal_distt(std::unique_ptr<numbert> mu, std::unique_ptr<numbert> sigma)
+    : mu(std::move(mu)), sigma(std::move(sigma))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "normal_distt";
+  }
+
+  numbert &get_mu()
+  {
+    return *mu;
+  }
+
+  numbert &get_sigma()
+  {
+    return *sigma;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "dist_normal(" << *mu << ", " << *sigma << ")";
+  }
+  
+  std::unique_ptr<real_exprt>
+  pdf(const std::unique_ptr<symbolt> sym) const override
+  {
+    return std::make_unique<mult>(
+      std::make_unique<divt>(
+        std::make_unique<numbert>("1"),
+        std::make_unique<powt>(
+          std::make_unique<mult>(
+            std::make_unique<numbert>("2"),
+            std::make_unique<mult>(
+              std::make_unique<numbert>("3.14159"),
+              std::make_unique<powt>(
+                std::make_unique<numbert>(*sigma),
+                std::make_unique<numbert>("2")))), 
+          std::make_unique<numbert>("0.5"))),
+      std::make_unique<expt>(
+        std::make_unique<minust>(
+          std::make_unique<divt>(
+            std::make_unique<powt>(
+              std::make_unique<subt>(
+                std::make_unique<symbolt>(*sym),
+                std::make_unique<numbert>(*mu)),
+              std::make_unique<numbert>("2")),
+            std::make_unique<mult>(
+              std::make_unique<numbert>("2"),
+              std::make_unique<powt>(
+                std::make_unique<numbert>(*sigma),
+                std::make_unique<numbert>("2")))))));
+  }
+
+  std::unique_ptr<distt> clone() const override
+  {
+    return std::make_unique<normal_distt>(
+        std::make_unique<numbert>(*mu),
+        std::make_unique<numbert>(*sigma));
+  }
+};
+
+class exp_distt : public cont_distt
+{
+private:
+  std::unique_ptr<numbert> lambda;
+
+public:
+  exp_distt(std::unique_ptr<numbert> lambda) : lambda(std::move(lambda))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "exp_distt";
+  }
+  
+  numbert &get_lambda()
+  {
+    return *lambda;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "dist_exp(" << *lambda << ")";
+  }
+  
+  std::unique_ptr<real_exprt>
+  pdf(const std::unique_ptr<symbolt> sym) const override
+  {
+    return std::make_unique<mult>(
+        std::make_unique<numbert>(*lambda),
+        std::make_unique<expt>(
+          std::make_unique<minust>(
+            std::make_unique<mult>(
+              std::make_unique<numbert>(*lambda),
+              std::make_unique<symbolt>(*sym)))));
+  }
+
+  std::unique_ptr<distt> clone() const override
+  {
+    return std::make_unique<exp_distt>(std::make_unique<numbert>(*lambda));
+  }
+};
+
+class gamma_distt : public cont_distt
+{
+  // Leave implementation for later
+};
+
+class beta_distt : public cont_distt
+{
+  // Leave implementation for later
+};
+
 class discrete_distt : public distt
 {
+  // Leave implementation for later
+};
+
+/// Declarations
+class declt
+{
+protected:
+  std::unique_ptr<symbolt> sym;
+
+public:
+  declt(std::unique_ptr<symbolt> sym) : sym(std::move(sym))
+  {
+  }
+
+  virtual std::string get_type() const = 0;
+  virtual ~declt() = default;
+  virtual void print(std::ostream &out) const = 0;
+
+  std::unique_ptr<symbolt> get_symbol()
+  {
+    return std::make_unique<symbolt>(*sym);
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const declt &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
+class const_declt : public declt
+{
+private:
+  std::unique_ptr<numbert> value;
+
+public:
+  const_declt(std::unique_ptr<symbolt> sym, std::unique_ptr<numbert> value)
+    : declt(std::move(sym)), value(std::move(value))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "const_declt";
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "[" << *value << "] " << *sym;
+  }
+
+  std::unique_ptr<numbert> get_value()
+  {
+    return std::make_unique<numbert>(*value);
+  }
+};
+
+class var_declt : public declt
+{
+private:
+  std::unique_ptr<intervalt> domain;
+
+public:
+  var_declt(std::unique_ptr<symbolt> sym, std::unique_ptr<intervalt> domain)
+    : declt(std::move(sym)), domain(std::move(domain))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "var_declt";
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << *domain << " " << *sym;
+  }
+
+  std::unique_ptr<intervalt> get_domain()
+  {
+    return std::make_unique<intervalt>(*domain);
+  }
+};
+
+class dist_declt : public declt
+{
+private:
+  std::unique_ptr<distt> dist;
+  
+public:  
+  dist_declt(std::unique_ptr<symbolt> sym, std::unique_ptr<distt> d)
+    : declt(std::move(sym)), dist(d->clone())
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "dist_declt";
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << *dist << " " << *sym;
+  }
+
+  std::unique_ptr<distt> get_dist()
+  {
+    return dist->clone();
+  }
 };
 
 #endif // PROBREACH_IREP_H

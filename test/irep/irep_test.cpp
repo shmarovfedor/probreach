@@ -157,8 +157,7 @@ TEST(andt_ostream, normal_test)
 TEST(intrevalt_ostream, normal_test)
 {
   auto intreval = std::make_unique<intervalt>(
-    std::make_unique<numbert>("-0.176"), 
-    std::make_unique<numbert>("0.456771"));
+    std::make_unique<numbert>("-0.176"), std::make_unique<numbert>("0.456771"));
 
   stringstream s;
   s << *intreval;
@@ -168,8 +167,7 @@ TEST(intrevalt_ostream, normal_test)
 TEST(uniform_distt_ostream, normal_test)
 {
   auto u_dist = std::make_unique<uniform_distt>(
-    std::make_unique<numbert>("0.176"), 
-    std::make_unique<numbert>("0.456771"));
+    std::make_unique<numbert>("0.176"), std::make_unique<numbert>("0.456771"));
 
   stringstream s;
   s << *u_dist;
@@ -180,4 +178,75 @@ TEST(uniform_distt_ostream, normal_test)
 
   s << *(u_dist->pdf());
   EXPECT_EQ(s.str(), "(1 / (0.456771 - 0.176))");
+}
+
+TEST(normal_distt_ostream, normal_test)
+{
+  auto n_dist = std::make_unique<normal_distt>(
+    std::make_unique<numbert>("0.176"), std::make_unique<numbert>("0.456771"));
+
+  stringstream s;
+  s << *n_dist;
+  EXPECT_EQ(s.str(), "dist_normal(0.176, 0.456771)");
+
+  s.str("");
+  s.clear();
+
+  s << *(n_dist->pdf(std::make_unique<symbolt>("p_12")));
+  EXPECT_EQ(
+    s.str(),
+    "((1 / ((2 * (3.14159 * (0.456771 ^ 2))) ^ 0.5)) * exp(( - ((((p_12 - "
+    "0.176) ^ 2) / (2 * (0.456771 ^ 2)))))))");
+}
+
+TEST(exp_distt_ostream, normal_test)
+{
+  auto e_dist = std::make_unique<exp_distt>(
+    std::make_unique<numbert>("0.176"));
+
+  stringstream s;
+  s << *e_dist;
+  EXPECT_EQ(s.str(), "dist_exp(0.176)");
+
+  s.str("");
+  s.clear();
+
+  s << *(e_dist->pdf(std::make_unique<symbolt>("p_12")));
+  EXPECT_EQ(s.str(), "(0.176 * exp(( - ((0.176 * p_12)))))");
+}
+
+TEST(const_declt_ostream, normal_test)
+{
+  auto const1 = std::make_unique<const_declt>(
+    std::make_unique<symbolt>("pi"), std::make_unique<numbert>("3.1415"));
+
+  stringstream s;
+  s << *const1;
+  EXPECT_EQ(s.str(), "[3.1415] pi");
+}
+
+TEST(var_declt_ostream, normal_test)
+{
+  auto var1 = std::make_unique<var_declt>(
+    std::make_unique<symbolt>("a1"),
+    std::make_unique<intervalt>(
+      std::make_unique<numbert>("-0.1254"),
+      std::make_unique<numbert>("1.43e2")));
+
+  stringstream s;
+  s << *var1;
+  EXPECT_EQ(s.str(), "[-0.1254, 1.43e2] a1");
+}
+
+TEST(dist_declt_ostream, normal_test)
+{
+  auto rv1 = std::make_unique<dist_declt>(
+    std::make_unique<symbolt>("p_11"),
+    std::make_unique<uniform_distt>(
+      std::make_unique<numbert>("-0.1254"),
+      std::make_unique<numbert>("1.43e2")));
+
+  stringstream s;
+  s << *rv1;
+  EXPECT_EQ(s.str(), "dist_uniform(-0.1254, 1.43e2) p_11");
 }
