@@ -375,16 +375,14 @@ expr:
   | ATAN '(' expr ')'         { $$ = new node("atan", {$3}); }
   | '(' expr ')'              { $$ = $2; }
 
-reset_props:
-	reset_props reset_prop { ; }
-	| reset_prop { ; }
+assignments:
+	assignments assignment { ; }
+	| assignment { ; }
 
-reset_prop:
+assignment:
   reset_var EQ expr { push_reset(*cur_mode, *cur_jump, $1, $3); }
-  | TRUE                                  { ; }
-  | FALSE                                 { ; }
-  | '(' reset_prop ')'                    { ; }
-  | '(' AND reset_props ')'               { ; }
+  | '(' assignment ')'                    { ; }
+  | '(' AND assignments ')'               { ; }
 
 reset_var:
   identifier PRIME 	
@@ -402,7 +400,7 @@ reset_var:
 }
 
 reset_state:
-	'@' number reset_prop ';'
+	'@' number assignment ';'
 {
   cur_jump->next_id = atoi($2);
 	// updating resets
