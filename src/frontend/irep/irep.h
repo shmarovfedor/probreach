@@ -1001,7 +1001,7 @@ public:
   virtual std::string get_type() const = 0;
   virtual ~distt() = default;
   virtual void print(std::ostream &out) const = 0;
-  
+
   friend std::ostream &operator<<(std::ostream &os, const distt &e)
   {
     e.print(os);
@@ -1094,7 +1094,7 @@ public:
   {
     out << "dist_normal(" << *mu << ", " << *sigma << ")";
   }
-  
+
   std::unique_ptr<real_exprt>
   pdf(const std::unique_ptr<symbolt> sym) const override
   {
@@ -1108,21 +1108,18 @@ public:
               std::make_unique<numbert>("3.14159"),
               std::make_unique<powt>(
                 std::make_unique<numbert>(*sigma),
-                std::make_unique<numbert>("2")))), 
+                std::make_unique<numbert>("2")))),
           std::make_unique<numbert>("0.5"))),
-      std::make_unique<expt>(
-        std::make_unique<minust>(
-          std::make_unique<divt>(
-            std::make_unique<powt>(
-              std::make_unique<subt>(
-                std::make_unique<symbolt>(*sym),
-                std::make_unique<numbert>(*mu)),
-              std::make_unique<numbert>("2")),
-            std::make_unique<mult>(
-              std::make_unique<numbert>("2"),
-              std::make_unique<powt>(
-                std::make_unique<numbert>(*sigma),
-                std::make_unique<numbert>("2")))))));
+      std::make_unique<expt>(std::make_unique<minust>(std::make_unique<divt>(
+        std::make_unique<powt>(
+          std::make_unique<subt>(
+            std::make_unique<symbolt>(*sym), std::make_unique<numbert>(*mu)),
+          std::make_unique<numbert>("2")),
+        std::make_unique<mult>(
+          std::make_unique<numbert>("2"),
+          std::make_unique<powt>(
+            std::make_unique<numbert>(*sigma),
+            std::make_unique<numbert>("2")))))));
   }
 };
 
@@ -1140,7 +1137,7 @@ public:
   {
     return "exp_distt";
   }
-  
+
   numbert &get_lambda()
   {
     return *lambda;
@@ -1150,17 +1147,14 @@ public:
   {
     out << "dist_exp(" << *lambda << ")";
   }
-  
+
   std::unique_ptr<real_exprt>
   pdf(const std::unique_ptr<symbolt> sym) const override
   {
     return std::make_unique<mult>(
-        std::make_unique<numbert>(*lambda),
-        std::make_unique<expt>(
-          std::make_unique<minust>(
-            std::make_unique<mult>(
-              std::make_unique<numbert>(*lambda),
-              std::make_unique<symbolt>(*sym)))));
+      std::make_unique<numbert>(*lambda),
+      std::make_unique<expt>(std::make_unique<minust>(std::make_unique<mult>(
+        std::make_unique<numbert>(*lambda), std::make_unique<symbolt>(*sym)))));
   }
 };
 
@@ -1264,8 +1258,8 @@ class dist_declt : public declt
 {
 private:
   std::unique_ptr<distt> dist;
-  
-public:  
+
+public:
   dist_declt(std::unique_ptr<symbolt> sym, std::unique_ptr<distt> dist)
     : declt(std::move(sym)), dist(std::move(dist))
   {
@@ -1295,8 +1289,8 @@ private:
   std::unique_ptr<real_exprt> rhs;
 
 public:
-  odet(std::unique_ptr<symbolt> sym, std::unique_ptr<real_exprt> rhs) : 
-    sym(std::move(sym)), rhs(std::move(rhs))
+  odet(std::unique_ptr<symbolt> sym, std::unique_ptr<real_exprt> rhs)
+    : sym(std::move(sym)), rhs(std::move(rhs))
   {
   }
 
@@ -1334,19 +1328,19 @@ private:
   std::unique_ptr<rvaluet> rhs;
 
 public:
-  assignt(std::unique_ptr<symbolt> sym, std::unique_ptr<rvaluet> rhs) : 
-    sym(std::move(sym)), rhs(std::move(rhs))
+  assignt(std::unique_ptr<symbolt> sym, std::unique_ptr<rvaluet> rhs)
+    : sym(std::move(sym)), rhs(std::move(rhs))
   {
   }
 
   void print(std::ostream &out) const
   {
     out << *sym << "\' = ";
-    if (auto rhs_value = dynamic_cast<real_exprt*>(rhs.get()))
+    if (auto rhs_value = dynamic_cast<real_exprt *>(rhs.get()))
       out << *rhs_value;
-    else if (auto rhs_value = dynamic_cast<intervalt*>(rhs.get()))
+    else if (auto rhs_value = dynamic_cast<intervalt *>(rhs.get()))
       out << *rhs_value;
-    else if (auto rhs_value = dynamic_cast<distt*>(rhs.get()))
+    else if (auto rhs_value = dynamic_cast<distt *>(rhs.get()))
       out << *rhs_value;
   }
 
@@ -1380,10 +1374,10 @@ protected:
 public:
   statet(std::unique_ptr<symbolt> mode_id) : mode_id(std::move(mode_id))
   {
-  }  
-  
+  }
+
   virtual ~statet() = default;
-  
+
   symbolt &get_mode_id()
   {
     return *mode_id;
@@ -1405,8 +1399,10 @@ private:
   std::unique_ptr<bool_exprt> cond;
 
 public:
-  cond_statet(std::unique_ptr<symbolt> mode_id, std::unique_ptr<bool_exprt> cond) : 
-    statet(std::move(mode_id)), cond(std::move(cond))
+  cond_statet(
+    std::unique_ptr<symbolt> mode_id,
+    std::unique_ptr<bool_exprt> cond)
+    : statet(std::move(mode_id)), cond(std::move(cond))
   {
   }
 
@@ -1432,7 +1428,9 @@ private:
   std::vector<std::unique_ptr<assignt>> assigns;
 
 public:
-  reset_statet(std::unique_ptr<symbolt> mode_id, std::vector<std::unique_ptr<assignt>> assigns)
+  reset_statet(
+    std::unique_ptr<symbolt> mode_id,
+    std::vector<std::unique_ptr<assignt>> assigns)
     : statet(std::move(mode_id)), assigns(std::move(assigns))
   {
   }
@@ -1455,6 +1453,5 @@ public:
     out << "(" << *assigns.back() << "))";
   }
 };
-
 
 #endif // PROBREACH_IREP_H

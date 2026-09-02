@@ -400,7 +400,7 @@ reset_var:
 }
 
 reset_state:
-	'@' number assignment ';'
+	'@' number assignments ';'
 {
   cur_jump->next_id = atoi($2);
 	// updating resets
@@ -447,7 +447,7 @@ jump:
 }
 
 init:
-	INIT ':' states
+	INIT ':' cond_states
 {
   delete cur_mode;
   delete cur_jump;
@@ -456,13 +456,13 @@ init:
 }
 
 goal:
-	GOAL ':' states
+	GOAL ':' cond_states
 {
   model::push_goal(cur_states);
   cur_states.clear();
 }
 
-state:
+cond_state:
 	'@' number prop ';' 
 {
   if(model::get_mode(atoi($2)) != NULL)
@@ -481,9 +481,9 @@ state:
 	}
 }
 
-states:
-  states state { ; }
-  | state { ; }
+cond_states:
+  cond_states cond_state { ; }
+  | cond_state { ; }
 
 %%
 
