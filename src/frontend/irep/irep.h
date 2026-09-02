@@ -26,8 +26,14 @@ public:
   }
 };
 
+class rvaluet
+{
+public:
+  virtual ~rvaluet() = default;
+};
+
 /// Real valued expressions
-class real_exprt : public exprt
+class real_exprt : public exprt, public rvaluet
 {
 public:
   virtual ~real_exprt() = default;
@@ -944,7 +950,7 @@ public:
 };
 
 /// Intervals and distributions
-class intervalt
+class intervalt : public rvaluet
 {
 private:
   std::unique_ptr<numbert> left;
@@ -989,13 +995,12 @@ public:
   }
 };
 
-class distt
+class distt : public rvaluet
 {
 public:
   virtual std::string get_type() const = 0;
   virtual ~distt() = default;
   virtual void print(std::ostream &out) const = 0;
-  virtual std::unique_ptr<distt> clone() const = 0;
   
   friend std::ostream &operator<<(std::ostream &os, const distt &e)
   {
@@ -1050,13 +1055,6 @@ public:
       std::make_unique<numbert>("1"),
       std::make_unique<subt>(
         std::make_unique<numbert>(*right), std::make_unique<numbert>(*left)));
-  }
-
-  std::unique_ptr<distt> clone() const override
-  {
-    return std::make_unique<uniform_distt>(
-        std::make_unique<numbert>(*left),
-        std::make_unique<numbert>(*right));
   }
 
   std::unique_ptr<real_exprt> pdf()
@@ -1126,13 +1124,6 @@ public:
                 std::make_unique<numbert>(*sigma),
                 std::make_unique<numbert>("2")))))));
   }
-
-  std::unique_ptr<distt> clone() const override
-  {
-    return std::make_unique<normal_distt>(
-        std::make_unique<numbert>(*mu),
-        std::make_unique<numbert>(*sigma));
-  }
 };
 
 class exp_distt : public cont_distt
@@ -1171,11 +1162,6 @@ public:
               std::make_unique<numbert>(*lambda),
               std::make_unique<symbolt>(*sym)))));
   }
-
-  std::unique_ptr<distt> clone() const override
-  {
-    return std::make_unique<exp_distt>(std::make_unique<numbert>(*lambda));
-  }
 };
 
 class gamma_distt : public cont_distt
@@ -1208,9 +1194,9 @@ public:
   virtual ~declt() = default;
   virtual void print(std::ostream &out) const = 0;
 
-  std::unique_ptr<symbolt> get_symbol()
+  symbolt &get_symbol()
   {
-    return std::make_unique<symbolt>(*sym);
+    return *sym;
   }
 
   friend std::ostream &operator<<(std::ostream &os, const declt &e)
@@ -1241,9 +1227,9 @@ public:
     out << "[" << *value << "] " << *sym;
   }
 
-  std::unique_ptr<numbert> get_value()
+  numbert &get_value()
   {
-    return std::make_unique<numbert>(*value);
+    return *value;
   }
 };
 
@@ -1268,9 +1254,9 @@ public:
     out << *domain << " " << *sym;
   }
 
-  std::unique_ptr<intervalt> get_domain()
+  intervalt &get_domain()
   {
-    return std::make_unique<intervalt>(*domain);
+    return *domain;
   }
 };
 
@@ -1280,8 +1266,8 @@ private:
   std::unique_ptr<distt> dist;
   
 public:  
-  dist_declt(std::unique_ptr<symbolt> sym, std::unique_ptr<distt> d)
-    : declt(std::move(sym)), dist(d->clone())
+  dist_declt(std::unique_ptr<symbolt> sym, std::unique_ptr<distt> dist)
+    : declt(std::move(sym)), dist(std::move(dist))
   {
   }
 
@@ -1295,10 +1281,180 @@ public:
     out << *dist << " " << *sym;
   }
 
-  std::unique_ptr<distt> get_dist()
+  distt &get_dist()
   {
-    return dist->clone();
+    return *dist;
   }
 };
+
+// Other model components
+class odet
+{
+private:
+  std::unique_ptr<symbolt> sym;
+  std::unique_ptr<real_exprt> rhs;
+
+public:
+  odet(std::unique_ptr<symbolt> sym, std::unique_ptr<real_exprt> rhs) : 
+    sym(std::move(sym)), rhs(std::move(rhs))
+  {
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << "d/dt[" << *sym << "] = " << *rhs;
+  }
+
+  symbolt &get_symbol()
+  {
+    return *sym;
+  }
+
+  real_exprt &get_rhs()
+  {
+    return *rhs;
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const odet &e)
+  {
+    e.print(os);
+    return os;
+  }
+
+  std::string get_type() const
+  {
+    return "odet";
+  }
+};
+
+class assignt
+{
+private:
+  std::unique_ptr<symbolt> sym;
+  std::unique_ptr<rvaluet> rhs;
+
+public:
+  assignt(std::unique_ptr<symbolt> sym, std::unique_ptr<rvaluet> rhs) : 
+    sym(std::move(sym)), rhs(std::move(rhs))
+  {
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << *sym << "\' = ";
+    if (auto rhs_value = dynamic_cast<real_exprt*>(rhs.get()))
+      out << *rhs_value;
+    else if (auto rhs_value = dynamic_cast<intervalt*>(rhs.get()))
+      out << *rhs_value;
+    else if (auto rhs_value = dynamic_cast<distt*>(rhs.get()))
+      out << *rhs_value;
+  }
+
+  symbolt &get_symbol()
+  {
+    return *sym;
+  }
+
+  rvaluet &get_rhs()
+  {
+    return *rhs;
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const assignt &e)
+  {
+    e.print(os);
+    return os;
+  }
+
+  std::string get_type() const
+  {
+    return "assignt";
+  }
+};
+
+class statet
+{
+protected:
+  std::unique_ptr<symbolt> mode_id;
+
+public:
+  statet(std::unique_ptr<symbolt> mode_id) : mode_id(std::move(mode_id))
+  {
+  }  
+  
+  virtual ~statet() = default;
+  
+  symbolt &get_mode_id()
+  {
+    return *mode_id;
+  }
+
+  virtual void print(std::ostream &out) const = 0;
+  virtual std::string get_type() const = 0;
+
+  friend std::ostream &operator<<(std::ostream &os, const statet &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
+class cond_statet : public statet
+{
+private:
+  std::unique_ptr<bool_exprt> cond;
+
+public:
+  cond_statet(std::unique_ptr<symbolt> mode_id, std::unique_ptr<bool_exprt> cond) : 
+    statet(std::move(mode_id)), cond(std::move(cond))
+  {
+  }
+
+  bool_exprt &get_cond()
+  {
+    return *cond;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "@" << *mode_id << " " << *cond;
+  }
+
+  std::string get_type() const override
+  {
+    return "cond_statet";
+  }
+};
+
+class reset_statet : public statet
+{
+private:
+  std::vector<std::unique_ptr<assignt>> assigns;
+
+public:
+  reset_statet(std::unique_ptr<symbolt> mode_id, std::vector<std::unique_ptr<assignt>> assigns)
+    : statet(std::move(mode_id)), assigns(std::move(assigns))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "reset_statet";
+  }
+
+  std::vector<std::unique_ptr<assignt>> &get_assignments()
+  {
+    return assigns;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "(and ";
+    for (size_t i = 0; i < assigns.size() - 1; i++)
+      out << "(" << *assigns[i] << ") ";
+    out << "(" << *assigns.back() << "))";
+  }
+};
+
 
 #endif // PROBREACH_IREP_H

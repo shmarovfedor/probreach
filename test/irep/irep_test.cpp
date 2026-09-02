@@ -201,8 +201,7 @@ TEST(normal_distt_ostream, normal_test)
 
 TEST(exp_distt_ostream, normal_test)
 {
-  auto e_dist = std::make_unique<exp_distt>(
-    std::make_unique<numbert>("0.176"));
+  auto e_dist = std::make_unique<exp_distt>(std::make_unique<numbert>("0.176"));
 
   stringstream s;
   s << *e_dist;
@@ -249,4 +248,62 @@ TEST(dist_declt_ostream, normal_test)
   stringstream s;
   s << *rv1;
   EXPECT_EQ(s.str(), "dist_uniform(-0.1254, 1.43e2) p_11");
+}
+
+TEST(cond_statet_ostream, normal_test)
+{
+  auto expr1 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  auto expr2 = std::make_unique<less_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<bool_exprt>> operands;
+  operands.push_back(std::move(expr1));
+  operands.push_back(std::move(expr2));
+
+  auto and_expr = std::make_unique<andt>(std::move(operands));
+
+  auto state = std::make_unique<cond_statet>(
+    std::make_unique<symbolt>("heating"), std::move(and_expr));
+
+  stringstream s;
+  s << *state;
+  EXPECT_EQ(
+    s.str(),
+    "@heating (and ((a1 + 0.456771) >= (b_2 + 3.1415)) ((a1 + 0.456771) <= "
+    "(b_2 + "
+    "3.1415)))");
+}
+
+TEST(odet_ostream, normal_test)
+{
+  auto rhs = std::make_unique<powt>(
+    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+
+  auto ode =
+    std::make_unique<odet>(std::make_unique<symbolt>("y"), std::move(rhs));
+
+  stringstream s;
+  s << *ode;
+  EXPECT_EQ(s.str(), "d/dt[y] = (x ^ 1.43)");
+}
+
+TEST(assignt_ostream, normal_test)
+{
+  auto rhs = std::make_unique<powt>(
+    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+
+  auto assign =
+    std::make_unique<assignt>(std::make_unique<symbolt>("y"), std::move(rhs));
+
+  stringstream s;
+  s << *assign;
+  EXPECT_EQ(s.str(), "y\' = (x ^ 1.43)");
 }
