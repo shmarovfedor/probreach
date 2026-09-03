@@ -1485,10 +1485,49 @@ public:
 
   void print(std::ostream &out) const override
   {
-    out << "(and ";
+    out << "@" << *mode_id << " (and ";
     for (size_t i = 0; i < assigns.size() - 1; i++)
       out << "(" << *assigns[i] << ") ";
     out << "(" << *assigns.back() << "))";
+  }
+};
+
+class jumpt
+{
+private:
+  std::unique_ptr<bool_exprt> guard;
+  std::unique_ptr<reset_statet> reset;
+
+public:
+  jumpt(std::unique_ptr<bool_exprt> guard, std::unique_ptr<reset_statet> reset)
+    : guard(std::move(guard)), reset(std::move(reset))
+  {
+  }
+
+  std::string get_type() const
+  {
+    return "jumpt";
+  }
+
+  bool_exprt &get_guard()
+  {
+    return *guard;
+  }
+
+  reset_statet &get_reset()
+  {
+    return *reset;
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << *guard << " ==> " << *reset;
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const jumpt &e)
+  {
+    e.print(os);
+    return os;
   }
 };
 

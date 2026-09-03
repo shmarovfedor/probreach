@@ -307,3 +307,68 @@ TEST(assignt_ostream, normal_test)
   s << *assign;
   EXPECT_EQ(s.str(), "y\' = (x ^ 1.43)");
 }
+
+TEST(reset_statet_ostream, normal_test)
+{
+  auto assign1 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("a1"), std::make_unique<numbert>("-0.345"));
+  auto assign2 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("b_2"),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+
+  std::vector<std::unique_ptr<assignt>> operands;
+  operands.push_back(std::move(assign1));
+  operands.push_back(std::move(assign2));
+
+  auto reset = std::make_unique<reset_statet>(
+    std::make_unique<symbolt>("cooling"), std::move(operands));
+
+  stringstream s;
+  s << *reset;
+  EXPECT_EQ(s.str(), "@cooling (and (a1' = -0.345) (b_2' = (b_2 + 2.98)))");
+}
+
+TEST(jumpt_ostream, normal_test)
+{
+  auto expr1 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  auto expr2 = std::make_unique<less_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<bool_exprt>> operands;
+  operands.push_back(std::move(expr1));
+  operands.push_back(std::move(expr2));
+
+  auto guard = std::make_unique<andt>(std::move(operands));
+
+  auto assign1 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("a1"), std::make_unique<numbert>("-0.345"));
+  auto assign2 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("b_2"),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+
+  std::vector<std::unique_ptr<assignt>> operands2;
+  operands2.push_back(std::move(assign1));
+  operands2.push_back(std::move(assign2));
+
+  auto reset = std::make_unique<reset_statet>(
+    std::make_unique<symbolt>("cooling"), std::move(operands2));
+
+  auto jump = std::make_unique<jumpt>(std::move(guard), std::move(reset));
+
+  stringstream s;
+  s << *jump;
+  EXPECT_EQ(
+    s.str(),
+    "(and ((a1 + 0.456771) >= (b_2 + 3.1415)) ((a1 + 0.456771) <= (b_2 + "
+    "3.1415))) ==> @cooling (and (a1' = -0.345) (b_2' = (b_2 + 2.98)))");
+}
