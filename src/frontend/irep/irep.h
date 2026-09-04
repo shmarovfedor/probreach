@@ -1170,7 +1170,34 @@ class beta_distt : public cont_distt
 
 class discrete_distt : public distt
 {
-  // Leave implementation for later
+private:
+  std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>> p_mass;
+
+public:
+  discrete_distt(
+    std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>> p_mass)
+    : p_mass(std::move(p_mass))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "discrete_distt";
+  }
+
+  std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>> &get_p_mass()
+  {
+    return p_mass;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "dist_discrete(";
+    for (auto it = p_mass.cbegin(); it != std::prev(p_mass.cend()); ++it)
+      out << *(it->first) << ":" << *(it->second) << ", ";
+    out << *(std::prev(p_mass.cend())->first) << ":"
+        << *(std::prev(p_mass.cend())->second) << ")";
+  }
 };
 
 /// Declarations
@@ -1282,9 +1309,36 @@ public:
 };
 
 // Other model components
-class invtt : public bool_exprt
+class invtt
 {
-  // Finish the implemetation
+private:
+  std::unique_ptr<bool_exprt> cond;
+
+public:
+  invtt(std::unique_ptr<bool_exprt> cond) : cond(std::move(cond))
+  {
+  }
+
+  std::string get_type() const
+  {
+    return "invtt";
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << *cond;
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const invtt &e)
+  {
+    e.print(os);
+    return os;
+  }
+  
+  bool_exprt &get_condition()
+  {
+    return *cond;
+  }
 };
 
 class odet
@@ -1349,7 +1403,7 @@ public:
   void print(std::ostream &out) const
   {
     for (size_t i = 0; i < odes.size(); i++)
-      out << *odes[i] << "\n";
+      out << *odes[i] << ";\n";
   }
 
   friend std::ostream &operator<<(std::ostream &os, const flowt &e)
@@ -1530,5 +1584,162 @@ public:
     return os;
   }
 };
+
+class modet
+{
+private:
+  std::unique_ptr<symbolt> mode_id;
+  std::unique_ptr<intervalt> time_domain;
+  std::vector<std::unique_ptr<invtt>> invariants;
+  std::unique_ptr<flowt> flow;
+  // the jumps are stored as a map <successor_mode_id, jumpt>
+  // instead of just a vector of <jumpt> so that it's easier to access
+  // the ids of successor modes
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps;
+
+public:
+  modet(
+    std::unique_ptr<symbolt> mode_id,
+    std::unique_ptr<intervalt> time_domain,
+    std::vector<std::unique_ptr<invtt>> invariants,
+    std::unique_ptr<flowt> flow,
+    std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps)
+    : mode_id(std::move(mode_id)),
+      time_domain(std::move(time_domain)),
+      invariants(std::move(invariants)),
+      flow(std::move(flow)),
+      jumps(std::move(jumps))
+  {
+  }
+
+  symbolt &get_mode_id()
+  {
+    return *mode_id;
+  }
+
+  intervalt &get_time_domain()
+  {
+    return *time_domain;
+  }
+
+  std::vector<std::unique_ptr<invtt>> &get_invariants()
+  {
+    return invariants;
+  }
+
+  flowt &get_flow()
+  {
+    return *flow;
+  }
+  
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> &get_jumps()
+  {
+    return jumps;
+  }
+
+  std::string get_type() const
+  {
+    return "modet";
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << "{\n";
+    out << "mode " << *mode_id << ";\n";
+    out << "time: " << *time_domain << ";\n";
+    if (invariants.size() > 0)
+    {
+      out << "invt:\n";
+      for (size_t i = 0; i < invariants.size(); i++)
+        out << *invariants[i] << ";\n";
+    }
+    out << "flow:\n";
+    out << *flow;
+    if (!jumps.empty())
+    {
+      out << "jump:\n";
+      for (auto it = jumps.cbegin(); it != jumps.cend(); ++it)
+        out << *(it->second) << ";\n";
+    }
+    out << "}\n";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const modet &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
+class modelt
+{
+private:
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> sym_table;
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes;
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits;
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals;
+
+public:
+  modelt(
+    std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> sym_table,
+    std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes,
+    std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits,
+    std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals) :
+  sym_table(std::move(sym_table)),
+  modes(std::move(modes)),
+  inits(std::move(inits)),
+  goals(std::move(goals))
+  {
+  }
+
+  std::string get_type() const
+  {
+    return "modelt";
+  }
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &get_symbol_table()
+  {
+    return sym_table;
+  }
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> &get_modes()
+  {
+    return modes;
+  }
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> &get_inits()
+  {
+    return inits;
+  }
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> &get_goals()
+  {
+    return goals;
+  }
+
+  void print(std::ostream &out) const
+  {
+    for (auto it = sym_table.cbegin(); it != sym_table.cend(); ++it)
+      out << *(it->second) << ";\n";
+
+    for (auto it = modes.cbegin(); it != modes.cend(); ++it)
+      out << *(it->second);
+
+    out << "init:\n";
+    for (auto it = inits.cbegin(); it != inits.cend(); ++it)
+      out << *(it->second) << ";\n";
+    
+    out << "goal:\n";
+    for (auto it = goals.cbegin(); it != goals.cend(); ++it)
+      out << *(it->second) << ";\n";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const modelt &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
 
 #endif // PROBREACH_IREP_H

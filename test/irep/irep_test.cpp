@@ -214,6 +214,21 @@ TEST(exp_distt_ostream, normal_test)
   EXPECT_EQ(s.str(), "(0.176 * exp(( - ((0.176 * p_12)))))");
 }
 
+TEST(discrete_distt_ostream, normal_test)
+{
+  std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>> p_mass;
+  p_mass.insert(std::make_pair(
+    std::make_unique<numbert>("5.43"), std::make_unique<numbert>("0.35")));
+  p_mass.insert(std::make_pair(
+    std::make_unique<numbert>("-3.76e-2"), std::make_unique<numbert>("0.65")));
+
+  auto d_dist = std::make_unique<discrete_distt>(std::move(p_mass));
+
+  stringstream s;
+  s << *d_dist;
+  EXPECT_EQ(s.str(), "dist_discrete(5.43:0.35, -3.76e-2:0.65)");
+}
+
 TEST(const_declt_ostream, normal_test)
 {
   auto const1 = std::make_unique<const_declt>(
@@ -371,4 +386,274 @@ TEST(jumpt_ostream, normal_test)
     s.str(),
     "(and ((a1 + 0.456771) >= (b_2 + 3.1415)) ((a1 + 0.456771) <= (b_2 + "
     "3.1415))) ==> @cooling (and (a1' = -0.345) (b_2' = (b_2 + 2.98)))");
+}
+
+TEST(modet_ostream, normal_test)
+{
+  auto mode_id = std::make_unique<symbolt>("heating");
+
+  auto time_domain = std::make_unique<intervalt>(
+    std::make_unique<numbert>("0"), std::make_unique<numbert>("10"));
+
+  auto expr1 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  auto expr2 = std::make_unique<less_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<invtt>> invariants;
+  invariants.push_back(std::make_unique<invtt>(std::move(expr1)));
+  invariants.push_back(std::make_unique<invtt>(std::move(expr2)));
+
+  auto rhs1 = std::make_unique<powt>(
+    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+  auto ode1 =
+    std::make_unique<odet>(std::make_unique<symbolt>("y"), std::move(rhs1));
+  auto rhs2 = std::make_unique<addt>(
+    std::make_unique<symbolt>("x"), std::make_unique<numbert>("-0.45"));
+  auto ode2 =
+    std::make_unique<odet>(std::make_unique<symbolt>("x"), std::move(rhs2));
+
+  std::vector<std::unique_ptr<odet>> odes;
+  odes.push_back(std::move(ode1));
+  odes.push_back(std::move(ode2));
+
+  auto flow = std::make_unique<flowt>(std::move(odes));
+
+  auto expr3 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  auto expr4 = std::make_unique<less_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<bool_exprt>> operands;
+  operands.push_back(std::move(expr3));
+  operands.push_back(std::move(expr4));
+
+  auto guard = std::make_unique<andt>(std::move(operands));
+
+  auto assign1 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("a1"), std::make_unique<numbert>("-0.345"));
+  auto assign2 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("b_2"),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+
+  std::vector<std::unique_ptr<assignt>> operands2;
+  operands2.push_back(std::move(assign1));
+  operands2.push_back(std::move(assign2));
+
+  auto reset = std::make_unique<reset_statet>(
+    std::make_unique<symbolt>("cooling"), std::move(operands2));
+
+  auto jump = std::make_unique<jumpt>(std::move(guard), std::move(reset));
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps;
+  jumps[std::make_unique<symbolt>("cooling")] = std::move(jump);
+
+  auto mode = std::make_unique<modet>(
+    std::move(mode_id),
+    std::move(time_domain),
+    std::move(invariants),
+    std::move(flow),
+    std::move(jumps));
+
+  stringstream s;
+  s << *mode;
+
+  EXPECT_EQ(
+    s.str(),
+    "{\n"
+    "mode heating;\n"
+    "time: [0, 10];\n"
+    "invt:\n"
+    "((a1 + 0.456771) >= (b_2 + 3.1415));\n"
+    "((a1 + 0.456771) <= (b_2 + 3.1415));\n"
+    "flow:\n"
+    "d/dt[y] = (x ^ 1.43);\n"
+    "d/dt[x] = (x + -0.45);\n"
+    "jump:\n"
+    "(and ((a1 + 0.456771) >= (b_2 + 3.1415)) ((a1 + 0.456771) <= (b_2 + "
+    "3.1415))) ==> @cooling (and (a1' = -0.345) (b_2' = (b_2 + 2.98)));\n"
+    "}\n");
+}
+
+TEST(modelt_ostream, normal_test)
+{
+  auto const1 = std::make_unique<const_declt>(
+    std::make_unique<symbolt>("pi"), std::make_unique<numbert>("3.1415"));
+
+  auto var1 = std::make_unique<var_declt>(
+    std::make_unique<symbolt>("a1"),
+    std::make_unique<intervalt>(
+      std::make_unique<numbert>("-0.1254"),
+      std::make_unique<numbert>("1.43e2")));
+
+  auto rv1 = std::make_unique<dist_declt>(
+    std::make_unique<symbolt>("p_11"),
+    std::make_unique<uniform_distt>(
+      std::make_unique<numbert>("-0.1254"),
+      std::make_unique<numbert>("1.43e2")));
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> sym_table;
+  sym_table[std::make_unique<symbolt>(const1->get_symbol())] =
+    std::move(const1);
+  sym_table[std::make_unique<symbolt>(var1->get_symbol())] = std::move(var1);
+  sym_table[std::make_unique<symbolt>(rv1->get_symbol())] = std::move(rv1);
+
+  auto mode_id = std::make_unique<symbolt>("heating");
+
+  auto time_domain = std::make_unique<intervalt>(
+    std::make_unique<numbert>("0"), std::make_unique<numbert>("10"));
+
+  auto expr1 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  auto expr2 = std::make_unique<less_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<invtt>> invariants;
+  invariants.push_back(std::make_unique<invtt>(std::move(expr1)));
+  invariants.push_back(std::make_unique<invtt>(std::move(expr2)));
+
+  auto rhs1 = std::make_unique<powt>(
+    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+  auto ode1 =
+    std::make_unique<odet>(std::make_unique<symbolt>("y"), std::move(rhs1));
+  auto rhs2 = std::make_unique<addt>(
+    std::make_unique<symbolt>("x"), std::make_unique<numbert>("-0.45"));
+  auto ode2 =
+    std::make_unique<odet>(std::make_unique<symbolt>("x"), std::move(rhs2));
+
+  std::vector<std::unique_ptr<odet>> odes;
+  odes.push_back(std::move(ode1));
+  odes.push_back(std::move(ode2));
+
+  auto flow = std::make_unique<flowt>(std::move(odes));
+
+  auto expr3 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  auto expr4 = std::make_unique<less_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<bool_exprt>> operands;
+  operands.push_back(std::move(expr3));
+  operands.push_back(std::move(expr4));
+
+  auto guard = std::make_unique<andt>(std::move(operands));
+
+  auto assign1 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("a1"), std::make_unique<numbert>("-0.345"));
+  auto assign2 = std::make_unique<assignt>(
+    std::make_unique<symbolt>("b_2"),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+
+  std::vector<std::unique_ptr<assignt>> operands2;
+  operands2.push_back(std::move(assign1));
+  operands2.push_back(std::move(assign2));
+
+  auto reset = std::make_unique<reset_statet>(
+    std::make_unique<symbolt>("cooling"), std::move(operands2));
+
+  auto jump = std::make_unique<jumpt>(std::move(guard), std::move(reset));
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps;
+  jumps[std::make_unique<symbolt>("cooling")] = std::move(jump);
+
+  auto mode = std::make_unique<modet>(
+    std::move(mode_id),
+    std::move(time_domain),
+    std::move(invariants),
+    std::move(flow),
+    std::move(jumps));
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes;
+  modes[std::make_unique<symbolt>(mode->get_mode_id())] = std::move(mode);
+
+  auto expr5 = std::make_unique<greater_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+
+  std::vector<std::unique_ptr<bool_exprt>> init_operands;
+  init_operands.push_back(std::move(expr5));
+
+  auto init_expr = std::make_unique<andt>(std::move(init_operands));
+
+  auto init_state = std::make_unique<cond_statet>(
+    std::make_unique<symbolt>("heating"), std::move(init_expr));
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits;
+  inits[std::make_unique<symbolt>(init_state->get_mode_id())] =
+    std::move(init_state);
+
+  auto expr6 = std::make_unique<not_equalt>(
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.4")),
+    std::make_unique<addt>(
+      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1")));
+
+  std::vector<std::unique_ptr<bool_exprt>> goal_operands;
+  goal_operands.push_back(std::move(expr6));
+
+  auto goal_expr = std::make_unique<andt>(std::move(goal_operands));
+
+  auto goal_state = std::make_unique<cond_statet>(
+    std::make_unique<symbolt>("cooling"), std::move(goal_expr));
+
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals;
+  goals[std::make_unique<symbolt>(goal_state->get_mode_id())] =
+    std::move(goal_state);
+
+  auto model = std::make_unique<modelt>(
+    std::move(sym_table), std::move(modes), std::move(inits), std::move(goals));
+
+  stringstream s;
+  s << *model;
+
+  EXPECT_EQ(s.str(), 
+    "[-0.1254, 1.43e2] a1;\n"
+    "dist_uniform(-0.1254, 1.43e2) p_11;\n"
+    "[3.1415] pi;\n"
+    "{\n"
+    "mode heating;\n"
+    "time: [0, 10];\n"
+    "invt:\n"
+    "((a1 + 0.456771) >= (b_2 + 3.1415));\n"
+    "((a1 + 0.456771) <= (b_2 + 3.1415));\n"
+    "flow:\n"
+    "d/dt[y] = (x ^ 1.43);\n"
+    "d/dt[x] = (x + -0.45);\n"
+    "jump:\n"
+    "(and ((a1 + 0.456771) >= (b_2 + 3.1415)) ((a1 + 0.456771) <= (b_2 + 3.1415))) ==> @cooling (and (a1' = -0.345) (b_2' = (b_2 + 2.98)));\n"
+    "}\n"
+    "init:\n"
+    "@heating (and ((a1 + 0.456771) >= (b_2 + 3.1415)));\n"
+    "goal:\n"
+    "@cooling (and ((a1 + 0.4) != (b_2 + 3.1)));\n");
 }
