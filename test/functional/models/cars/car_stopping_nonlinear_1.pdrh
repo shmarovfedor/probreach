@@ -12,12 +12,13 @@
 [0,1000] s; // distance m
 [0,27.78] v; // velocity m/s (16.67 m/s = 60 km/h)
 [0,30] tau; // time in seconds
-[0,30] time;
 dist_normal(4,0.1) beta;
 
 // accelerating
 {
 mode 1;
+time: [0, 30];
+
 flow:
 d/dt[s]= v;
 d/dt[v]= alpha*exp(-alpha*tau+beta)-drag*v*v;
@@ -29,6 +30,7 @@ jump:
 // reacting
 {
 mode 2;
+time: [0, 30];
 flow:
 d/dt[s]= v;
 d/dt[v]= -drag*v*v;
@@ -40,6 +42,7 @@ jump:
 // braking
 {
 mode 3;
+time: [0, 30];
 flow:
 d/dt[s]= v;
 d/dt[v]= -a_d-drag*v*v;
@@ -51,6 +54,7 @@ jump:
 // stopped
 {
 mode 4;
+time: [0, 30];
 flow:
 d/dt[s]= v;
 d/dt[v]= 0.0;

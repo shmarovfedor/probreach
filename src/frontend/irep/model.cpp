@@ -9,7 +9,6 @@
 using namespace std;
 
 model::type model::model_type;
-pair<node *, node *> model::time;
 map<string, tuple<node *, node *, node *, node *>> model::rv_map;
 map<string, map<node *, node *>> model::dd_map;
 map<string, pair<node *, node *>> model::var_map;
@@ -37,12 +36,6 @@ void model::push_var(string var, node *left, node *right)
   {
     model::var_map.insert(make_pair(var, make_pair(left, right)));
   }
-}
-
-// adding time bounds
-void model::push_time_bounds(node *left, node *right)
-{
-  model::time = make_pair(left, right);
 }
 
 // adding invariant

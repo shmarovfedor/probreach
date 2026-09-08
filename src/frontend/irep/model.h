@@ -25,7 +25,6 @@ extern type model_type;
 void set_model_type();
 
 // SYMBOL TABLE begin
-extern std::pair<node *, node *> time;
 extern std::map<std::string, std::tuple<node *, node *, node *, node *>> rv_map;
 extern std::map<std::string, std::map<node *, node *>> dd_map;
 extern std::map<std::string, std::pair<node *, node *>> var_map;
@@ -124,7 +123,6 @@ void push_jump(mode &, mode::jump);
 void push_reset(mode &, mode::jump &, std::string, node *);
 void push_init(std::vector<state>);
 void push_goal(std::vector<state>);
-void push_time_bounds(node *, node *);
 
 // getter methods
 mode *get_mode(int);

@@ -72,7 +72,6 @@ declaration:
 	var_declaration { ; }
 	| dist_declaration { ; }
 	| const_declaration { ; }
-  | time_declaration { ; }
 
 const_declaration:
   '[' number ']' identifier ';' 
@@ -116,12 +115,6 @@ var_declaration:
     s << "multiple declaration of variable \"" << $2 << "\"";
     yyerror(s.str().c_str());
   }
-}
-
-time_declaration:
-  interval TIME ';'
-{
-  model::push_time_bounds($1->first, $1->second); 
 }
 
 dist_declaration:
@@ -230,43 +223,7 @@ modes:
 	| mode      { ; }
 
 mode:
-	'{' MODE number ';' invt flow jumps_section '}'
-{
-  if(model::get_mode(atoi($3)) == NULL)
-	{
-    cur_dd.clear();
-    cur_mode->id = atoi($3);
-    cur_mode->time = model::time;
-    model::push_mode(*cur_mode);
-    delete cur_mode;
-    cur_mode = new model::mode;
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of mode \"" << $3 << "\"";
-    yyerror(s.str().c_str());
-  }
-}
-  | '{' MODE number ';' flow jumps_section '}'
-{
-  if(model::get_mode(atoi($3)) == NULL)
-  {
-    cur_dd.clear();
-    cur_mode->id = atoi($3);
-    cur_mode->time = model::time;
-    model::push_mode(*cur_mode);
-    delete cur_mode;
-    cur_mode = new model::mode;
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of mode \"" << $3 << "\"";
-    yyerror(s.str().c_str());
-  }
-}
-  | '{' MODE number ';' TIME ':' interval ';' flow jumps_section '}'
+  '{' MODE number ';' TIME ':' interval ';' flow jumps_section '}'
 {
   if(model::get_mode(atoi($3)) == NULL)
   {
