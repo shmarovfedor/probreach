@@ -109,8 +109,8 @@ extern std::vector<state> goal;
 void push_var(std::string, node *, node *);
 void push_dd(std::string, std::map<node *, node *>);
 void push_rv(std::string, node *, node *, node *, node *);
-void push_mode(mode);
-void push_ode(mode &, std::string, node *);
+
+void finalise();
 
 // getter methods
 mode *get_mode(int);
@@ -123,11 +123,6 @@ std::vector<mode *> get_successors(mode *);
 std::vector<std::vector<mode *>> get_paths(mode *, mode *, int);
 std::vector<std::vector<mode *>> get_all_paths(int);
 std::vector<std::vector<mode *>> get_all_paths(int, int);
-
-// returns <first_map_keys> \ <second_map_keys>
-std::vector<std::string> get_keys_diff(
-  std::map<std::string, std::pair<node *, node *>>,
-  std::map<std::string, std::pair<node *, node *>>);
 
 std::string to_string();
 

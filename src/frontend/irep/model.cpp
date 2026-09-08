@@ -5,6 +5,8 @@
 #include "model.h"
 #include <sstream>
 #include <algorithm>
+#include <set>
+#include <iostream>
 
 using namespace std;
 
@@ -37,75 +39,54 @@ void model::push_var(string var, node *left, node *right)
   }
 }
 
-// adding mode
-void model::push_mode(model::mode m)
+void model::finalise()
 {
-  vector<string> extra_vars = model::get_keys_diff(model::var_map, m.flow_map);
-  for (string var : extra_vars)
-  {
-    m.flow_map.insert(make_pair(var, model::var_map[var]));
-    m.odes.insert(make_pair(var, new node("0")));
-    if (model::var_map[var].first != model::var_map[var].second)
-    {
-      // adding this variable to the list of parameters if it is not there yet,
-      // if it is not a continuous or discrete random variable and
-      // if its domain is an interval of length descending than 0.
-      // There might be a problem as the length of the interval
-      // is always different from 0 due to overapproximation of
-      // the interval arithmetics
-      if (
-        model::par_map.find(var) == model::par_map.cend() &&
-        model::rv_map.find(var) == model::rv_map.cend() &&
-        model::dd_map.find(var) == model::dd_map.cend() &&
-        model::var_map[var].first != model::var_map[var].second)
-      {
-        bool insert_flag = true;
-        for (model::mode md : model::modes)
-        {
-          if (md.flow_map.find(var) != md.flow_map.cend())
-          {
-            insert_flag = false;
-            break;
-          }
-        }
-        if (insert_flag)
-        {
-          model::par_map.insert(make_pair(var, model::var_map[var]));
-        }
-      }
-    }
-  }
-  model::modes.push_back(m);
-}
+  // collecting all variables for which an ode is defined
+  std::set<std::string> flow_vars;
+  for (model::mode m : model::modes)
+    for (auto it : m.odes)
+      flow_vars.insert(it.first);
 
-// adding ode to the mode
-void model::push_ode(model::mode &m, string var, node *ode)
-{
-  if (model::var_map.find(var) != model::var_map.cend())
+  // creating par_map (i.e. explicit nondet parameters)
+  for (auto it : model::var_map)
   {
-    if (m.flow_map.find(var) == m.flow_map.cend())
+    if (
+      flow_vars.find(it.first) == flow_vars.cend() &&
+      model::par_map.find(it.first) == model::par_map.cend() &&
+      model::rv_map.find(it.first) == model::rv_map.cend() &&
+      model::dd_map.find(it.first) == model::dd_map.cend())
     {
-      m.flow_map.insert(make_pair(var, model::var_map[var]));
-      m.odes.insert(make_pair(var, ode));
-      // removing a variable from the parameter list if there is an ode defined for it
-      if (model::par_map.find(var) != model::par_map.cend())
-      {
-        model::par_map.erase(var);
-      }
-    }
-    else
-    {
-      stringstream s;
-      s << "ode for the variable \"" << var << "\" was already declared above";
-      throw invalid_argument(s.str());
+      model::par_map.insert(make_pair(it.first, it.second));
     }
   }
-  else
+
+  // adding equations for the parameters (nondet and random)
+  for (size_t i = 0; i < model::modes.size(); ++i)
   {
-    stringstream s;
-    s << "variable \"" << var
-      << "\" appears in the flow but it was not declared";
-    throw invalid_argument(s.str());
+    for (auto it : model::par_map)
+      model::modes[i].odes.insert(make_pair(it.first, new node("0")));
+    for (auto it : model::rv_map)
+      model::modes[i].odes.insert(make_pair(it.first, new node("0")));
+    for (auto it : model::dd_map)
+      model::modes[i].odes.insert(make_pair(it.first, new node("0")));
+  }
+
+  // adding implicit resets
+  for (size_t i = 0; i < model::modes.size(); ++i)
+  {
+    for (size_t j = 0; j < model::modes[i].jumps.size(); ++j)
+    {
+      for (auto it : model::modes[i].odes)
+      {
+        if (
+          model::modes[i].jumps[j].reset.find(it.first) ==
+          model::modes[i].jumps[j].reset.cend())
+        {
+          model::modes[i].jumps[j].reset.insert(
+            make_pair(it.first, new node(it.first)));
+        }
+      }
+    }
   }
 }
 
@@ -194,7 +175,9 @@ model::get_paths(model::mode *begin, model::mode *end, int path_length)
 }
 
 // comparing two paths alphabetically
-bool compare_paths_ascending(vector<model::mode *> lhs, vector<model::mode *> rhs)
+bool compare_paths_ascending(
+  vector<model::mode *> lhs,
+  vector<model::mode *> rhs)
 {
   if (lhs.size() < rhs.size())
   {
@@ -321,22 +304,6 @@ vector<model::mode *> model::get_goal_modes()
   return res;
 }
 
-// getting a difference of the key sets of two maps
-vector<string> model::get_keys_diff(
-  map<string, pair<node *, node *>> left,
-  map<string, pair<node *, node *>> right)
-{
-  vector<string> res;
-  for (auto it = left.cbegin(); it != left.cend(); it++)
-  {
-    if (right.find(it->first) == right.cend())
-    {
-      res.push_back(it->first);
-    }
-  }
-  return res;
-}
-
 // getting string representation of the model
 string model::to_string()
 {
@@ -357,7 +324,7 @@ string model::to_string()
   out << "CONTINUOUS RANDOM VARIABLES:" << endl;
   for (auto it = model::rv_map.cbegin(); it != model::rv_map.cend(); it++)
   {
-    out << "|   pdf(" << it->first << ") = " << get<0>(it->second) << "  | "
+    out << "|   pdf(" << it->first << ") = " << *(get<0>(it->second)) << "  | "
         << get<1>(it->second)->to_prefix() << " |   "
         << get<2>(it->second)->to_prefix() << "    |   "
         << get<3>(it->second)->to_prefix() << endl;
@@ -384,13 +351,6 @@ string model::to_string()
     {
       out << "|   |   " << n->to_prefix() << endl;
     }
-    out << "|   FLOW_MAP:" << endl;
-    for (auto it = m.flow_map.cbegin(); it != m.flow_map.cend(); it++)
-    {
-      out << "|   " << it->first << " "
-          << " [" << it->second.first->to_prefix() << ", "
-          << it->second.second->to_prefix() << "]" << endl;
-    }
     out << "|   ODES:" << endl;
     for (auto it = m.odes.cbegin(); it != m.odes.cend(); it++)
     {
@@ -405,8 +365,8 @@ string model::to_string()
       out << "|   |   RESETS:" << endl;
       for (auto it = j.reset.cbegin(); it != j.reset.cend(); it++)
       {
-        out << "|   |   |   " << it->first << " := " << it->second->to_prefix()
-            << endl;
+        out << "|   |   |   " << it->first
+            << "\' := " << it->second->to_prefix() << endl;
       }
     }
   }
@@ -438,17 +398,24 @@ void model::distribution::push_uniform(string var, node *a, node *b)
 void model::distribution::push_normal(string var, node *mu, node *sigma)
 {
   model::push_var(var, new node("-infty"), new node("infty"));
-  model::push_rv(var, 
+  model::push_rv(
+    var,
     model::distribution::normal_to_node(var, mu, sigma),
-    new node("-infty"), new node("infty"), mu);
+    new node("-infty"),
+    new node("infty"),
+    mu);
   model::distribution::normal.insert(make_pair(var, make_pair(mu, sigma)));
 }
 
 void model::distribution::push_exp(string var, node *lambda)
 {
   model::push_var(var, new node("0"), new node("infty"));
-  model::push_rv(var, model::distribution::exp_to_node(var, lambda),
-    new node("0"), new node("infty"), new node("0"));
+  model::push_rv(
+    var,
+    model::distribution::exp_to_node(var, lambda),
+    new node("0"),
+    new node("infty"),
+    new node("0"));
   model::distribution::exp.insert(make_pair(var, lambda));
 }
 

@@ -49,6 +49,7 @@ TEST(formal_bad_test_4, testing_bad_4_pdrh)
 {
   parse_pdrh_model(
     string(PROBREACH_TEST_MODELS_DIR) + string("/bad/bad_4.pdrh"));
+  std::cout << model::to_string() << "\n";
   // setting precision for computing the probability interval
   global_config.partition_nondet = true;
   map<string, string> partition_nondet_map = {{"n", "0.1"}};

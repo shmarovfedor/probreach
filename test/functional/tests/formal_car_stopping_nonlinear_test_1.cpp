@@ -50,6 +50,7 @@ TEST(formal_good_test_1, testing_good_1_pdrh)
   parse_pdrh_model(
     string(PROBREACH_TEST_MODELS_DIR) +
     string("/cars/car_stopping_nonlinear_1.pdrh"));
+  std::cout << model::to_string() << "\n";
   // setting precision for computing the probability interval
   global_config.precision_prob = 5e-2;
   global_config.partition_prob = true;

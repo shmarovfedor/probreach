@@ -34,7 +34,7 @@ void yyerror(const char *s);
   model::mode::jump*                                jump_val;
   std::vector<model::mode::jump>*                   jump_list;
   model::mode*                                      mode_val;
-  std::vector<model::mode*>*                        mode_list;
+  std::vector<model::mode>*                         mode_list;
 }
 
 // terminals
@@ -69,7 +69,7 @@ void yyerror(const char *s);
 %type<node_node_pair> dd_pair
 %type<node_node_map> dd_pairs
 %type<state_val> cond_state
-%type<state_list> cond_states
+%type<state_list> cond_states init goal
 %type<str_node_pair> ode
 %type<str_node_map> odes flow_section
 %type<str_val> reset_var
@@ -84,13 +84,17 @@ void yyerror(const char *s);
 
 // declaring some variables
 %{
-model::mode *cur_mode = new model::mode;
-std::vector<model::mode*> cur_path;
 %}
 
 %%
 pdrh:
-	| declarations modes init goal { ; }
+	| declarations modes init goal 
+{
+  model::modes = *$2;
+  model::init = *$3;
+  model::goal = *$4;
+  model::finalise();
+}
 
 declarations:
 	declarations declaration { ; }
@@ -160,20 +164,26 @@ dd_pair:
 }
 
 modes:
-	modes mode  { ; }
-	| mode      { ; }
+	modes mode  
+{ 
+  $1->push_back(*$2);
+  $$ = $1;
+}
+	| mode      
+{
+  $$ = new std::vector<model::mode>();
+  $$->push_back(*$1); 
+}
 
 mode:
   '{' mode_declaration time_section invt_section flow_section jump_section '}'
 {
-  cur_mode->id = atoi($2);
-  cur_mode->time = std::make_pair($3->first, $3->second);
-  cur_mode->invts = *$4;
-  cur_mode->odes = *$5;
-  cur_mode->jumps = *$6;
-  model::push_mode(*cur_mode);
-  delete cur_mode;
-  cur_mode = new model::mode;
+  $$ = new model::mode();
+  $$->id = atoi($2);
+  $$->time = std::make_pair($3->first, $3->second);
+  $$->invts = *$4;
+  $$->odes = *$5;
+  $$->jumps = *$6;
 }
 
 mode_declaration:
@@ -259,8 +269,6 @@ ode:
   $$ = new std::pair<std::string, node*>();
   $$->first = $3;
   $$->second = $6;
-  // this does some extra stuff in addition to assigning the odes
-  push_ode(*cur_mode, std::string($3), $6);
 }
 
 expr:
@@ -320,14 +328,6 @@ reset_var:
 reset_state:
 	'@' number assignments ';'
 {
-	// updating resets for implicit assignments
-  for(auto it = model::var_map.begin(); it != model::var_map.end(); it++)
-  {
-    if($3->find(it->first) == $3->end())
-    {
-      $3->insert(make_pair(it->first, new node(it->first)));
-    }
-  }
   $$ = new std::pair<int, std::map<std::string, node*>>(atoi($2), *$3);
 }
 
@@ -380,13 +380,15 @@ cond_states:
 init:
 	INIT ':' cond_states
 {
-  model::init = *$3;
+  //model::init = *$3;
+  $$ = $3;
 }
 
 goal:
 	GOAL ':' cond_states
 {
-  model::goal = *$3;
+  //model::goal = *$3;
+  $$ = $3;
 }
 
 
