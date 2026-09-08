@@ -24,7 +24,7 @@ void yyerror(const char *s);
 
 // terminals
 %token TIME
-%token N_DIST U_DIST E_DIST G_DIST DD_DIST
+%token N_DIST U_DIST E_DIST DD_DIST
 %token INFTY
 
 %token MODE INVT FLOW JUMP INIT GOAL 
@@ -47,7 +47,7 @@ void yyerror(const char *s);
 
 %type<sval> reset_var
 %type<node_val_list> props dd_pairs
-%type<node_val> prop expr dist dd_pair
+%type<node_val> prop expr dd_pair
 %type<node_val_pair> interval
 
 // declaring some variables
@@ -57,7 +57,6 @@ model::mode::jump *cur_jump = new model::mode::jump;
 std::vector<model::state> cur_states;
 std::vector<model::mode*> cur_path;
 std::map<node*, node*> cur_dd;
-std::map<std::string, node*> const_map;
 %}
 
 %%
@@ -76,22 +75,7 @@ declaration:
 const_declaration:
   '[' number ']' identifier ';' 
 {
-  // adding the value into the map
-  const_map[$4] = new node($2);
-  // scanning the define map for the constants defined before
-  for(auto it = const_map.begin(); it != const_map.end(); it++)
-  {
-    // if the value is a terminal node
-    if(it->second->operands.size() == 0)
-    {
-      // if the value is an identifier
-      if(it->second->value == $4)
-      {
-        const_map[it->first] = new node($2);
-        const_map.erase($4);
-      }
-    }
-  }
+  model::push_var($4, new node($2), new node($2));
 }
 
 interval:
@@ -235,11 +219,7 @@ ode:
 }
 
 expr:
-  identifier
-{
-  if(const_map.find($1) != const_map.end()) $$ = const_map[$1];
-  else $$ = new node($1);
-}
+  identifier                  { $$ = new node($1); }
   | number                    { $$ = new node($1); }
   | MINUS expr %prec UMINUS   { $$ = new node("-", {$2}); }
   | PLUS expr %prec UPLUS     { $$ = $2; }
