@@ -37,12 +37,6 @@ void model::push_var(string var, node *left, node *right)
   }
 }
 
-// adding invariant
-void model::push_invt(model::mode &m, node *invt)
-{
-  m.invts.push_back(invt);
-}
-
 // adding mode
 void model::push_mode(model::mode m)
 {
@@ -113,35 +107,6 @@ void model::push_ode(model::mode &m, string var, node *ode)
       << "\" appears in the flow but it was not declared";
     throw invalid_argument(s.str());
   }
-}
-
-// adding a reset
-void model::push_reset(
-  model::mode &m,
-  model::mode::jump &j,
-  string var,
-  node *expr)
-{
-  // implement error check
-  j.reset.insert(make_pair(var, expr));
-}
-
-// adding a jump
-void model::push_jump(model::mode &m, mode::jump j)
-{
-  m.jumps.push_back(j);
-}
-
-// adding init
-void model::push_init(vector<model::state> s)
-{
-  model::init = s;
-}
-
-// adding goal
-void model::push_goal(vector<model::state> s)
-{
-  model::goal = s;
 }
 
 // adding continuous random variable

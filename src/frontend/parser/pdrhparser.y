@@ -14,12 +14,27 @@ void yyerror(const char *s);
 %}
 %locations
 
+// to make sure that all nameespaces are resolved correctly
+%code requires {
+  #include "model.h"
+}
+
 %union
 {
-	char*                     sval;
-  node*                     node_val;
-  std::vector<node*>*       node_val_list;
-  std::pair<node*, node*>*  node_val_pair;
+	char*                                             str_val;
+  node*                                             node_val;
+  std::vector<node*>*                               node_list;
+  std::pair<node*, node*>*                          node_node_pair;
+  std::map<node*, node*>*                           node_node_map;
+  model::state*                                     state_val;
+  std::vector<model::state>*                        state_list;
+  std::pair<std::string, node*>*                    str_node_pair;
+  std::map<std::string, node*>*                     str_node_map;
+  std::pair<int, std::map<std::string, node*>>*     reset_state_val;
+  model::mode::jump*                                jump_val;
+  std::vector<model::mode::jump>*                   jump_list;
+  model::mode*                                      mode_val;
+  std::vector<model::mode*>*                        mode_list;
 }
 
 // terminals
@@ -36,8 +51,8 @@ void yyerror(const char *s);
 %token EQ GT LT GE LE NE
 %token TRUE FALSE
 
-%token <sval> identifier
-%token <sval> number
+%token <str_val> identifier
+%token <str_val> number
 
 %left EQ LT GT LE GE NE
 %left PLUS MINUS
@@ -45,18 +60,32 @@ void yyerror(const char *s);
 %precedence UMINUS UPLUS
 %right POWER
 
-%type<sval> reset_var
-%type<node_val_list> props dd_pairs
-%type<node_val> prop expr dd_pair
-%type<node_val_pair> interval
+%type<str_val> mode_declaration
+%type<node_node_pair> time_section
+%type<node_val> expr
+%type<node_list> props
+%type<node_val> prop
+%type<node_node_pair> interval
+%type<node_node_pair> dd_pair
+%type<node_node_map> dd_pairs
+%type<state_val> cond_state
+%type<state_list> cond_states
+%type<str_node_pair> ode
+%type<str_node_map> odes flow_section
+%type<str_val> reset_var
+%type<str_node_pair> assignment
+%type<str_node_map> assignments
+%type<reset_state_val> reset_state
+%type<jump_val> jump
+%type<jump_list> jumps jump_section
+%type<node_list> invt_list invt_section
+%type<mode_val> mode
+%type<mode_list> modes
 
 // declaring some variables
 %{
 model::mode *cur_mode = new model::mode;
-model::mode::jump *cur_jump = new model::mode::jump;
-std::vector<model::state> cur_states;
 std::vector<model::mode*> cur_path;
-std::map<node*, node*> cur_dd;
 %}
 
 %%
@@ -107,27 +136,27 @@ dist_declaration:
 }
   | DD_DIST '(' dd_pairs ')' identifier ';'
 {
-  model::push_dd($5, cur_dd);
-  cur_dd.clear();
+  model::push_dd($5, *$3);
 }
 
 dd_pairs:
-    dd_pairs ',' dd_pair        
+  dd_pairs ',' dd_pair        
 {
-  $1->push_back($3);
+  $1->insert(*$3);
   $$ = $1;
 }
   | dd_pair
 {
-  $$ = new std::vector<node*>();
-  $$->push_back($1);
+  $$ = new std::map<node*, node*>();
+  $$->insert(*$1);
 }
 
 dd_pair:
     number ':' number
 {
-  $$ = new node(":", {new node($1), new node($3)});
-  cur_dd.insert(std::make_pair(new node($1), new node($3)));
+  $$ = new std::pair<node*, node*>();
+  $$->first = new node($1);
+  $$->second = new node($3);
 }
 
 modes:
@@ -135,50 +164,52 @@ modes:
 	| mode      { ; }
 
 mode:
-  '{' MODE number ';' TIME ':' interval ';' flow jumps_section '}'
+  '{' mode_declaration time_section invt_section flow_section jump_section '}'
 {
-  if(model::get_mode(atoi($3)) == NULL)
+  cur_mode->id = atoi($2);
+  cur_mode->time = std::make_pair($3->first, $3->second);
+  cur_mode->invts = *$4;
+  cur_mode->odes = *$5;
+  cur_mode->jumps = *$6;
+  model::push_mode(*cur_mode);
+  delete cur_mode;
+  cur_mode = new model::mode;
+}
+
+mode_declaration:
+  MODE number ';'
+{
+  if(model::get_mode(atoi($2)) == NULL)
   {
-    cur_dd.clear();
-    cur_mode->id = atoi($3);
-    cur_mode->time = std::make_pair($7->first, $7->second);
-    model::push_mode(*cur_mode);
-    delete cur_mode;
-    cur_mode = new model::mode;
+    $$ = $2;
   }
   else
   {
     std::stringstream s;
-    s << "multiple declaration of mode \"" << $3 << "\"";
-    yyerror(s.str().c_str());
-  }
-}
-  | '{' MODE number ';' TIME ':' interval ';'  invt flow jumps_section '}'
-{
-  if(model::get_mode(atoi($3)) == NULL)
-  {
-    cur_dd.clear();
-    cur_mode->id = atoi($3);
-    cur_mode->time = std::make_pair($7->first, $7->second);
-    model::push_mode(*cur_mode);
-    delete cur_mode;
-    cur_mode = new model::mode;
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of mode \"" << $3 << "\"";
+    s << "multiple declaration of mode \"" << $2 << "\"";
     yyerror(s.str().c_str());
   }
 }
 
-invt:
-	INVT ':' prop_list { ; }
-	| INVT ':'
+time_section:
+  TIME ':' interval ';' { $$ = $3; }
 
-prop_list:
-	prop_list prop ';'  { model::push_invt(*cur_mode, $2); }
-	| prop ';'          { model::push_invt(*cur_mode, $1); }
+invt_section:
+	INVT ':' invt_list { $$ = $3; }
+	| INVT ':' { $$ = new std::vector<node*>(); }
+  | { $$ = new std::vector<node*>(); }
+
+invt_list:
+	invt_list prop ';'  
+{ 
+  $1->push_back($2);
+  $$ = $1;
+}
+	| prop ';'          
+{ 
+  $$ = new std::vector<node*>();
+  $$->push_back($1);  
+}
 
 props:
 	props prop { $$->push_back($2); }
@@ -204,18 +235,32 @@ prop:
     | '(' XOR props ')'         { $$ = new node("xor", *($3)); }
     | '(' IMPLY prop prop ')'   { $$ = new node("=>", {$3, $4}); }
 
-flow:
-	FLOW ':' odes { ; }
+flow_section:
+	FLOW ':' odes 
+{
+  $$ = $3; 
+}
 
 odes:
-	odes ode { ; }
-	| ode { ; }
+	odes ode 
+{ 
+  $1->insert(*$2);
+  $$ = $1; 
+}
+	| ode 
+{ 
+  $$ = new std::map<std::string, node*>();
+  $$->insert(*$1);
+}
 
 ode:
 	D_DT '[' identifier ']' EQ expr ';'
 {
+  $$ = new std::pair<std::string, node*>();
+  $$->first = $3;
+  $$->second = $6;
+  // this does some extra stuff in addition to assigning the odes
   push_ode(*cur_mode, std::string($3), $6);
-	free($3);
 }
 
 expr:
@@ -241,13 +286,30 @@ expr:
   | '(' expr ')'              { $$ = $2; }
 
 assignments:
-	assignments assignment { ; }
-	| assignment { ; }
+	assignments assignment 
+{ 
+  $1->insert(*$2);
+  $$ = $1; 
+}
+  | '(' AND assignments ')' 
+{ 
+  $$ = $3;
+}
+	| assignment 
+{ 
+  $$ = new std::map<std::string, node*>();
+  $$->insert(*$1); 
+}
 
 assignment:
-  reset_var EQ expr { push_reset(*cur_mode, *cur_jump, $1, $3); }
-  | '(' assignment ')'                    { ; }
-  | '(' AND assignments ')'               { ; }
+  reset_var EQ expr 
+{ 
+  $$ = new std::pair<std::string, node*>($1, $3);
+}
+  | '(' assignment ')'                    
+{ 
+  $$ = $2;
+}
 
 reset_var:
   identifier PRIME 	
@@ -258,72 +320,73 @@ reset_var:
 reset_state:
 	'@' number assignments ';'
 {
-  cur_jump->next_id = atoi($2);
-	// updating resets
-  // variables
+	// updating resets for implicit assignments
   for(auto it = model::var_map.begin(); it != model::var_map.end(); it++)
   {
-    if(cur_jump->reset.find(it->first) == cur_jump->reset.end())
+    if($3->find(it->first) == $3->end())
     {
-      cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
+      $3->insert(make_pair(it->first, new node(it->first)));
     }
   }
+  $$ = new std::pair<int, std::map<std::string, node*>>(atoi($2), *$3);
 }
 
-jumps_section:
-	JUMP ':' jumps { ; }
-	| JUMP ':' { ; }
+jump_section:
+	JUMP ':' jumps { $$ = $3; }
+	| JUMP ':' { $$ = new std::vector<model::mode::jump>(); }
+  | { $$ = new std::vector<model::mode::jump>(); }
 
 jumps:
-	jumps jump { ; }
-	| jump { ; }
+	jumps jump 
+{ 
+  $1->push_back(*$2);
+  $$ = $1; 
+}
+	| jump 
+{ 
+  $$ = new std::vector<model::mode::jump>();
+  $$->push_back(*$1);
+}
 
 jump:
 	prop TRANS reset_state
 {
-  cur_jump->guard = $1;
-	model::push_jump(*cur_mode, *cur_jump);
-	delete cur_jump;
-	cur_jump = new model::mode::jump;
+  $$ = new model::mode::jump();
+  $$->guard = $1;
+  $$->next_id = $3->first;
+  $$->reset = $3->second;
 }
 
 cond_state:
 	'@' number prop ';' 
 {
-  if(model::get_mode(atoi($2)) != NULL)
-  {
-    model::state *s = new model::state;
-    s->id = atoi($2);
-    s->prop = $3;
-    cur_states.push_back(*s);
-    delete s;
-	}
-	else
-	{
-	  std::stringstream s;
-    s << "mode \"" << $2 << "\" does not exist";
-    yyerror(s.str().c_str());
-	}
+  $$ = new model::state();
+  $$->id = atoi($2);
+  $$->prop = $3;
 }
 
 cond_states:
-  cond_states cond_state { ; }
-  | cond_state { ; }
+  cond_states cond_state 
+{ 
+  $1->push_back(*$2);
+  $$ = $1;
+ }
+  | cond_state 
+{ 
+  $$ = new std::vector<model::state>();
+  $$->push_back(*$1); 
+}
 
 init:
 	INIT ':' cond_states
 {
-  delete cur_mode;
-  delete cur_jump;
-	model::push_init(cur_states);
-	cur_states.clear();
+  model::init = *$3;
 }
 
 goal:
 	GOAL ':' cond_states
 {
-  model::push_goal(cur_states);
-  cur_states.clear();
+  model::goal = *$3;
 }
 
 

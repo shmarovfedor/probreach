@@ -110,12 +110,7 @@ void push_var(std::string, node *, node *);
 void push_dd(std::string, std::map<node *, node *>);
 void push_rv(std::string, node *, node *, node *, node *);
 void push_mode(mode);
-void push_invt(mode &, node *);
 void push_ode(mode &, std::string, node *);
-void push_jump(mode &, mode::jump);
-void push_reset(mode &, mode::jump &, std::string, node *);
-void push_init(std::vector<state>);
-void push_goal(std::vector<state>);
 
 // getter methods
 mode *get_mode(int);
