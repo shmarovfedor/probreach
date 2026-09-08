@@ -21,7 +21,6 @@ vector<model::state> model::goal;
 map<string, pair<node *, node *>> model::distribution::uniform;
 map<string, pair<node *, node *>> model::distribution::normal;
 map<string, node *> model::distribution::exp;
-map<string, pair<node *, node *>> model::distribution::gamma;
 
 // adding a variable
 void model::push_var(string var, node *left, node *right)
@@ -154,6 +153,7 @@ void model::push_rv(string var, node *pdf, node *left, node *right, node *start)
 // adding discrete random variable
 void model::push_dd(string var, map<node *, node *> m)
 {
+  model::push_var(var, new node("-infty"), new node("infty"));
   model::dd_map.insert(make_pair(var, m));
 }
 
@@ -443,25 +443,6 @@ string model::to_string()
         out << "|   |   |   " << it->first << " := " << it->second->to_prefix()
             << endl;
       }
-      out << "|   |   RESETS RV:" << endl;
-      for (auto it = j.reset_rv.cbegin(); it != j.reset_rv.cend(); it++)
-      {
-        out << "|   |   " << get<0>(it->second) << "   |   "
-            << get<1>(it->second) << "  | " << get<2>(it->second)->to_prefix()
-            << " |   " << get<3>(it->second)->to_prefix() << "    |   "
-            << get<4>(it->second)->to_prefix() << endl;
-      }
-      out << "|   |   RESETS DD:" << endl;
-      for (auto it = j.reset_dd.cbegin(); it != j.reset_dd.cend(); it++)
-      {
-        out << "|   |   |   dd(" << it->first << ") = (";
-        for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)
-        {
-          out << it2->first->to_prefix() << " : " << it2->second->to_prefix()
-              << ", ";
-        }
-        out << ")" << endl;
-      }
     }
   }
   out << "INIT:" << endl;
@@ -484,21 +465,25 @@ string model::to_string()
 
 void model::distribution::push_uniform(string var, node *a, node *b)
 {
+  model::push_var(var, a, b);
+  model::push_rv(var, model::distribution::uniform_to_node(a, b), a, b, a);
   model::distribution::uniform.insert(make_pair(var, make_pair(a, b)));
 }
 
 void model::distribution::push_normal(string var, node *mu, node *sigma)
 {
+  model::push_var(var, new node("-infty"), new node("infty"));
+  model::push_rv(var, 
+    model::distribution::normal_to_node(var, mu, sigma),
+    new node("-infty"), new node("infty"), mu);
   model::distribution::normal.insert(make_pair(var, make_pair(mu, sigma)));
-}
-
-void model::distribution::push_gamma(string var, node *a, node *b)
-{
-  model::distribution::gamma.insert(make_pair(var, make_pair(a, b)));
 }
 
 void model::distribution::push_exp(string var, node *lambda)
 {
+  model::push_var(var, new node("0"), new node("infty"));
+  model::push_rv(var, model::distribution::exp_to_node(var, lambda),
+    new node("0"), new node("infty"), new node("0"));
   model::distribution::exp.insert(make_pair(var, lambda));
 }
 

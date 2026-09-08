@@ -59,24 +59,6 @@ box rnd::get_random_sample(gsl_rng *r)
               .mid()
               .leftBound())));
   }
-  // gamma distributions
-  for (auto it = model::distribution::gamma.cbegin();
-       it != model::distribution::gamma.cend();
-       it++)
-  {
-    edges.insert(make_pair(
-      it->first,
-      gsl_ran_gamma(
-        r,
-        node_utils::node_to_interval(
-          model::distribution::gamma[it->first].first)
-          .mid()
-          .leftBound(),
-        node_utils::node_to_interval(
-          model::distribution::gamma[it->first].second)
-          .mid()
-          .leftBound())));
-  }
   //discrete distributions
   for (auto it = model::dd_map.cbegin(); it != model::dd_map.cend(); it++)
   {

@@ -35,17 +35,14 @@ namespace distribution
 extern std::map<std::string, std::pair<node *, node *>> uniform;
 extern std::map<std::string, std::pair<node *, node *>> normal;
 extern std::map<std::string, node *> exp;
-extern std::map<std::string, std::pair<node *, node *>> gamma;
 
 void push_uniform(std::string, node *, node *);
 void push_normal(std::string, node *, node *);
 void push_exp(std::string, node *);
-void push_gamma(std::string, node *, node *);
 
 node *uniform_to_node(node *, node *);
 node *normal_to_node(std::string, node *, node *);
 node *exp_to_node(std::string, node *);
-node *gamma_to_node(std::string, node *, node *);
 } // namespace distribution
 // SYMBOL TABLE end
 
@@ -62,10 +59,6 @@ struct mode
     int next_id;
     node *guard;
     std::map<std::string, node *> reset;
-    std::
-      map<std::string, std::tuple<std::string, node *, node *, node *, node *>>
-        reset_rv;
-    std::map<std::string, std::map<node *, node *>> reset_dd;
 
     inline jump()
     {

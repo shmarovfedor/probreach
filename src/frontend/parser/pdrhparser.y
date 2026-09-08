@@ -105,98 +105,26 @@ interval:
 var_declaration:
 	interval identifier ';'
 {
-  if(!model::var_exists($2))
-  {
-    model::push_var($2, $1->first, $1->second);
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $2 << "\"";
-    yyerror(s.str().c_str());
-  }
+  model::push_var($2, $1->first, $1->second);
 }
 
 dist_declaration:
-  G_DIST '(' number ',' number ')' identifier ';'
+  N_DIST '(' number ',' number ')' identifier ';'
 {
-  if(!model::var_exists($7))
-  {
-    model::push_var($7, new node("-infty"), new node("infty"));
-    model::distribution::push_gamma($7, new node($3), new node($5));
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $7 << "\"";
-    yyerror(s.str().c_str());
-  }
-}
-  | N_DIST '(' number ',' number ')' identifier ';'
-{
-  if(!model::var_exists($7))
-  {
-    model::push_var($7, new node("-infty"), new node("infty"));
-    model::push_rv($7, 
-      model::distribution::normal_to_node($7, new node($3), new node($5)),
-      new node("-infty"), new node("infty"), new node($3));
-    model::distribution::push_normal($7, new node($3), new node($5));
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $7 << "\"";
-    yyerror(s.str().c_str());
-  }
+  model::distribution::push_normal($7, new node($3), new node($5));
 }
   | U_DIST '(' number ',' number ')' identifier ';'
 {
-  if(!model::var_exists($7))
-  {
-    model::push_var($7, new node($3), new node($5));
-    model::push_rv($7, 
-      model::distribution::uniform_to_node(new node($3), new node($5)), 
-      new node($3), new node($5), new node($3));
-    model::distribution::push_uniform($7, new node($3), new node($5));
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $7 << "\"";
-    yyerror(s.str().c_str());
-  }
+  model::distribution::push_uniform($7, new node($3), new node($5));
 }
   | E_DIST '(' number ')' identifier ';'
 {
-  if(!model::var_exists($5))
-  {
-    model::push_var($5, new node("0"), new node("infty"));
-    model::push_rv($5,
-      model::distribution::exp_to_node($5, new node($3)),
-      new node("0"), new node("infty"), new node("0"));
-    model::distribution::push_exp($5, new node($3));
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $5 << "\"";
-    yyerror(s.str().c_str());
-  }
+  model::distribution::push_exp($5, new node($3));
 }
   | DD_DIST '(' dd_pairs ')' identifier ';'
 {
-  if(!model::var_exists($5))
-  {
-    model::push_var($5, new node("-infty"), new node("infty"));
-    model::push_dd($5, cur_dd);
-    cur_dd.clear();
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of variable \"" << $5 << "\"";
-    yyerror(s.str().c_str());
-  }
+  model::push_dd($5, cur_dd);
+  cur_dd.clear();
 }
 
 dd_pairs:
@@ -344,16 +272,7 @@ assignment:
 reset_var:
   identifier PRIME 	
 {
-  if(model::var_exists($1))
-  {
-    $$ = $1;
-  }
-  else
-  {
-    std::stringstream s;
-    s << "undefined variable \"" << $1 << "\"";
-    yyerror(s.str().c_str());
-  }
+  $$ = $1;
 }
 
 reset_state:
@@ -368,21 +287,6 @@ reset_state:
     {
       cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
     }
-  }
-  // nondeterministic parameters
-  for(auto it = model::par_map.begin(); it != model::par_map.end(); it++)
-  {
-    cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
-  }
-  // discrete random parameters
-  for(auto it = model::dd_map.begin(); it != model::dd_map.end(); it++)
-  {
-    cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
-  }
-  // continuous random parameters
-  for(auto it = model::rv_map.begin(); it != model::rv_map.end(); it++)
-  {
-    cur_jump->reset.insert(make_pair(it->first, new node(it->first)));
   }
 }
 
@@ -401,22 +305,6 @@ jump:
 	model::push_jump(*cur_mode, *cur_jump);
 	delete cur_jump;
 	cur_jump = new model::mode::jump;
-}
-
-init:
-	INIT ':' cond_states
-{
-  delete cur_mode;
-  delete cur_jump;
-	model::push_init(cur_states);
-	cur_states.clear();
-}
-
-goal:
-	GOAL ':' cond_states
-{
-  model::push_goal(cur_states);
-  cur_states.clear();
 }
 
 cond_state:
@@ -441,6 +329,23 @@ cond_state:
 cond_states:
   cond_states cond_state { ; }
   | cond_state { ; }
+
+init:
+	INIT ':' cond_states
+{
+  delete cur_mode;
+  delete cur_jump;
+	model::push_init(cur_states);
+	cur_states.clear();
+}
+
+goal:
+	GOAL ':' cond_states
+{
+  model::push_goal(cur_states);
+  cur_states.clear();
+}
+
 
 %%
 
