@@ -10,14 +10,15 @@ using namespace std;
 using namespace capd;
 
 // getting a string representation of reachability formula in smt2 format for all combinations of initial and goal modes
-string
-smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
+string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = model::var_map.cbegin(); it != model::var_map.cend(); it++)
+  for (auto it = model::declarations.var_map.cbegin();
+       it != model::declarations.var_map.cend();
+       it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
     for (int i = 0; i < path.size(); i++)
@@ -164,7 +165,6 @@ smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   return s.str();
 }
 
-
 /**
  * Returns the first node matching the pattern (root->value == values[i]) and (expr).
  *
@@ -172,10 +172,7 @@ smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
  * @param res_node - resulting node.
  * @param values - list of values to check.
  */
-void get_first_node_by_value(
-  node *root,
-  node *res_node,
-  vector<string> values)
+void get_first_node_by_value(node *root, node *res_node, vector<string> values)
 {
   if (root->value == "=")
   {
@@ -223,15 +220,15 @@ node *get_node_neg_by_value(node *root, vector<string> values)
   return res_node;
 }
 
-
-string
-smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
+string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = model::var_map.cbegin(); it != model::var_map.cend(); it++)
+  for (auto it = model::declarations.var_map.cbegin();
+       it != model::declarations.var_map.cend();
+       it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
     for (int i = 0; i < path.size(); i++)
@@ -456,7 +453,9 @@ string smt2_generator::reach_c_to_smt2(
     // setting logic
     s << "(set-logic QF_NRA_ODE)" << endl;
     // declaring variables and defining bounds
-    for (auto it = model::var_map.cbegin(); it != model::var_map.cend(); it++)
+    for (auto it = model::declarations.var_map.cbegin();
+         it != model::declarations.var_map.cend();
+         it++)
     {
       s << "(declare-fun " << it->first << " () Real)" << endl;
       for (int i = 0; i <= depth; i++)

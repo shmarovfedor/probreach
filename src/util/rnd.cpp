@@ -60,9 +60,11 @@ box rnd::get_random_sample(gsl_rng *r)
               .leftBound())));
   }
   //discrete distributions
-  for (auto it = model::dd_map.cbegin(); it != model::dd_map.cend(); it++)
+  for (auto it = model::declarations.dd_map.cbegin();
+       it != model::declarations.dd_map.cend();
+       it++)
   {
-    map<node *, node *> mass_map = model::dd_map[it->first];
+    map<node *, node *> mass_map = model::declarations.dd_map[it->first];
     double *p_mass = new double[mass_map.size()];
     node **p_value = new node *[mass_map.size()];
     size_t i = 0;
@@ -90,7 +92,9 @@ box rnd::get_random_sample(gsl_rng *r)
 box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
 {
   map<std::string, capd::interval> edges;
-  for (auto it = model::par_map.cbegin(); it != model::par_map.cend(); it++)
+  for (auto it = model::declarations.par_map.cbegin();
+       it != model::declarations.par_map.cend();
+       it++)
   {
     if (it->second.first->value != it->second.second->value)
     {

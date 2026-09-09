@@ -50,7 +50,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   // evaluating boxes
   for (box dd : dd_partition)
   {
-    if (model::rv_map.size() > 0)
+    if (model::declarations.rv_map.size() > 0)
       probability = capd::interval(
         0,
         2 - measure::p_measure(rv_domain, global_config.precision_prob)
@@ -179,7 +179,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
       rv_partition = rv_stack;
       rv_stack.clear();
       // breaking out of the loop if there are no continuous random variables
-      if (model::rv_map.size() == 0)
+      if (model::declarations.rv_map.size() == 0)
       {
         rv_partition.push_back(box());
         break;

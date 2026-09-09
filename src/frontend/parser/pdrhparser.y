@@ -33,8 +33,10 @@ void yyerror(const char *s);
   std::pair<std::string, std::map<std::string, node*>>* reset_state_val;
   jumpt*                                                jump_val;
   std::vector<jumpt>*                                   jump_list;
-  modet*                                          mode_val;
-  std::vector<modet>*                             mode_list;
+  modet*                                                mode_val;
+  std::vector<modet>*                                   mode_list;
+  declarationt*                                         decl_val;
+  std::map<std::string, declarationt>*                  decl_map;
 }
 
 // terminals
@@ -81,6 +83,8 @@ void yyerror(const char *s);
 %type<node_list> invt_list invt_section
 %type<mode_val> mode
 %type<mode_list> modes
+%type<decl_val> declaration const_declaration var_declaration dist_declaration
+%type<decl_map> declarations
 
 // declaring some variables
 %{
@@ -90,6 +94,7 @@ void yyerror(const char *s);
 pdrh:
 	| declarations modes init goal 
 {
+  model::declarations.decls = *$1;
   model::modes = *$2;
   model::init = *$3;
   model::goal = *$4;
@@ -97,18 +102,37 @@ pdrh:
 }
 
 declarations:
-	declarations declaration { ; }
-	| declaration { ; }
+	declarations declaration 
+{
+  $1->insert(make_pair($2->sym, *$2));
+  $$ = $1;
+}
+	| declaration 
+{
+  $$ = new std::map<std::string, declarationt>();
+  $$->insert(make_pair($1->sym, *$1));
+}
 
 declaration:
-	var_declaration { ; }
-	| dist_declaration { ; }
-	| const_declaration { ; }
+	var_declaration 
+{ 
+  $$ = $1;
+}
+	| dist_declaration 
+{
+  $$ = $1;
+}
+	| const_declaration 
+{ 
+  $$ = $1;
+}
 
 const_declaration:
   '[' number ']' identifier ';' 
 {
   model::push_var($4, new node($2), new node($2));
+  node* decl = new node("const_decl", { new node($2) });
+  $$ = new declarationt($4, decl);
 }
 
 interval:
@@ -123,24 +147,43 @@ var_declaration:
 	interval identifier ';'
 {
   model::push_var($2, $1->first, $1->second);
+  node* range = new node(",", {$1->first, $1->second});
+  node* decl = new node("var_decl", { range });
+  $$ = new declarationt($2, decl);
 }
 
 dist_declaration:
   N_DIST '(' number ',' number ')' identifier ';'
 {
   model::push_normal($7, new node($3), new node($5));
+  node* params = new node(",", {new node($3), new node($5)});
+  node* decl = new node("dist_normal", {params});
+  $$ = new declarationt($7, new node("dist_decl", {decl}));
 }
   | U_DIST '(' number ',' number ')' identifier ';'
 {
   model::push_uniform($7, new node($3), new node($5));
+  node* params = new node(",", {new node($3), new node($5)});
+  node* decl = new node("dist_uniform", {params});
+  $$ = new declarationt($7, new node("dist_decl", {decl}));
 }
   | E_DIST '(' number ')' identifier ';'
 {
   model::push_exp($5, new node($3));
+  node* decl = new node("dist_exp", {new node($3)});
+  $$ = new declarationt($5, new node("dist_decl", {decl}));
 }
   | DD_DIST '(' dd_pairs ')' identifier ';'
 {
   model::push_dd($5, *$3);
+  node* params = new node();
+  for (auto it = $3->cbegin(); it != $3->cend(); ++it)
+  {
+    node* dd_pair = new node(":", {it->first, it->second});
+    params->operands.push_back(dd_pair);
+  }
+  node* decl = new node("dist_discrete", {params});
+  $$ = new declarationt($5, new node("dist_decl", {decl}));
 }
 
 dd_pairs:

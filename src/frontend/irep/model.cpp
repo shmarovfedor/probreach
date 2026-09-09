@@ -11,21 +11,16 @@
 using namespace std;
 
 model::type model::model_type;
-map<string, tuple<node *, node *, node *, node *>> model::rv_map;
-map<string, map<node *, node *>> model::dd_map;
-map<string, pair<node *, node *>> model::var_map;
-map<string, pair<node *, node *>> model::par_map;
-
 vector<modet> model::modes;
 vector<statet> model::init;
 vector<statet> model::goal;
-
 declarationst model::declarations;
 
 // adding a variable
 void model::push_var(string var, node *left, node *right)
 {
-  if (model::var_map.find(var) != model::var_map.cend())
+  if (
+    model::declarations.var_map.find(var) != model::declarations.var_map.cend())
   {
     stringstream s;
     s << "multiple declaration of \"" << var << "\"";
@@ -33,7 +28,7 @@ void model::push_var(string var, node *left, node *right)
   }
   else
   {
-    model::var_map.insert(make_pair(var, make_pair(left, right)));
+    model::declarations.var_map.insert(make_pair(var, make_pair(left, right)));
   }
 }
 
@@ -46,26 +41,29 @@ void model::finalise()
       flow_vars.insert(it.first);
 
   // creating par_map (i.e. explicit nondet parameters)
-  for (auto it : model::var_map)
+  for (auto it : model::declarations.var_map)
   {
     if (
       flow_vars.find(it.first) == flow_vars.cend() &&
-      model::par_map.find(it.first) == model::par_map.cend() &&
-      model::rv_map.find(it.first) == model::rv_map.cend() &&
-      model::dd_map.find(it.first) == model::dd_map.cend())
+      model::declarations.par_map.find(it.first) ==
+        model::declarations.par_map.cend() &&
+      model::declarations.rv_map.find(it.first) ==
+        model::declarations.rv_map.cend() &&
+      model::declarations.dd_map.find(it.first) ==
+        model::declarations.dd_map.cend())
     {
-      model::par_map.insert(make_pair(it.first, it.second));
+      model::declarations.par_map.insert(make_pair(it.first, it.second));
     }
   }
 
   // adding equations for the parameters (nondet and random)
   for (size_t i = 0; i < model::modes.size(); ++i)
   {
-    for (auto it : model::par_map)
+    for (auto it : model::declarations.par_map)
       model::modes[i].odes.insert(make_pair(it.first, new node("0")));
-    for (auto it : model::rv_map)
+    for (auto it : model::declarations.rv_map)
       model::modes[i].odes.insert(make_pair(it.first, new node("0")));
-    for (auto it : model::dd_map)
+    for (auto it : model::declarations.dd_map)
       model::modes[i].odes.insert(make_pair(it.first, new node("0")));
   }
 
@@ -93,14 +91,46 @@ void model::finalise()
 // adding continuous random variable
 void model::push_rv(string var, node *pdf, node *left, node *right, node *start)
 {
-  model::rv_map.insert(make_pair(var, make_tuple(pdf, left, right, start)));
+  model::declarations.rv_map.insert(
+    make_pair(var, make_tuple(pdf, left, right, start)));
 }
 
 // adding discrete random variable
 void model::push_dd(string var, map<node *, node *> m)
 {
   model::push_var(var, new node("-infty"), new node("infty"));
-  model::dd_map.insert(make_pair(var, m));
+  model::declarations.dd_map.insert(make_pair(var, m));
+}
+
+void model::push_uniform(string var, node *a, node *b)
+{
+  model::push_var(var, a, b);
+  model::push_rv(var, model::uniform_to_node(a, b), a, b, a);
+  model::declarations.uniform.insert(make_pair(var, make_pair(a, b)));
+}
+
+void model::push_normal(string var, node *mu, node *sigma)
+{
+  model::push_var(var, new node("-infty"), new node("infty"));
+  model::push_rv(
+    var,
+    model::normal_to_node(var, mu, sigma),
+    new node("-infty"),
+    new node("infty"),
+    mu);
+  model::declarations.normal.insert(make_pair(var, make_pair(mu, sigma)));
+}
+
+void model::push_exp(string var, node *lambda)
+{
+  model::push_var(var, new node("0"), new node("infty"));
+  model::push_rv(
+    var,
+    model::exp_to_node(var, lambda),
+    new node("0"),
+    new node("infty"),
+    new node("0"));
+  model::declarations.exp.insert(make_pair(var, lambda));
 }
 
 // getting pointer to the mode by id
@@ -157,7 +187,7 @@ model::get_paths(modet *begin, modet *end, int path_length)
   return paths;
 }
 
-// getting all paths of length path_length for 
+// getting all paths of length path_length for
 // all combinations of init and goal modes
 vector<vector<modet *>> model::get_all_paths(int path_length)
 {
@@ -208,38 +238,6 @@ vector<modet *> model::get_successors(modet *m)
   return res;
 }
 
-
-void model::push_uniform(string var, node *a, node *b)
-{
-  model::push_var(var, a, b);
-  model::push_rv(var, model::uniform_to_node(a, b), a, b, a);
-  model::declarations.uniform.insert(make_pair(var, make_pair(a, b)));
-}
-
-void model::push_normal(string var, node *mu, node *sigma)
-{
-  model::push_var(var, new node("-infty"), new node("infty"));
-  model::push_rv(
-    var,
-    model::normal_to_node(var, mu, sigma),
-    new node("-infty"),
-    new node("infty"),
-    mu);
-  model::declarations.normal.insert(make_pair(var, make_pair(mu, sigma)));
-}
-
-void model::push_exp(string var, node *lambda)
-{
-  model::push_var(var, new node("0"), new node("infty"));
-  model::push_rv(
-    var,
-    model::exp_to_node(var, lambda),
-    new node("0"),
-    new node("infty"),
-    new node("0"));
-  model::declarations.exp.insert(make_pair(var, lambda));
-}
-
 node *model::uniform_to_node(node *a, node *b)
 {
   node *minus_node = new node("+", {b, a});
@@ -272,11 +270,13 @@ node *model::exp_to_node(string var, node *lambda)
 
 void model::set_model_type()
 {
-  if (model::rv_map.empty() && model::dd_map.empty() && model::par_map.empty())
+  if (
+    model::declarations.rv_map.empty() && model::declarations.dd_map.empty() &&
+    model::declarations.par_map.empty())
   {
     model::model_type = model::type::HA;
   }
-  else if (model::par_map.empty())
+  else if (model::declarations.par_map.empty())
   {
     model::model_type = model::type::PHA;
   }
@@ -291,20 +291,33 @@ string model::to_string()
 {
   stringstream out;
   out << "MODEL TYPE: " << model::model_type << endl;
+  out << "DECLARATIONS:" << endl;
+  for (auto it = model::declarations.decls.cbegin();
+        it != model::declarations.decls.cend();
+        ++it)
+  {
+    out << "|   " << it->first << " : " << *(it->second.decl) << "\n";
+  }
   out << "VARIABLES:" << endl;
-  for (auto it = model::var_map.cbegin(); it != model::var_map.cend(); it++)
+  for (auto it = model::declarations.var_map.cbegin();
+       it != model::declarations.var_map.cend();
+       ++it)
   {
     out << "|   " << it->first << " [" << it->second.first->to_prefix() << ", "
         << it->second.second->to_prefix() << "]" << endl;
   }
   out << "PARAMETERS:" << endl;
-  for (auto it = model::par_map.cbegin(); it != model::par_map.cend(); it++)
+  for (auto it = model::declarations.par_map.cbegin();
+       it != model::declarations.par_map.cend();
+       it++)
   {
     out << "|   " << it->first << " [" << it->second.first->to_prefix() << ", "
         << it->second.second->to_prefix() << "]" << endl;
   }
   out << "CONTINUOUS RANDOM VARIABLES:" << endl;
-  for (auto it = model::rv_map.cbegin(); it != model::rv_map.cend(); it++)
+  for (auto it = model::declarations.rv_map.cbegin();
+       it != model::declarations.rv_map.cend();
+       it++)
   {
     out << "|   pdf(" << it->first << ") = " << *(get<0>(it->second)) << "  | "
         << get<1>(it->second)->to_prefix() << " |   "
@@ -312,7 +325,9 @@ string model::to_string()
         << get<3>(it->second)->to_prefix() << endl;
   }
   out << "DISCRETE RANDOM VARIABLES:" << endl;
-  for (auto it = model::dd_map.cbegin(); it != model::dd_map.cend(); it++)
+  for (auto it = model::declarations.dd_map.cbegin();
+       it != model::declarations.dd_map.cend();
+       it++)
   {
     out << "|   dd(" << it->first << ") = (";
     for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)

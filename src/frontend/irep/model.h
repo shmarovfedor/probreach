@@ -59,12 +59,29 @@ public:
   }
 };
 
+class declarationt
+{
+public:
+  std::string sym;
+  node* decl;
+
+  declarationt(std::string sym, node* decl) : 
+    sym(sym), decl(decl)
+  {
+  }
+};
+
 class declarationst
 {
 public:
   std::map<std::string, std::pair<node *, node *>> uniform;
   std::map<std::string, std::pair<node *, node *>> normal;
   std::map<std::string, node *> exp;
+  std::map<std::string, std::tuple<node *, node *, node *, node *>> rv_map;
+  std::map<std::string, std::map<node *, node *>> dd_map;
+  std::map<std::string, std::pair<node *, node *>> var_map;
+  std::map<std::string, std::pair<node *, node *>> par_map;
+  std::map<std::string, declarationt> decls;
   
   declarationst()
   {
@@ -81,22 +98,15 @@ enum type
   NHA,
   NPHA
 };
+
 extern type model_type;
-void set_model_type();
-
-// SYMBOL TABLE begin
-extern std::map<std::string, std::tuple<node *, node *, node *, node *>> rv_map;
-extern std::map<std::string, std::map<node *, node *>> dd_map;
-extern std::map<std::string, std::pair<node *, node *>> var_map;
-extern std::map<std::string, std::pair<node *, node *>> par_map;
 extern declarationst declarations;
-// SYMBOL TABLE end
-
 extern std::vector<modet> modes;
 extern std::vector<statet> init;
 extern std::vector<statet> goal;
 
 // methods for updating the model
+void set_model_type();
 void push_var(std::string, node *, node *);
 void push_dd(std::string, std::map<node *, node *>);
 void push_rv(std::string, node *, node *, node *, node *);
@@ -114,14 +124,13 @@ void finalise();
 modet *get_mode(std::string);
 std::vector<modet *> get_successors(modet *);
 
+std::string to_string();
+
 // this actually generates paths of the given length (like symbolic execution);
 // this should not be part of the irep
 std::vector<std::vector<modet *>> get_paths(modet *, modet *, int);
 std::vector<std::vector<modet *>> get_all_paths(int);
 std::vector<std::vector<modet *>> get_all_paths(int, int);
-
-std::string to_string();
-
 } // namespace model
 
 #endif //PROBREACH_MODEL_H
