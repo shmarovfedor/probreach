@@ -16,13 +16,11 @@ map<string, map<node *, node *>> model::dd_map;
 map<string, pair<node *, node *>> model::var_map;
 map<string, pair<node *, node *>> model::par_map;
 
-vector<model::mode> model::modes;
-vector<model::state> model::init;
-vector<model::state> model::goal;
+vector<modet> model::modes;
+vector<statet> model::init;
+vector<statet> model::goal;
 
-map<string, pair<node *, node *>> model::distribution::uniform;
-map<string, pair<node *, node *>> model::distribution::normal;
-map<string, node *> model::distribution::exp;
+declarationst model::declarations;
 
 // adding a variable
 void model::push_var(string var, node *left, node *right)
@@ -43,7 +41,7 @@ void model::finalise()
 {
   // collecting all variables for which an ode is defined
   std::set<std::string> flow_vars;
-  for (model::mode m : model::modes)
+  for (modet m : model::modes)
     for (auto it : m.odes)
       flow_vars.insert(it.first);
 
@@ -106,7 +104,7 @@ void model::push_dd(string var, map<node *, node *> m)
 }
 
 // getting pointer to the mode by id
-model::mode *model::get_mode(std::string id)
+modet *model::get_mode(std::string id)
 {
   for (size_t i = 0; i < model::modes.size(); i++)
   {
@@ -119,15 +117,15 @@ model::mode *model::get_mode(std::string id)
 }
 
 // getting all paths of length path_length between begin and end modes
-vector<vector<model::mode *>>
-model::get_paths(model::mode *begin, model::mode *end, int path_length)
+vector<vector<modet *>>
+model::get_paths(modet *begin, modet *end, int path_length)
 {
   // initializing the set of paths
-  vector<std::vector<model::mode *>> paths;
-  vector<model::mode *> path;
+  vector<std::vector<modet *>> paths;
+  vector<modet *> path;
   path.push_back(begin);
   // initializing the stack
-  vector<vector<model::mode *>> stack;
+  vector<vector<modet *>> stack;
   stack.push_back(path);
   while (!stack.empty())
   {
@@ -143,13 +141,13 @@ model::get_paths(model::mode *begin, model::mode *end, int path_length)
     else if (path.size() < path_length + 1)
     {
       // getting the last mode in the path
-      model::mode *cur_mode = path.back();
+      modet *cur_mode = path.back();
       // getting the successors of the mode
-      vector<model::mode *> successors = model::get_successors(cur_mode);
-      for (model::mode *suc_mode : successors)
+      vector<modet *> successors = model::get_successors(cur_mode);
+      for (modet *suc_mode : successors)
       {
         // appending the successor the current paths
-        vector<model::mode *> new_path = path;
+        vector<modet *> new_path = path;
         new_path.push_back(suc_mode);
         // pushing the new path to the set of the paths
         stack.push_back(new_path);
@@ -161,14 +159,14 @@ model::get_paths(model::mode *begin, model::mode *end, int path_length)
 
 // getting all paths of length path_length for 
 // all combinations of init and goal modes
-vector<vector<model::mode *>> model::get_all_paths(int path_length)
+vector<vector<modet *>> model::get_all_paths(int path_length)
 {
-  vector<vector<model::mode *>> res;
-  for (model::state i : model::init)
+  vector<vector<modet *>> res;
+  for (statet i : model::init)
   {
-    for (model::state g : model::goal)
+    for (statet g : model::goal)
     {
-      vector<vector<model::mode *>> paths = model::get_paths(
+      vector<vector<modet *>> paths = model::get_paths(
         model::get_mode(i.id), model::get_mode(g.id), path_length);
       res.insert(res.end(), paths.begin(), paths.end());
     }
@@ -176,24 +174,24 @@ vector<vector<model::mode *>> model::get_all_paths(int path_length)
   return res;
 }
 
-vector<vector<model::mode *>> model::get_all_paths(int min_depth, int max_depth)
+vector<vector<modet *>> model::get_all_paths(int min_depth, int max_depth)
 {
-  vector<vector<model::mode *>> res;
+  vector<vector<modet *>> res;
   for (int i = min_depth; i <= max_depth; i++)
   {
-    vector<vector<model::mode *>> paths = model::get_all_paths(i);
+    vector<vector<modet *>> paths = model::get_all_paths(i);
     res.insert(res.end(), paths.begin(), paths.end());
   }
   return res;
 }
 
 // getting successors of the mode m
-vector<model::mode *> model::get_successors(model::mode *m)
+vector<modet *> model::get_successors(modet *m)
 {
-  vector<model::mode *> res;
-  for (model::mode::jump j : m->jumps)
+  vector<modet *> res;
+  for (jumpt j : m->jumps)
   {
-    model::mode *tmp = model::get_mode(j.next_id);
+    modet *tmp = model::get_mode(j.next_id);
     if (tmp != NULL)
     {
       res.push_back(tmp);
@@ -211,44 +209,44 @@ vector<model::mode *> model::get_successors(model::mode *m)
 }
 
 
-void model::distribution::push_uniform(string var, node *a, node *b)
+void model::push_uniform(string var, node *a, node *b)
 {
   model::push_var(var, a, b);
-  model::push_rv(var, model::distribution::uniform_to_node(a, b), a, b, a);
-  model::distribution::uniform.insert(make_pair(var, make_pair(a, b)));
+  model::push_rv(var, model::uniform_to_node(a, b), a, b, a);
+  model::declarations.uniform.insert(make_pair(var, make_pair(a, b)));
 }
 
-void model::distribution::push_normal(string var, node *mu, node *sigma)
+void model::push_normal(string var, node *mu, node *sigma)
 {
   model::push_var(var, new node("-infty"), new node("infty"));
   model::push_rv(
     var,
-    model::distribution::normal_to_node(var, mu, sigma),
+    model::normal_to_node(var, mu, sigma),
     new node("-infty"),
     new node("infty"),
     mu);
-  model::distribution::normal.insert(make_pair(var, make_pair(mu, sigma)));
+  model::declarations.normal.insert(make_pair(var, make_pair(mu, sigma)));
 }
 
-void model::distribution::push_exp(string var, node *lambda)
+void model::push_exp(string var, node *lambda)
 {
   model::push_var(var, new node("0"), new node("infty"));
   model::push_rv(
     var,
-    model::distribution::exp_to_node(var, lambda),
+    model::exp_to_node(var, lambda),
     new node("0"),
     new node("infty"),
     new node("0"));
-  model::distribution::exp.insert(make_pair(var, lambda));
+  model::declarations.exp.insert(make_pair(var, lambda));
 }
 
-node *model::distribution::uniform_to_node(node *a, node *b)
+node *model::uniform_to_node(node *a, node *b)
 {
   node *minus_node = new node("+", {b, a});
   return new node("/", {new node("1"), minus_node});
 }
 
-node *model::distribution::normal_to_node(string var, node *mu, node *sigma)
+node *model::normal_to_node(string var, node *mu, node *sigma)
 {
   node *power_node_1 = new node("^", {sigma, new node("2")});
   node *mult_node_1 = new node("*", {new node("2"), power_node_1});
@@ -264,7 +262,7 @@ node *model::distribution::normal_to_node(string var, node *mu, node *sigma)
   return new node("*", {exp_node, divide_node_2});
 }
 
-node *model::distribution::exp_to_node(string var, node *lambda)
+node *model::exp_to_node(string var, node *lambda)
 {
   node *times_node = new node("*", {lambda, new node(var)});
   node *unary_minus_node = new node("-", {times_node});
@@ -325,7 +323,7 @@ string model::to_string()
     out << ")" << endl;
   }
   out << "MODES:" << endl;
-  for (model::mode m : model::modes)
+  for (modet m : model::modes)
   {
     out << "|   MODE: " << m.id << ";" << endl;
     out << "|   TIME DOMAIN: [" << m.time.first->to_prefix() << ", "
@@ -342,7 +340,7 @@ string model::to_string()
           << endl;
     }
     out << "|   JUMPS:" << endl;
-    for (model::mode::jump j : m.jumps)
+    for (jumpt j : m.jumps)
     {
       out << "|   |   GUARD: " << j.guard->to_prefix() << endl;
       out << "|   |   SUCCESSOR: " << j.next_id << endl;
@@ -355,7 +353,7 @@ string model::to_string()
     }
   }
   out << "INIT:" << endl;
-  for (model::state s : model::init)
+  for (statet s : model::init)
   {
     out << "|   MODE: " << s.id << endl;
     out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;
@@ -363,7 +361,7 @@ string model::to_string()
   if (model::goal.size() > 0)
   {
     out << "GOAL:" << endl;
-    for (model::state s : model::goal)
+    for (statet s : model::goal)
     {
       out << "|   MODE: " << s.id << endl;
       out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;

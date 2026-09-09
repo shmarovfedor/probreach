@@ -11,7 +11,7 @@ using namespace capd;
 
 // getting a string representation of reachability formula in smt2 format for all combinations of initial and goal modes
 string
-smt2_generator::reach_to_smt2(vector<model::mode *> path, vector<box> boxes)
+smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
@@ -91,7 +91,7 @@ smt2_generator::reach_to_smt2(vector<model::mode *> path, vector<box> boxes)
   }
   s << "\n; defining initial states\n";
   s << "(assert (or \n";
-  for (model::state st : model::init)
+  for (statet st : model::init)
   {
     if (st.id == path.front()->id)
     {
@@ -100,7 +100,7 @@ smt2_generator::reach_to_smt2(vector<model::mode *> path, vector<box> boxes)
   }
   s << "))" << endl;
   int step = 0;
-  for (model::mode *m : path)
+  for (modet *m : path)
   {
     s << "\n; step " << step << ", mode " << m->id << "\n";
     s << "; flow\n";
@@ -125,7 +125,7 @@ smt2_generator::reach_to_smt2(vector<model::mode *> path, vector<box> boxes)
     if (step < path.size() - 1)
     {
       // defining jumps
-      for (model::mode::jump j : m->jumps)
+      for (jumpt j : m->jumps)
       {
         // only the jumps to the next mode in the path
         if (j.next_id == path.at(step + 1)->id)
@@ -150,7 +150,7 @@ smt2_generator::reach_to_smt2(vector<model::mode *> path, vector<box> boxes)
   }
   s << "\n; defining the GOAL\n";
   s << "(assert (or \n";
-  for (model::state st : model::goal)
+  for (statet st : model::goal)
   {
     if (st.id == path.back()->id)
     {
@@ -225,7 +225,7 @@ node *get_node_neg_by_value(node *root, vector<string> values)
 
 
 string
-smt2_generator::reach_c_to_smt2(vector<model::mode *> path, vector<box> boxes)
+smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
@@ -308,7 +308,7 @@ smt2_generator::reach_c_to_smt2(vector<model::mode *> path, vector<box> boxes)
   s << "(assert (and (and " << endl;
   // defining initial states
   s << "(or ";
-  for (model::state st : model::init)
+  for (statet st : model::init)
   {
     if (path.front()->id == st.id)
     {
@@ -337,7 +337,7 @@ smt2_generator::reach_c_to_smt2(vector<model::mode *> path, vector<box> boxes)
   }
   // defining trajectory
   int step = 0;
-  for (model::mode *m : path)
+  for (modet *m : path)
   {
     // defining integrals
     s << "(= [";
@@ -365,7 +365,7 @@ smt2_generator::reach_c_to_smt2(vector<model::mode *> path, vector<box> boxes)
     if (step < path.size() - 1)
     {
       // defining jumps
-      for (model::mode::jump j : m->jumps)
+      for (jumpt j : m->jumps)
       {
         if (j.next_id == path.at(step + 1)->id)
         {
@@ -387,7 +387,7 @@ smt2_generator::reach_c_to_smt2(vector<model::mode *> path, vector<box> boxes)
   s << ")";
   // defining goal
   s << "(and ";
-  for (model::state st : model::goal)
+  for (statet st : model::goal)
   {
     if (path.back()->id == st.id)
     {
@@ -443,7 +443,7 @@ smt2_generator::reach_c_to_smt2(vector<model::mode *> path, vector<box> boxes)
 
 string smt2_generator::reach_c_to_smt2(
   int depth,
-  vector<model::mode *> path,
+  vector<modet *> path,
   vector<box> boxes)
 {
   if (depth == path.size() - 1)
@@ -539,7 +539,7 @@ string smt2_generator::reach_c_to_smt2(
     s << "(assert (and (and " << endl;
     // defining initial states
     s << "(or ";
-    for (model::state st : model::init)
+    for (statet st : model::init)
     {
       if (path.front()->id == st.id)
       {
@@ -569,7 +569,7 @@ string smt2_generator::reach_c_to_smt2(
     // defining trajectory
     for (int i = 0; i <= depth; i++)
     {
-      model::mode *m = path.at(i);
+      modet *m = path.at(i);
       // defining integrals
       s << "(= [";
       for (auto ode_it = m->odes.cbegin(); ode_it != m->odes.cend(); ode_it++)
@@ -596,7 +596,7 @@ string smt2_generator::reach_c_to_smt2(
       if (i < depth)
       {
         // defining jumps
-        for (model::mode::jump j : m->jumps)
+        for (jumpt j : m->jumps)
         {
           // getting only the jumps leading to the next mode in the path
           if (j.next_id == path.at(i + 1)->id)
@@ -618,7 +618,7 @@ string smt2_generator::reach_c_to_smt2(
     s << ")" << endl;
     // defining the last jump
     s << "(and ";
-    for (model::mode::jump j : path.at(depth)->jumps)
+    for (jumpt j : path.at(depth)->jumps)
     {
       if (j.next_id == path.at(depth + 1)->id)
       {

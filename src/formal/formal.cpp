@@ -16,7 +16,7 @@ using namespace std;
 
 int formal::evaluate_ha(int min_depth, int max_depth)
 {
-  vector<vector<model::mode *>> paths =
+  vector<vector<modet *>> paths =
     model::get_all_paths(min_depth, max_depth);
   return decision_procedure::evaluate(
     paths, {}, global_config.solver_bin, global_config.solver_opt);
@@ -43,7 +43,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   capd::interval probability(0, 1);
   // checking if there are any continuous random variables
   // generating all paths of lengths [min_depth, max_depth]
-  std::vector<std::vector<model::mode *>> paths =
+  std::vector<std::vector<modet *>> paths =
     model::get_all_paths(min_depth, max_depth);
   //resulting probability
   capd::interval res_prob(0.0);
@@ -97,11 +97,11 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
         bool sat_flag = false;
         // evaluating all paths for all dd and rv
         //cout << "Before evaluate loop " << omp_get_thread_num() << endl;
-        for (std::vector<model::mode *> path : paths)
+        for (std::vector<modet *> path : paths)
         {
           std::string solver_opt;
           std::stringstream p_stream;
-          for (model::mode *m : path)
+          for (modet *m : path)
           {
             p_stream << m->id << " ";
           }
@@ -256,7 +256,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
     dd_partition.push_back(box());
   }
   // generating all paths of lengths [min_depth, max_depth]
-  std::vector<std::vector<model::mode *>> paths =
+  std::vector<std::vector<modet *>> paths =
     model::get_all_paths(min_depth, max_depth);
   // initializing probability map
   std::map<box, capd::interval> p_map;
@@ -570,7 +570,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
     dd_partition.push_back(box());
   }
   // generating all paths of lengths [min_depth, max_depth]
-  std::vector<std::vector<model::mode *>> paths =
+  std::vector<std::vector<modet *>> paths =
     model::get_all_paths(min_depth, max_depth);
   // initializing probability map
   std::map<box, capd::interval> p_map;

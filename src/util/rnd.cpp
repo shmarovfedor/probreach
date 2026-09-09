@@ -16,46 +16,46 @@ box rnd::get_random_sample(gsl_rng *r)
   map<std::string, capd::interval> edges;
 
   // uniform distributions
-  for (auto it = model::distribution::uniform.cbegin();
-       it != model::distribution::uniform.cend();
+  for (auto it = model::declarations.uniform.cbegin();
+       it != model::declarations.uniform.cend();
        it++)
   {
     edges.insert(make_pair(
       it->first,
       node_utils::node_to_interval(
-        model::distribution::uniform[it->first].first) +
+        model::declarations.uniform[it->first].first) +
         gsl_rng_uniform(r) *
           (node_utils::node_to_interval(
-             model::distribution::uniform[it->first].second) -
+             model::declarations.uniform[it->first].second) -
            node_utils::node_to_interval(
-             model::distribution::uniform[it->first].first))));
+             model::declarations.uniform[it->first].first))));
   }
   // normal distributions
-  for (auto it = model::distribution::normal.cbegin();
-       it != model::distribution::normal.cend();
+  for (auto it = model::declarations.normal.cbegin();
+       it != model::declarations.normal.cend();
        it++)
   {
     edges.insert(make_pair(
       it->first,
       node_utils::node_to_interval(
-        model::distribution::normal[it->first].first) +
+        model::declarations.normal[it->first].first) +
         gsl_ran_gaussian_ziggurat(
           r,
           node_utils::node_to_interval(
-            model::distribution::normal[it->first].second)
+            model::declarations.normal[it->first].second)
             .mid()
             .leftBound())));
   }
   // exponential distributions
-  for (auto it = model::distribution::exp.cbegin();
-       it != model::distribution::exp.cend();
+  for (auto it = model::declarations.exp.cbegin();
+       it != model::declarations.exp.cend();
        it++)
   {
     edges.insert(make_pair(
       it->first,
       gsl_ran_exponential(
         r,
-        1 / node_utils::node_to_interval(model::distribution::exp[it->first])
+        1 / node_utils::node_to_interval(model::declarations.exp[it->first])
               .mid()
               .leftBound())));
   }

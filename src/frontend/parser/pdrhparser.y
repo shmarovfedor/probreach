@@ -26,15 +26,15 @@ void yyerror(const char *s);
   std::vector<node*>*                                   node_list;
   std::pair<node*, node*>*                              node_node_pair;
   std::map<node*, node*>*                               node_node_map;
-  model::state*                                         state_val;
-  std::vector<model::state>*                            state_list;
+  statet*                                               state_val;
+  std::vector<statet>*                                  state_list;
   std::pair<std::string, node*>*                        str_node_pair;
   std::map<std::string, node*>*                         str_node_map;
   std::pair<std::string, std::map<std::string, node*>>* reset_state_val;
-  model::mode::jump*                                    jump_val;
-  std::vector<model::mode::jump>*                       jump_list;
-  model::mode*                                          mode_val;
-  std::vector<model::mode>*                             mode_list;
+  jumpt*                                                jump_val;
+  std::vector<jumpt>*                                   jump_list;
+  modet*                                          mode_val;
+  std::vector<modet>*                             mode_list;
 }
 
 // terminals
@@ -128,15 +128,15 @@ var_declaration:
 dist_declaration:
   N_DIST '(' number ',' number ')' identifier ';'
 {
-  model::distribution::push_normal($7, new node($3), new node($5));
+  model::push_normal($7, new node($3), new node($5));
 }
   | U_DIST '(' number ',' number ')' identifier ';'
 {
-  model::distribution::push_uniform($7, new node($3), new node($5));
+  model::push_uniform($7, new node($3), new node($5));
 }
   | E_DIST '(' number ')' identifier ';'
 {
-  model::distribution::push_exp($5, new node($3));
+  model::push_exp($5, new node($3));
 }
   | DD_DIST '(' dd_pairs ')' identifier ';'
 {
@@ -171,14 +171,14 @@ modes:
 }
 	| mode      
 {
-  $$ = new std::vector<model::mode>();
+  $$ = new std::vector<modet>();
   $$->push_back(*$1); 
 }
 
 mode:
   '{' mode_declaration time_section invt_section flow_section jump_section '}'
 {
-  $$ = new model::mode();
+  $$ = new modet();
   $$->id = $2;
   $$->time = std::make_pair($3->first, $3->second);
   $$->invts = *$4;
@@ -189,16 +189,11 @@ mode:
 mode_declaration:
   MODE number ';'
 {
-  if(model::get_mode($2) == NULL)
-  {
-    $$ = $2;
-  }
-  else
-  {
-    std::stringstream s;
-    s << "multiple declaration of mode \"" << $2 << "\"";
-    yyerror(s.str().c_str());
-  }
+  $$ = $2;
+}
+  | MODE identifier ';'
+{
+  $$ = $2;
 }
 
 time_section:
@@ -333,8 +328,8 @@ reset_state:
 
 jump_section:
 	JUMP ':' jumps { $$ = $3; }
-	| JUMP ':' { $$ = new std::vector<model::mode::jump>(); }
-  | { $$ = new std::vector<model::mode::jump>(); }
+	| JUMP ':' { $$ = new std::vector<jumpt>(); }
+  | { $$ = new std::vector<jumpt>(); }
 
 jumps:
 	jumps jump 
@@ -344,14 +339,14 @@ jumps:
 }
 	| jump 
 { 
-  $$ = new std::vector<model::mode::jump>();
+  $$ = new std::vector<jumpt>();
   $$->push_back(*$1);
 }
 
 jump:
 	prop TRANS reset_state
 {
-  $$ = new model::mode::jump();
+  $$ = new jumpt();
   $$->guard = $1;
   $$->next_id = $3->first;
   $$->reset = $3->second;
@@ -360,7 +355,7 @@ jump:
 cond_state:
 	'@' number prop ';' 
 {
-  $$ = new model::state();
+  $$ = new statet();
   $$->id = $2;
   $$->prop = $3;
 }
@@ -373,7 +368,7 @@ cond_states:
  }
   | cond_state 
 { 
-  $$ = new std::vector<model::state>();
+  $$ = new std::vector<statet>();
   $$->push_back(*$1); 
 }
 
