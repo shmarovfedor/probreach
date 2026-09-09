@@ -88,6 +88,8 @@ void model::finalise()
       }
     }
   }
+
+  model::set_model_type();
 }
 
 // adding continuous random variable
@@ -103,14 +105,8 @@ void model::push_dd(string var, map<node *, node *> m)
   model::dd_map.insert(make_pair(var, m));
 }
 
-// checking if the variable exists
-bool model::var_exists(string var)
-{
-  return (model::var_map.find(var) != model::var_map.cend());
-}
-
 // getting pointer to the mode by id
-model::mode *model::get_mode(int id)
+model::mode *model::get_mode(std::string id)
 {
   for (size_t i = 0; i < model::modes.size(); i++)
   {
@@ -120,17 +116,6 @@ model::mode *model::get_mode(int id)
     }
   }
   return NULL;
-}
-
-model::mode::jump model::mode::get_jump(int id)
-{
-  for (size_t i = 0; i < this->jumps.size(); i++)
-  {
-    if (this->jumps.at(i).next_id == id)
-    {
-      return this->jumps.at(i);
-    }
-  }
 }
 
 // getting all paths of length path_length between begin and end modes
@@ -174,41 +159,8 @@ model::get_paths(model::mode *begin, model::mode *end, int path_length)
   return paths;
 }
 
-// comparing two paths alphabetically
-bool compare_paths_ascending(
-  vector<model::mode *> lhs,
-  vector<model::mode *> rhs)
-{
-  if (lhs.size() < rhs.size())
-  {
-    return true;
-  }
-  else if (lhs.size() > rhs.size())
-  {
-    return false;
-  }
-  else
-  {
-    stringstream s;
-    for (model::mode *m : lhs)
-    {
-      s << m->id;
-    }
-    string lstring = s.str();
-    s.str("");
-    for (model::mode *m : rhs)
-    {
-      s << m->id;
-    }
-    if (lstring.compare(s.str()) <= 0)
-    {
-      return true;
-    }
-    return false;
-  }
-}
-
-// getting all paths of length path_length for all combinations of init and goal modes
+// getting all paths of length path_length for 
+// all combinations of init and goal modes
 vector<vector<model::mode *>> model::get_all_paths(int path_length)
 {
   vector<vector<model::mode *>> res;
@@ -221,8 +173,6 @@ vector<vector<model::mode *>> model::get_all_paths(int path_length)
       res.insert(res.end(), paths.begin(), paths.end());
     }
   }
-  // sorting all paths if the ascending order
-  sort(res.begin(), res.end(), compare_paths_ascending);
   return res;
 }
 
@@ -234,8 +184,6 @@ vector<vector<model::mode *>> model::get_all_paths(int min_depth, int max_depth)
     vector<vector<model::mode *>> paths = model::get_all_paths(i);
     res.insert(res.end(), paths.begin(), paths.end());
   }
-  // sorting all paths if the ascending order
-  sort(res.begin(), res.end(), compare_paths_ascending);
   return res;
 }
 
@@ -262,46 +210,82 @@ vector<model::mode *> model::get_successors(model::mode *m)
   return res;
 }
 
-// getting initial modes
-vector<model::mode *> model::get_init_modes()
+
+void model::distribution::push_uniform(string var, node *a, node *b)
 {
-  vector<model::mode *> res;
-  for (model::state st : model::init)
-  {
-    model::mode *tmp = model::get_mode(st.id);
-    if (tmp != NULL)
-    {
-      res.push_back(tmp);
-    }
-    else
-    {
-      stringstream s;
-      s << "mode \"" << st.id << "\" is not defined but appears in the init";
-      throw invalid_argument(s.str());
-    }
-  }
-  return res;
+  model::push_var(var, a, b);
+  model::push_rv(var, model::distribution::uniform_to_node(a, b), a, b, a);
+  model::distribution::uniform.insert(make_pair(var, make_pair(a, b)));
 }
 
-// getting goal modes
-vector<model::mode *> model::get_goal_modes()
+void model::distribution::push_normal(string var, node *mu, node *sigma)
 {
-  vector<model::mode *> res;
-  for (model::state st : model::goal)
+  model::push_var(var, new node("-infty"), new node("infty"));
+  model::push_rv(
+    var,
+    model::distribution::normal_to_node(var, mu, sigma),
+    new node("-infty"),
+    new node("infty"),
+    mu);
+  model::distribution::normal.insert(make_pair(var, make_pair(mu, sigma)));
+}
+
+void model::distribution::push_exp(string var, node *lambda)
+{
+  model::push_var(var, new node("0"), new node("infty"));
+  model::push_rv(
+    var,
+    model::distribution::exp_to_node(var, lambda),
+    new node("0"),
+    new node("infty"),
+    new node("0"));
+  model::distribution::exp.insert(make_pair(var, lambda));
+}
+
+node *model::distribution::uniform_to_node(node *a, node *b)
+{
+  node *minus_node = new node("+", {b, a});
+  return new node("/", {new node("1"), minus_node});
+}
+
+node *model::distribution::normal_to_node(string var, node *mu, node *sigma)
+{
+  node *power_node_1 = new node("^", {sigma, new node("2")});
+  node *mult_node_1 = new node("*", {new node("2"), power_node_1});
+  node *minus_node = new node("-", {new node(var), mu});
+  node *power_node_2 = new node("^", {minus_node, new node("2")});
+  node *divide_node_1 = new node("/", {power_node_2, mult_node_1});
+  node *unary_minus_node = new node("-", {divide_node_1});
+  node *exp_node = new node("exp", {unary_minus_node});
+  node *mult_node_2 = new node("*", {new node("2"), new node("3.14159265359")});
+  node *sqrt_node = new node("sqrt", {mult_node_2});
+  node *mult_node_3 = new node("*", {sigma, sqrt_node});
+  node *divide_node_2 = new node("/", {new node("1"), mult_node_3});
+  return new node("*", {exp_node, divide_node_2});
+}
+
+node *model::distribution::exp_to_node(string var, node *lambda)
+{
+  node *times_node = new node("*", {lambda, new node(var)});
+  node *unary_minus_node = new node("-", {times_node});
+  node *exp_node = new node("exp", {unary_minus_node});
+  return new node("*", {exp_node, lambda});
+}
+
+void model::set_model_type()
+{
+  if (model::rv_map.empty() && model::dd_map.empty() && model::par_map.empty())
   {
-    model::mode *tmp = model::get_mode(st.id);
-    if (tmp != NULL)
-    {
-      res.push_back(tmp);
-    }
-    else
-    {
-      stringstream s;
-      s << "mode \"" << st.id << "\" is not defined but appears in the goal";
-      throw invalid_argument(s.str());
-    }
+    model::model_type = model::type::HA;
   }
-  return res;
+  else if (model::par_map.empty())
+  {
+    model::model_type = model::type::PHA;
+  }
+  else
+  {
+    model::model_type = model::type::NPHA;
+  }
 }
 
 // getting string representation of the model
@@ -386,81 +370,4 @@ string model::to_string()
     }
   }
   return out.str();
-}
-
-void model::distribution::push_uniform(string var, node *a, node *b)
-{
-  model::push_var(var, a, b);
-  model::push_rv(var, model::distribution::uniform_to_node(a, b), a, b, a);
-  model::distribution::uniform.insert(make_pair(var, make_pair(a, b)));
-}
-
-void model::distribution::push_normal(string var, node *mu, node *sigma)
-{
-  model::push_var(var, new node("-infty"), new node("infty"));
-  model::push_rv(
-    var,
-    model::distribution::normal_to_node(var, mu, sigma),
-    new node("-infty"),
-    new node("infty"),
-    mu);
-  model::distribution::normal.insert(make_pair(var, make_pair(mu, sigma)));
-}
-
-void model::distribution::push_exp(string var, node *lambda)
-{
-  model::push_var(var, new node("0"), new node("infty"));
-  model::push_rv(
-    var,
-    model::distribution::exp_to_node(var, lambda),
-    new node("0"),
-    new node("infty"),
-    new node("0"));
-  model::distribution::exp.insert(make_pair(var, lambda));
-}
-
-node *model::distribution::uniform_to_node(node *a, node *b)
-{
-  node *minus_node = new node("+", {b, a});
-  return new node("/", {new node("1"), minus_node});
-}
-
-node *model::distribution::normal_to_node(string var, node *mu, node *sigma)
-{
-  node *power_node_1 = new node("^", {sigma, new node("2")});
-  node *mult_node_1 = new node("*", {new node("2"), power_node_1});
-  node *minus_node = new node("-", {new node(var), mu});
-  node *power_node_2 = new node("^", {minus_node, new node("2")});
-  node *divide_node_1 = new node("/", {power_node_2, mult_node_1});
-  node *unary_minus_node = new node("-", {divide_node_1});
-  node *exp_node = new node("exp", {unary_minus_node});
-  node *mult_node_2 = new node("*", {new node("2"), new node("3.14159265359")});
-  node *sqrt_node = new node("sqrt", {mult_node_2});
-  node *mult_node_3 = new node("*", {sigma, sqrt_node});
-  node *divide_node_2 = new node("/", {new node("1"), mult_node_3});
-  return new node("*", {exp_node, divide_node_2});
-}
-
-node *model::distribution::exp_to_node(string var, node *lambda)
-{
-  node *times_node = new node("*", {lambda, new node(var)});
-  node *unary_minus_node = new node("-", {times_node});
-  node *exp_node = new node("exp", {unary_minus_node});
-  return new node("*", {exp_node, lambda});
-}
-
-void model::set_model_type()
-{
-  if (model::rv_map.empty() && model::dd_map.empty() && model::par_map.empty())
-  {
-    model::model_type = model::type::HA;
-  }
-  else if (model::par_map.empty())
-  {
-    model::model_type = model::type::PHA;
-  }
-  else
-  {
-    model::model_type = model::type::NPHA;
-  }
 }

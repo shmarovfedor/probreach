@@ -21,20 +21,20 @@ void yyerror(const char *s);
 
 %union
 {
-	char*                                             str_val;
-  node*                                             node_val;
-  std::vector<node*>*                               node_list;
-  std::pair<node*, node*>*                          node_node_pair;
-  std::map<node*, node*>*                           node_node_map;
-  model::state*                                     state_val;
-  std::vector<model::state>*                        state_list;
-  std::pair<std::string, node*>*                    str_node_pair;
-  std::map<std::string, node*>*                     str_node_map;
-  std::pair<int, std::map<std::string, node*>>*     reset_state_val;
-  model::mode::jump*                                jump_val;
-  std::vector<model::mode::jump>*                   jump_list;
-  model::mode*                                      mode_val;
-  std::vector<model::mode>*                         mode_list;
+	char*                                                 str_val;
+  node*                                                 node_val;
+  std::vector<node*>*                                   node_list;
+  std::pair<node*, node*>*                              node_node_pair;
+  std::map<node*, node*>*                               node_node_map;
+  model::state*                                         state_val;
+  std::vector<model::state>*                            state_list;
+  std::pair<std::string, node*>*                        str_node_pair;
+  std::map<std::string, node*>*                         str_node_map;
+  std::pair<std::string, std::map<std::string, node*>>* reset_state_val;
+  model::mode::jump*                                    jump_val;
+  std::vector<model::mode::jump>*                       jump_list;
+  model::mode*                                          mode_val;
+  std::vector<model::mode>*                             mode_list;
 }
 
 // terminals
@@ -179,7 +179,7 @@ mode:
   '{' mode_declaration time_section invt_section flow_section jump_section '}'
 {
   $$ = new model::mode();
-  $$->id = atoi($2);
+  $$->id = $2;
   $$->time = std::make_pair($3->first, $3->second);
   $$->invts = *$4;
   $$->odes = *$5;
@@ -189,7 +189,7 @@ mode:
 mode_declaration:
   MODE number ';'
 {
-  if(model::get_mode(atoi($2)) == NULL)
+  if(model::get_mode($2) == NULL)
   {
     $$ = $2;
   }
@@ -328,7 +328,7 @@ reset_var:
 reset_state:
 	'@' number assignments ';'
 {
-  $$ = new std::pair<int, std::map<std::string, node*>>(atoi($2), *$3);
+  $$ = new std::pair<std::string, std::map<std::string, node*>>($2, *$3);
 }
 
 jump_section:
@@ -361,7 +361,7 @@ cond_state:
 	'@' number prop ';' 
 {
   $$ = new model::state();
-  $$->id = atoi($2);
+  $$->id = $2;
   $$->prop = $3;
 }
 

@@ -47,9 +47,6 @@ int main(int argc, char *argv[])
     yyparse();
   } while (!feof(yyin));
 
-  // setting the model type
-  model::set_model_type();
-
   // only the following cases are supported in the formal setting
   if (model::model_type == model::PHA)
   {

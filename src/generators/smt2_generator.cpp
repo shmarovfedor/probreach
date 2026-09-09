@@ -4,6 +4,7 @@
 
 #include "pdrh_config.h"
 #include "smt2_generator.h"
+#include <iostream>
 
 using namespace std;
 using namespace capd;

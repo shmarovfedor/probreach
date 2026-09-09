@@ -133,7 +133,6 @@ configure_file(
 
 # adding CMakeLists.txt files that specify executables
 include("${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/CMakeLists.txt")
-include("${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/CMakeLists.txt")
 include("${CMAKE_CURRENT_SOURCE_DIR}/src/formal/CMakeLists.txt")
 include("${CMAKE_CURRENT_SOURCE_DIR}/src/mc/CMakeLists.txt")
 include("${CMAKE_CURRENT_SOURCE_DIR}/src/config/CMakeLists.txt")

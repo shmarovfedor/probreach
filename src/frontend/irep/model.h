@@ -46,17 +46,15 @@ node *exp_to_node(std::string, node *);
 } // namespace distribution
 // SYMBOL TABLE end
 
-bool var_exists(std::string);
-
 // mode struct
 struct mode
 {
-  int id;
+  std::string id;
   std::vector<node *> invts;
   // jump struct
   struct jump
   {
-    int next_id;
+    std::string next_id;
     node *guard;
     std::map<std::string, node *> reset;
 
@@ -65,7 +63,7 @@ struct mode
     }
 
     inline jump(
-      const int next_id,
+      std::string next_id,
       node *guard,
       std::map<std::string, node *> reset)
       : next_id(next_id), guard(guard), reset(reset)
@@ -73,21 +71,18 @@ struct mode
     }
   };
   std::vector<jump> jumps;
-  std::map<std::string, std::pair<node *, node *>> flow_map;
   std::map<std::string, node *> odes;
   std::pair<node *, node *> time;
-
-  model::mode::jump get_jump(int);
 };
 extern std::vector<mode> modes;
 
 // state struct
 struct state
 {
-  int id;
+  std::string id;
   node *prop;
 
-  inline state(const int id, node *prop) : id(id), prop(prop)
+  inline state(std::string id, node *prop) : id(id), prop(prop)
   {
   }
 
@@ -113,9 +108,7 @@ void push_rv(std::string, node *, node *, node *, node *);
 void finalise();
 
 // getter methods
-mode *get_mode(int);
-std::vector<mode *> get_init_modes();
-std::vector<mode *> get_goal_modes();
+mode *get_mode(std::string);
 std::vector<mode *> get_successors(mode *);
 
 // this actually generates paths of the given length (like symbolic execution);
