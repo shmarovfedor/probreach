@@ -130,7 +130,6 @@ declaration:
 const_declaration:
   '[' number ']' identifier ';' 
 {
-  model::push_var($4, new node($2), new node($2));
   node* decl = new node("const_decl", { new node($2) });
   $$ = new declarationt($4, decl);
 }
@@ -146,36 +145,27 @@ interval:
 var_declaration:
 	interval identifier ';'
 {
-  model::push_var($2, $1->first, $1->second);
-  node* range = new node(",", {$1->first, $1->second});
-  node* decl = new node("var_decl", { range });
+  node* decl = new node("var_decl", {$1->first, $1->second});
   $$ = new declarationt($2, decl);
 }
 
 dist_declaration:
   N_DIST '(' number ',' number ')' identifier ';'
 {
-  model::push_normal($7, new node($3), new node($5));
-  node* params = new node(",", {new node($3), new node($5)});
-  node* decl = new node("dist_normal", {params});
+  node* decl = new node("dist_normal", {new node($3), new node($5)});
   $$ = new declarationt($7, new node("dist_decl", {decl}));
 }
   | U_DIST '(' number ',' number ')' identifier ';'
 {
-  model::push_uniform($7, new node($3), new node($5));
-  node* params = new node(",", {new node($3), new node($5)});
-  node* decl = new node("dist_uniform", {params});
+  node* decl = new node("dist_uniform", {new node($3), new node($5)});
   $$ = new declarationt($7, new node("dist_decl", {decl}));
 }
   | E_DIST '(' number ')' identifier ';'
 {
-  model::push_exp($5, new node($3));
-  node* decl = new node("dist_exp", {new node($3)});
-  $$ = new declarationt($5, new node("dist_decl", {decl}));
+  $$ = new declarationt($5, new node("dist_decl", {new node($3)}));
 }
   | DD_DIST '(' dd_pairs ')' identifier ';'
 {
-  model::push_dd($5, *$3);
   node* params = new node();
   for (auto it = $3->cbegin(); it != $3->cend(); ++it)
   {

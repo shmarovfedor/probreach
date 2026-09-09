@@ -19,6 +19,7 @@ declarationst model::declarations;
 // adding a variable
 void model::push_var(string var, node *left, node *right)
 {
+  /*
   if (
     model::declarations.var_map.find(var) != model::declarations.var_map.cend())
   {
@@ -28,12 +29,56 @@ void model::push_var(string var, node *left, node *right)
   }
   else
   {
-    model::declarations.var_map.insert(make_pair(var, make_pair(left, right)));
-  }
+  */
+  model::declarations.var_map.insert(make_pair(var, make_pair(left, right)));
+  //}
 }
 
 void model::finalise()
 {
+  // extracting declarations and populating the maps
+  for (auto it = model::declarations.decls.cbegin();
+       it != model::declarations.decls.cend();
+       ++it)
+  {
+    declarationt decl = it->second;
+    if (decl.decl->value == "const_decl")
+    {
+      model::push_var(decl.sym, decl.decl->operands[0], decl.decl->operands[0]);
+    }
+    else if (decl.decl->value == "var_decl")
+    {
+      model::push_var(decl.sym, decl.decl->operands[0], decl.decl->operands[1]);
+    }
+    else if (decl.decl->value == "dist_decl")
+    {
+      node *decl_node = decl.decl->operands[0];
+      if (decl_node->value == "dist_normal")
+      {
+        model::push_normal(
+          decl.sym, decl_node->operands[0], decl_node->operands[1]);
+      }
+      else if (decl_node->value == "dist_uniform")
+      {
+        model::push_uniform(
+          decl.sym, decl_node->operands[0], decl_node->operands[1]);
+      }
+      else if (decl_node->value == "dist_exp")
+      {
+        model::push_exp(
+          decl.sym, decl_node->operands[0]);
+      }
+      else if (decl_node->value == "dist_discrete")
+      {
+        std::map<node*, node*> dd_pairs;
+        for (node* op : decl_node->operands)
+          dd_pairs.insert(make_pair(op->operands[0], op->operands[1]));
+        
+        model::push_dd(decl.sym, dd_pairs);
+      }
+    }
+  }
+
   // collecting all variables for which an ode is defined
   std::set<std::string> flow_vars;
   for (modet m : model::modes)
@@ -293,8 +338,8 @@ string model::to_string()
   out << "MODEL TYPE: " << model::model_type << endl;
   out << "DECLARATIONS:" << endl;
   for (auto it = model::declarations.decls.cbegin();
-        it != model::declarations.decls.cend();
-        ++it)
+       it != model::declarations.decls.cend();
+       ++it)
   {
     out << "|   " << it->first << " : " << *(it->second.decl) << "\n";
   }
