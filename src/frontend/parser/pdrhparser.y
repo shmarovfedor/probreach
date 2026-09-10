@@ -85,6 +85,7 @@ void yyerror(const char *s);
 %type<mode_list> modes
 %type<decl_val> declaration const_declaration var_declaration dist_declaration
 %type<decl_map> declarations
+%type<node_val> dist
 
 // declaring some variables
 %{
@@ -92,7 +93,7 @@ void yyerror(const char *s);
 
 %%
 pdrh:
-	| declarations modes init goal 
+	declarations modes init goal 
 {
   model::declarations.decls = *$1;
   model::modes = *$2;
@@ -150,21 +151,25 @@ var_declaration:
 }
 
 dist_declaration:
-  N_DIST '(' number ',' number ')' identifier ';'
+  dist identifier ';'
 {
-  node* decl = new node("dist_normal", {new node($3), new node($5)});
-  $$ = new declarationt($7, new node("dist_decl", {decl}));
+  $$ = new declarationt($2, new node("dist_decl", {$1}));
 }
-  | U_DIST '(' number ',' number ')' identifier ';'
+
+dist:
+  N_DIST '(' number ',' number ')'
 {
-  node* decl = new node("dist_uniform", {new node($3), new node($5)});
-  $$ = new declarationt($7, new node("dist_decl", {decl}));
+  $$ = new node("dist_normal", {new node($3), new node($5)});
 }
-  | E_DIST '(' number ')' identifier ';'
+  | U_DIST '(' number ',' number ')'
 {
-  $$ = new declarationt($5, new node("dist_decl", {new node($3)}));
+  $$ = new node("dist_uniform", {new node($3), new node($5)});
 }
-  | DD_DIST '(' dd_pairs ')' identifier ';'
+  | E_DIST '(' number ')'
+{
+  $$ = new node("dist_exp", {new node($3)});
+}
+  | DD_DIST '(' dd_pairs ')'
 {
   node* params = new node();
   for (auto it = $3->cbegin(); it != $3->cend(); ++it)
@@ -172,8 +177,7 @@ dist_declaration:
     node* dd_pair = new node(":", {it->first, it->second});
     params->operands.push_back(dd_pair);
   }
-  node* decl = new node("dist_discrete", {params});
-  $$ = new declarationt($5, new node("dist_decl", {decl}));
+  $$ = new node("dist_discrete", {params});
 }
 
 dd_pairs:
@@ -408,17 +412,14 @@ cond_states:
 init:
 	INIT ':' cond_states
 {
-  //model::init = *$3;
   $$ = $3;
 }
 
 goal:
 	GOAL ':' cond_states
 {
-  //model::goal = *$3;
   $$ = $3;
 }
-
 
 %%
 

@@ -19,7 +19,6 @@ declarationst model::declarations;
 // adding a variable
 void model::push_var(string var, node *left, node *right)
 {
-  /*
   if (
     model::declarations.var_map.find(var) != model::declarations.var_map.cend())
   {
@@ -29,9 +28,8 @@ void model::push_var(string var, node *left, node *right)
   }
   else
   {
-  */
-  model::declarations.var_map.insert(make_pair(var, make_pair(left, right)));
-  //}
+    model::declarations.var_map.insert(make_pair(var, make_pair(left, right)));
+  }
 }
 
 void model::finalise()
