@@ -52,14 +52,14 @@ int main(int argc, char *argv[])
   } while (!feof(yyin));
 
   // only the following cases are supported in the formal setting
-  if (model::model_type == model::PHA)
+  if (global_model.model_type == modelt::type::PHA)
   {
     capd::interval probability = formal::evaluate_pha(
       global_config.reach_depth_min, global_config.reach_depth_max);
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (model::model_type == model::NPHA)
+  else if (global_model.model_type == modelt::type::NPHA)
   {
     map<box, capd::interval> probability_map;
     if(global_config.upper_p_bound_flag)

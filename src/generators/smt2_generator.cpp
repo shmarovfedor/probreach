@@ -16,8 +16,8 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = model::declarations.var_map.cbegin();
-       it != model::declarations.var_map.cend();
+  for (auto it = global_model.declarations.var_map.cbegin();
+       it != global_model.declarations.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -92,7 +92,7 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   }
   s << "\n; defining initial states\n";
   s << "(assert (or \n";
-  for (statet st : model::init)
+  for (statet st : global_model.init)
   {
     if (st.id == path.front()->id)
     {
@@ -151,7 +151,7 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   }
   s << "\n; defining the GOAL\n";
   s << "(assert (or \n";
-  for (statet st : model::goal)
+  for (statet st : global_model.goal)
   {
     if (st.id == path.back()->id)
     {
@@ -226,8 +226,8 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = model::declarations.var_map.cbegin();
-       it != model::declarations.var_map.cend();
+  for (auto it = global_model.declarations.var_map.cbegin();
+       it != global_model.declarations.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -305,7 +305,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
   s << "(assert (and (and " << endl;
   // defining initial states
   s << "(or ";
-  for (statet st : model::init)
+  for (statet st : global_model.init)
   {
     if (path.front()->id == st.id)
     {
@@ -384,7 +384,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
   s << ")";
   // defining goal
   s << "(and ";
-  for (statet st : model::goal)
+  for (statet st : global_model.goal)
   {
     if (path.back()->id == st.id)
     {
@@ -453,8 +453,8 @@ string smt2_generator::reach_c_to_smt2(
     // setting logic
     s << "(set-logic QF_NRA_ODE)" << endl;
     // declaring variables and defining bounds
-    for (auto it = model::declarations.var_map.cbegin();
-         it != model::declarations.var_map.cend();
+    for (auto it = global_model.declarations.var_map.cbegin();
+         it != global_model.declarations.var_map.cend();
          it++)
     {
       s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -538,7 +538,7 @@ string smt2_generator::reach_c_to_smt2(
     s << "(assert (and (and " << endl;
     // defining initial states
     s << "(or ";
-    for (statet st : model::init)
+    for (statet st : global_model.init)
     {
       if (path.front()->id == st.id)
       {

@@ -77,22 +77,22 @@ capd::interval measure::p_measure(box b, double e)
   for (auto it = edges.cbegin(); it != edges.cend(); it++)
   {
     if (
-      model::declarations.rv_map.find(it->first) !=
-      model::declarations.rv_map.cend())
+      global_model.declarations.rv_map.find(it->first) !=
+      global_model.declarations.rv_map.cend())
     {
       res *= measure::integral(
                it->first,
-               std::get<0>(model::declarations.rv_map[it->first])->to_infix(),
+               std::get<0>(global_model.declarations.rv_map[it->first])->to_infix(),
                it->second,
                measure::precision(e, edges.size()))
                .first;
     }
     else if (
-      model::declarations.dd_map.find(it->first) !=
-      model::declarations.dd_map.cend())
+      global_model.declarations.dd_map.find(it->first) !=
+      global_model.declarations.dd_map.cend())
     {
       bool measure_exists = false;
-      map<node *, node *> tmp_map = model::declarations.dd_map[it->first];
+      map<node *, node *> tmp_map = global_model.declarations.dd_map[it->first];
       for (auto it2 = tmp_map.cbegin(); it2 != tmp_map.cend(); it2++)
       {
         if (it->second == node_utils::node_to_interval(it2->first))
@@ -132,11 +132,11 @@ capd::interval measure::p_dd_measure(box b)
   for (auto it = edges.cbegin(); it != edges.cend(); it++)
   {
     if (
-      model::declarations.dd_map.find(it->first) !=
-      model::declarations.dd_map.cend())
+      global_model.declarations.dd_map.find(it->first) !=
+      global_model.declarations.dd_map.cend())
     {
       bool measure_exists = false;
-      map<node *, node *> tmp_map = model::declarations.dd_map[it->first];
+      map<node *, node *> tmp_map = global_model.declarations.dd_map[it->first];
       for (auto it2 = tmp_map.cbegin(); it2 != tmp_map.cend(); it2++)
       {
         if (it->second == node_utils::node_to_interval(it2->first))
@@ -193,8 +193,8 @@ capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
   {
     // considering only the parameters which domain is not a single point
     if (
-      model::declarations.par_map[it->first].first->value !=
-      model::declarations.par_map[it->first].second->value)
+      global_model.declarations.par_map[it->first].first->value !=
+      global_model.declarations.par_map[it->first].second->value)
     {
       double prec = 1e-5;
       //double prec = sigma.get_map()[it->first].leftBound() / 10;
@@ -267,8 +267,8 @@ std::pair<capd::interval, std::vector<capd::interval>> measure::bounds_from_pdf(
 std::vector<box> measure::get_rv_partition()
 {
   std::map<std::string, std::vector<capd::interval>> partition_map;
-  for (auto it = model::declarations.rv_map.cbegin();
-       it != model::declarations.rv_map.cend();
+  for (auto it = global_model.declarations.rv_map.cbegin();
+       it != global_model.declarations.rv_map.cend();
        it++)
   {
     // setting initial rv bounds
@@ -292,15 +292,15 @@ std::vector<box> measure::get_rv_partition()
         init_domain,
         node_utils::node_to_interval(get<3>(it->second)).mid().leftBound(),
         measure::precision(
-          global_config.precision_prob, model::declarations.rv_map.size()));
+          global_config.precision_prob, global_model.declarations.rv_map.size()));
     // updating rv bounds
-    model::declarations.rv_map[it->first] = make_tuple(
+    global_model.declarations.rv_map[it->first] = make_tuple(
       std::get<0>(it->second),
       new node(std::to_string(bound.first.leftBound())),
       new node(std::to_string(bound.first.rightBound())),
       get<3>(it->second));
     // updating var bounds
-    model::declarations.var_map[it->first] = make_pair(
+    global_model.declarations.var_map[it->first] = make_pair(
       new node(std::to_string(bound.first.leftBound())),
       new node(std::to_string(bound.first.rightBound())));
     // updating partition map
@@ -312,8 +312,8 @@ std::vector<box> measure::get_rv_partition()
 std::vector<box> measure::get_dd_partition()
 {
   std::map<std::string, std::vector<capd::interval>> m;
-  for (auto it = model::declarations.dd_map.cbegin();
-       it != model::declarations.dd_map.cend();
+  for (auto it = global_model.declarations.dd_map.cbegin();
+       it != global_model.declarations.dd_map.cend();
        it++)
   {
     std::vector<capd::interval> args;
@@ -330,8 +330,8 @@ std::vector<box> measure::get_dd_partition()
 box measure::get_rv_domain()
 {
   map<std::string, vector<capd::interval>> domain_map;
-  for (auto it = model::declarations.rv_map.cbegin();
-       it != model::declarations.rv_map.cend();
+  for (auto it = global_model.declarations.rv_map.cbegin();
+       it != global_model.declarations.rv_map.cend();
        it++)
   {
     vector<capd::interval> tmp;
@@ -352,8 +352,8 @@ box measure::get_rv_domain()
 box measure::get_nondet_domain()
 {
   map<std::string, capd::interval> m;
-  for (auto it = model::declarations.par_map.cbegin();
-       it != model::declarations.par_map.cend();
+  for (auto it = global_model.declarations.par_map.cbegin();
+       it != global_model.declarations.par_map.cend();
        it++)
   {
     m.insert(make_pair(

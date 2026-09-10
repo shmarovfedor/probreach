@@ -50,7 +50,6 @@ dist_uniform        { return U_DIST; }
 dist_normal         { return N_DIST; }
 dist_exp            { return E_DIST; }
 dist_discrete       { return DD_DIST; }
-infty               { return INFTY; }
 
 mode                { return MODE; }
 invt                { return INVT; }

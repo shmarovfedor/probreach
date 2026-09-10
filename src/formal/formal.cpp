@@ -17,7 +17,7 @@ using namespace std;
 int formal::evaluate_ha(int min_depth, int max_depth)
 {
   vector<vector<modet *>> paths =
-    model::get_all_paths(min_depth, max_depth);
+    global_model.get_all_paths(min_depth, max_depth);
   return decision_procedure::evaluate(
     paths, {}, global_config.solver_bin, global_config.solver_opt);
 }
@@ -44,13 +44,13 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   // checking if there are any continuous random variables
   // generating all paths of lengths [min_depth, max_depth]
   std::vector<std::vector<modet *>> paths =
-    model::get_all_paths(min_depth, max_depth);
+    global_model.get_all_paths(min_depth, max_depth);
   //resulting probability
   capd::interval res_prob(0.0);
   // evaluating boxes
   for (box dd : dd_partition)
   {
-    if (model::declarations.rv_map.size() > 0)
+    if (global_model.declarations.rv_map.size() > 0)
       probability = capd::interval(
         0,
         2 - measure::p_measure(rv_domain, global_config.precision_prob)
@@ -179,7 +179,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
       rv_partition = rv_stack;
       rv_stack.clear();
       // breaking out of the loop if there are no continuous random variables
-      if (model::declarations.rv_map.size() == 0)
+      if (global_model.declarations.rv_map.size() == 0)
       {
         rv_partition.push_back(box());
         break;
@@ -257,7 +257,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
   }
   // generating all paths of lengths [min_depth, max_depth]
   std::vector<std::vector<modet *>> paths =
-    model::get_all_paths(min_depth, max_depth);
+    global_model.get_all_paths(min_depth, max_depth);
   // initializing probability map
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =
@@ -571,7 +571,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
   }
   // generating all paths of lengths [min_depth, max_depth]
   std::vector<std::vector<modet *>> paths =
-    model::get_all_paths(min_depth, max_depth);
+    global_model.get_all_paths(min_depth, max_depth);
   // initializing probability map
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =

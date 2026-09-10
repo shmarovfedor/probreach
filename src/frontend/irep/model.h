@@ -21,10 +21,7 @@ public:
   {
   }
 
-  jumpt(
-    std::string next_id,
-    node *guard,
-    std::map<std::string, node *> reset)
+  jumpt(std::string next_id, node *guard, std::map<std::string, node *> reset)
     : next_id(next_id), guard(guard), reset(reset)
   {
   }
@@ -63,10 +60,9 @@ class declarationt
 {
 public:
   std::string sym;
-  node* decl;
+  node *decl;
 
-  declarationt(std::string sym, node* decl) : 
-    sym(sym), decl(decl)
+  declarationt(std::string sym, node *decl) : sym(sym), decl(decl)
   {
   }
 };
@@ -82,55 +78,71 @@ public:
   std::map<std::string, std::pair<node *, node *>> var_map;
   std::map<std::string, std::pair<node *, node *>> par_map;
   std::map<std::string, declarationt> decls;
-  
+
   declarationst()
   {
   }
 };
 
-namespace model
+class modelt
 {
-// model type
-enum type
-{
-  HA,
-  PHA,
-  NHA,
-  NPHA
+public:
+  // model type
+  enum type
+  {
+    HA,
+    PHA,
+    NHA,
+    NPHA
+  };
+
+  type model_type;
+  declarationst declarations;
+  std::vector<modet> modes;
+  std::vector<statet> init;
+  std::vector<statet> goal;
+
+  modelt()
+  {
+  }
+
+  modelt(
+    declarationst declarations,
+    std::vector<modet> modes,
+    std::vector<statet> init,
+    std::vector<statet> goal)
+    : declarations(declarations), modes(modes), init(init), goal(goal)
+  {
+  }
+
+  // methods for updating the model
+  void set_model_type();
+  void push_var(std::string, node *, node *);
+  void push_dd(std::string, std::map<node *, node *>);
+  void push_rv(std::string, node *, node *, node *, node *);
+  void push_uniform(std::string, node *, node *);
+  void push_normal(std::string, node *, node *);
+  void push_exp(std::string, node *);
+
+  node *uniform_to_node(node *, node *);
+  node *normal_to_node(std::string, node *, node *);
+  node *exp_to_node(std::string, node *);
+
+  void finalise();
+
+  // getter methods
+  modet *get_mode(std::string);
+  std::vector<modet *> get_successors(modet *);
+
+  std::string to_string();
+
+  // this actually generates paths of the given length (like symbolic execution);
+  // this should not be part of the irep
+  std::vector<std::vector<modet *>> get_paths(modet *, modet *, int);
+  std::vector<std::vector<modet *>> get_all_paths(int);
+  std::vector<std::vector<modet *>> get_all_paths(int, int);
 };
 
-extern type model_type;
-extern declarationst declarations;
-extern std::vector<modet> modes;
-extern std::vector<statet> init;
-extern std::vector<statet> goal;
-
-// methods for updating the model
-void set_model_type();
-void push_var(std::string, node *, node *);
-void push_dd(std::string, std::map<node *, node *>);
-void push_rv(std::string, node *, node *, node *, node *);
-void push_uniform(std::string, node *, node *);
-void push_normal(std::string, node *, node *);
-void push_exp(std::string, node *);
-
-node *uniform_to_node(node *, node *);
-node *normal_to_node(std::string, node *, node *);
-node *exp_to_node(std::string, node *);
-
-void finalise();
-
-// getter methods
-modet *get_mode(std::string);
-std::vector<modet *> get_successors(modet *);
-
-std::string to_string();
-
-// this actually generates paths of the given length (like symbolic execution);
-// this should not be part of the irep
-std::vector<std::vector<modet *>> get_paths(modet *, modet *, int);
-std::vector<std::vector<modet *>> get_all_paths(int);
-std::vector<std::vector<modet *>> get_all_paths(int, int);
-} // namespace model
+extern modelt global_model;
 
 #endif //PROBREACH_MODEL_H

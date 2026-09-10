@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   } while (!feof(yyin));
 
   // only the following cases are supported in the formal setting
-  if (model::model_type == model::PHA)
+  if (global_model.model_type == modelt::type::PHA)
   {
     capd::interval probability = algorithm::evaluate_pha_bayesian(
       global_config.reach_depth_min,
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (model::model_type == model::NPHA)
+  else if (global_model.model_type == modelt::type::NPHA)
   {
     pair<box, capd::interval> probability =
       algorithm::evaluate_npha_cross_entropy_normal(

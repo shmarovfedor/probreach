@@ -87,19 +87,20 @@ void yyerror(const char *s);
 %type<decl_map> declarations
 %type<node_val> dist
 
-// declaring some variables
+// setting global extern variable here
 %{
+modelt global_model;
 %}
 
 %%
-pdrh:
+model:
 	declarations modes init goal 
 {
-  model::declarations.decls = *$1;
-  model::modes = *$2;
-  model::init = *$3;
-  model::goal = *$4;
-  model::finalise();
+  global_model.declarations.decls = *$1;
+  global_model.modes = *$2;
+  global_model.init = *$3;
+  global_model.goal = *$4;
+  global_model.finalise();
 }
 
 declarations:

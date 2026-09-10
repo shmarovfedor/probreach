@@ -53,7 +53,7 @@ capd::interval algorithm::evaluate_pha_chernoff(
   {
     // getting all paths
     std::vector<std::vector<modet *>> paths =
-      model::get_all_paths(min_depth, max_depth);
+      global_model.get_all_paths(min_depth, max_depth);
     // getting a sample
     box b = rnd::get_random_sample(r);
     if (global_config.verbose)
@@ -177,7 +177,7 @@ capd::interval algorithm::evaluate_pha_bayesian(
   vector<vector<modet *>> paths;
   if (global_config.decision_method == 0)
   {
-    paths = model::get_all_paths(min_depth, max_depth);
+    paths = global_model.get_all_paths(min_depth, max_depth);
   }
 #pragma omp parallel
   while (post_prob < conf)
@@ -320,7 +320,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   vector<pair<box, capd::interval>> samples;
   capd::interval size_correction_coef(1e-32);
   // getting initial mode
-  modet *init_mode = model::get_mode(model::init.front().id);
+  modet *init_mode = global_model.get_mode(global_model.init.front().id);
   //#pragma omp parallel
   for (int j = 0; j < iter_num; j++)
   {
