@@ -21,7 +21,7 @@ void yyerror(const char *s);
 
 %union
 {
-	char*                                                 str_val;
+  char*                                                 str_val;
   node*                                                 node_val;
   std::vector<node*>*                                   node_list;
   std::pair<node*, node*>*                              node_node_pair;
