@@ -149,18 +149,6 @@ void parse_pdrh_config(int argc, char *argv[])
       istringstream is(argv[i]);
       is >> global_config.decision_method;
     }
-    // ODE discretisation grid
-    else if (strcmp(argv[i], "-n") == 0)
-    {
-      i++;
-      istringstream is(argv[i]);
-      is >> global_config.ode_discretisation;
-      if (global_config.ode_discretisation < 0)
-      {
-        cerr << "-n must be positive\n";
-        exit(EXIT_FAILURE);
-      }
-    }
     // partition nondeterministic parameter according to the given precision
     else if (strcmp(argv[i], "--partition-nondet") == 0)
     {
@@ -248,24 +236,6 @@ void parse_pdrh_config(int argc, char *argv[])
       i++;
       global_config.global_time = argv[i];
     }
-    // sample_time variable
-    else if (strcmp(argv[i], "--sample-time") == 0)
-    {
-      i++;
-      global_config.sample_time = argv[i];
-    }
-    // noise variance
-    else if (strcmp(argv[i], "--noise-variance") == 0)
-    {
-      i++;
-      istringstream is(argv[i]);
-      is >> global_config.noise_var;
-      if (global_config.noise_var <= 0)
-      {
-        cerr << "noise variance should be positive";
-        exit(EXIT_FAILURE);
-      }
-    }
     // confidence
     else if (strcmp(argv[i], "-c") == 0)
     {
@@ -278,64 +248,6 @@ void parse_pdrh_config(int argc, char *argv[])
         exit(EXIT_FAILURE);
       }
     }
-    // qmc conf
-    else if (strcmp(argv[i], "--qmc-conf") == 0)
-    {
-      global_config.qmc_flag = true;
-      global_config.stat_flag = true;
-      i++;
-      istringstream is(argv[i]);
-      is >> global_config.qmc_conf;
-      if (global_config.qmc_conf <= 0)
-      {
-        cerr << "confidence for QMC method should be positive";
-        exit(EXIT_FAILURE);
-      }
-    }
-    // qmc acc
-    else if (strcmp(argv[i], "--qmc-acc") == 0)
-    {
-      global_config.qmc_flag = true;
-      global_config.stat_flag = true;
-      i++;
-      istringstream is(argv[i]);
-      is >> global_config.qmc_acc;
-      if (global_config.qmc_acc < 0)
-      {
-        cerr << "accuracy for QMS simulations should be positive";
-        exit(EXIT_FAILURE);
-      }
-    }
-    // qmc sample size
-    else if (strcmp(argv[i], "--qmc-sample-size") == 0)
-    {
-      global_config.qmc_flag = true;
-      global_config.stat_flag = true;
-      i++;
-      istringstream is(argv[i]);
-      is >> global_config.qmc_sample_size;
-      if (global_config.qmc_sample_size <= 0)
-      {
-        cerr << "number of samples for QMC method should be positive";
-        exit(EXIT_FAILURE);
-      }
-    }
-    // qmc randomisation and CI type
-    else if (strcmp(argv[i], "--CI") == 0)
-    {
-      global_config.qmc_flag = true;
-      global_config.stat_flag = true;
-      i++;
-      global_config.CI_flag = argv[i];
-      if (strcmp(global_config.CI_flag, "") == 0)
-      {
-        cerr << "choose CI type: 0 for single QMC, 1 for RQMC+CLT, 2 for "
-                "RQMC+ADG-COUL, 3 for RQMC+WILSON, 4 FOR RQMC+LOGIT, 5 FOR "
-                "RQMC+ANSCOMBE, 6 FOR RQMC_ARCSINE, 7 FOR QMC+QUINT, 8 FOR "
-                "RQMC+JEFFREYS";
-        exit(EXIT_FAILURE);
-      }
-    }
     // use only the first formula for sampling
     else if (strcmp(argv[i], "--delta-sat") == 0)
     {
@@ -345,11 +257,6 @@ void parse_pdrh_config(int argc, char *argv[])
     else if (strcmp(argv[i], "--upper-bound") == 0)
     {
       global_config.upper_p_bound_flag = true;
-    }
-    // merge flag
-    else if (strcmp(argv[i], "--merge-boxes") == 0)
-    {
-      global_config.boxes_merge = true;
     }
     // partition continuous random parameters
     else if (strcmp(argv[i], "--partition-prob") == 0)
@@ -383,21 +290,6 @@ void parse_pdrh_config(int argc, char *argv[])
         }
       }
     }
-    // partition continuous nondeterministic parameter
-    else if (strcmp(argv[i], "--decompose") == 0)
-    {
-      global_config.decompose = true;
-    }
-    // solution-guided
-    else if (strcmp(argv[i], "--guided") == 0)
-    {
-      global_config.witness_guided = true;
-    }
-    // prepartition flag
-    else if (strcmp(argv[i], "--partition") == 0)
-    {
-      global_config.boxes_prepartition = true;
-    }
     // verbose
     else if (strcmp(argv[i], "--verbose") == 0)
     {
@@ -428,11 +320,6 @@ void parse_pdrh_config(int argc, char *argv[])
     else if (strcmp(argv[i], "--verbose-result") == 0)
     {
       global_config.verbose_result = true;
-    }
-    // sample size display
-    else if (strcmp(argv[i], "--stability-test") == 0)
-    {
-      global_config.stability_test = true;
     }
     // version
     else if (strcmp(argv[i], "--version") == 0)
