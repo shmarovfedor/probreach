@@ -85,12 +85,6 @@ int yylex(
 
 %type<std::unique_ptr<distt>> dist
 
-//%type<old::declarationt*> declaration 
-//%type<old::declarationt*> const_declaration 
-//%type<old::declarationt*> var_declaration 
-//%type<old::declarationt*> dist_declaration
-//%type<std::map<std::string, old::declarationt>*> declarations
-
 %type<std::unique_ptr<declt>> declaration 
 %type<std::unique_ptr<declt>> const_declaration 
 %type<std::unique_ptr<declt>> var_declaration 
@@ -106,46 +100,43 @@ old::modelt old::global_model;
 model:
 	declarations modes init goal 
 {
-  old::global_model.declarations.decls = *$1;
-  old::global_model.modes = new_to_old(*$2);
-  old::global_model.init = new_to_old(*$3);
-  old::global_model.goal = new_to_old(*$4);
+  auto model = std::make_unique<modelt>(
+    std::move(*$1), std::move(*$2), std::move(*$3), std::move(*$4));
+  old::global_model = new_to_old(*model);
   old::global_model.finalise();
 }
 
 declarations:
 	declarations declaration 
 {
-  $1->insert(make_pair($2->sym, *$2));
-  $$ = $1;
+  auto sym = std::make_unique<symbolt>($2->get_symbol().get_value());
+  $1->emplace(std::move(sym), std::move($2));
+  $$ = std::move($1);
 }
 	| declaration 
 {
-  $$ = new std::map<std::string, old::declarationt>();
-  $$->insert(make_pair($1->sym, *$1));
+  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>>();
+  auto sym = std::make_unique<symbolt>($1->get_symbol().get_value());
+  $$->emplace(std::move(sym), std::move($1));
 }
 
 declaration:
 	var_declaration 
 { 
-  $$ = $1;
+  $$ = std::move($1);
 }
 	| dist_declaration 
 {
-  $$ = $1;
+  $$ = std::move($1);
 }
 	| const_declaration 
 { 
-  $$ = $1;
+  $$ = std::move($1);
 }
 
 const_declaration:
   '[' number ']' identifier ';' 
 {
-/*
-  node* decl = new node("const_decl", { new node($2) });
-  $$ = new old::declarationt($4, decl);
-*/
   $$ = std::make_unique<const_declt>(
     std::make_unique<symbolt>($4), std::make_unique<numbert>($2));
 }
@@ -161,11 +152,6 @@ interval:
 var_declaration:
 	interval identifier ';'
 {
-/*
-  auto old_interval = new_to_old(*$1);
-  node* decl = new node("var_decl", {old_interval.first, old_interval.second});
-  $$ = new old::declarationt($2, decl);
-*/
   $$ = std::make_unique<var_declt>(
     std::make_unique<symbolt>($2), std::move($1));
 }
@@ -173,9 +159,6 @@ var_declaration:
 dist_declaration:
   dist identifier ';'
 {
-/*
-  $$ = new old::declarationt($2, new node("dist_decl", {new_to_old(*$1)}));
-*/
   $$ = std::make_unique<dist_declt>(std::make_unique<symbolt>($2), std::move($1));
 }
 
