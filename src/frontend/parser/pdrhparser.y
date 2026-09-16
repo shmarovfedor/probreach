@@ -50,30 +50,52 @@ int yylex(
 %right POWER
 
 %type<std::unique_ptr<real_exprt>> expr
+%type<std::unique_ptr<bool_exprt>> prop
+%type<std::vector<std::unique_ptr<bool_exprt>>*> props
+%type<std::unique_ptr<symbolt>> mode_id
+%type<std::unique_ptr<symbolt>> mode_declaration
+%type<std::unique_ptr<intervalt>> interval
+%type<std::unique_ptr<intervalt>> time_section
+%type<std::vector<std::unique_ptr<invtt>>*> invt_section
+%type<std::vector<std::unique_ptr<invtt>>*> invt_list 
 
-%type<std::string> mode_declaration
-%type<std::pair<node*, node*>*> time_section
-%type<std::vector<node*>*> props
-%type<node*> prop
-%type<std::pair<node*, node*>*> interval
-%type<std::pair<node*, node*>*> dd_pair
-%type<std::map<node*, node*>*> dd_pairs
-%type<old::statet*> cond_state
-%type<std::vector<old::statet>*> cond_states init goal
-%type<std::pair<std::string, node*>*> ode
-%type<std::map<std::string, node*>*> odes flow_section
-%type<std::string> reset_var
-%type<std::pair<std::string, node*>*> assignment
-%type<std::map<std::string, node*>*> assignments
-%type<std::pair<std::string, std::map<std::string, node*>>*> reset_state
-%type<old::jumpt*> jump
-%type<std::vector<old::jumpt>*> jumps jump_section
-%type<std::vector<node*>*> invt_list invt_section
-%type<old::modet*> mode
-%type<std::vector<old::modet>*> modes
-%type<old::declarationt*> declaration const_declaration var_declaration dist_declaration
-%type<std::map<std::string, old::declarationt>*> declarations
-%type<node*> dist
+%type<std::unique_ptr<symbolt>> reset_var
+%type<std::unique_ptr<assignt>> assignment
+%type<std::vector<std::unique_ptr<assignt>>*> assignments
+%type<std::unique_ptr<reset_statet>> reset_state
+
+%type<std::unique_ptr<cond_statet>> cond_state
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>*> cond_states
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>*> init
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>*> goal
+
+%type<std::unique_ptr<odet>> ode
+%type<std::vector<std::unique_ptr<odet>>*> odes 
+%type<std::unique_ptr<flowt>> flow_section
+
+%type<std::unique_ptr<jumpt>> jump
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>*> jumps 
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>*> jump_section 
+
+%type<std::unique_ptr<modet>> mode
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>>*> modes
+
+%type<std::pair<std::unique_ptr<numbert>, std::unique_ptr<numbert>>*> dd_pair
+%type<std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>>*> dd_pairs
+
+%type<std::unique_ptr<distt>> dist
+
+//%type<old::declarationt*> declaration 
+//%type<old::declarationt*> const_declaration 
+//%type<old::declarationt*> var_declaration 
+//%type<old::declarationt*> dist_declaration
+//%type<std::map<std::string, old::declarationt>*> declarations
+
+%type<std::unique_ptr<declt>> declaration 
+%type<std::unique_ptr<declt>> const_declaration 
+%type<std::unique_ptr<declt>> var_declaration 
+%type<std::unique_ptr<declt>> dist_declaration
+%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>>*> declarations
 
 // setting global extern variable here
 %{
@@ -85,9 +107,9 @@ model:
 	declarations modes init goal 
 {
   old::global_model.declarations.decls = *$1;
-  old::global_model.modes = *$2;
-  old::global_model.init = *$3;
-  old::global_model.goal = *$4;
+  old::global_model.modes = new_to_old(*$2);
+  old::global_model.init = new_to_old(*$3);
+  old::global_model.goal = new_to_old(*$4);
   old::global_model.finalise();
 }
 
@@ -114,208 +136,252 @@ declaration:
 }
 	| const_declaration 
 { 
-  std::cout << "Const declaration 2\n";
   $$ = $1;
 }
 
 const_declaration:
   '[' number ']' identifier ';' 
 {
+/*
   node* decl = new node("const_decl", { new node($2) });
   $$ = new old::declarationt($4, decl);
+*/
+  $$ = std::make_unique<const_declt>(
+    std::make_unique<symbolt>($4), std::make_unique<numbert>($2));
 }
 
 interval:
   '[' number ',' number ']'
 {
-  $$ = new std::pair<node*, node*>();
-  $$->first = new node($2);
-  $$->second = new node($4);
+  $$ = std::make_unique<intervalt>(
+    std::make_unique<numbert>($2),
+    std::make_unique<numbert>($4));
 }
 
 var_declaration:
 	interval identifier ';'
 {
-  node* decl = new node("var_decl", {$1->first, $1->second});
+/*
+  auto old_interval = new_to_old(*$1);
+  node* decl = new node("var_decl", {old_interval.first, old_interval.second});
   $$ = new old::declarationt($2, decl);
+*/
+  $$ = std::make_unique<var_declt>(
+    std::make_unique<symbolt>($2), std::move($1));
 }
 
 dist_declaration:
   dist identifier ';'
 {
-  $$ = new old::declarationt($2, new node("dist_decl", {$1}));
+/*
+  $$ = new old::declarationt($2, new node("dist_decl", {new_to_old(*$1)}));
+*/
+  $$ = std::make_unique<dist_declt>(std::make_unique<symbolt>($2), std::move($1));
 }
 
 dist:
   N_DIST '(' number ',' number ')'
 {
-  $$ = new node("dist_normal", {new node($3), new node($5)});
+  $$ = std::make_unique<normal_distt>(
+    std::make_unique<numbert>($3), std::make_unique<numbert>($5));
 }
   | U_DIST '(' number ',' number ')'
 {
-  $$ = new node("dist_uniform", {new node($3), new node($5)});
+  $$ = std::make_unique<uniform_distt>(
+    std::make_unique<numbert>($3), std::make_unique<numbert>($5));
 }
   | E_DIST '(' number ')'
 {
-  $$ = new node("dist_exp", {new node($3)});
+  $$ = std::make_unique<exp_distt>(std::make_unique<numbert>($3));
 }
   | DD_DIST '(' dd_pairs ')'
 {
-  node* params = new node();
-  for (auto it = $3->cbegin(); it != $3->cend(); ++it)
-  {
-    node* dd_pair = new node(":", {it->first, it->second});
-    params->operands.push_back(dd_pair);
-  }
-  $$ = new node("dist_discrete", {params});
+  $$ = std::make_unique<discrete_distt>(std::move(*$3));
 }
 
 dd_pairs:
   dd_pairs ',' dd_pair        
 {
-  $1->insert(*$3);
-  $$ = $1;
+  $1->insert(std::move(*$3));
+  $$ = std::move($1);
 }
   | dd_pair
 {
-  $$ = new std::map<node*, node*>();
-  $$->insert(*$1);
+  $$ = new std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>>();
+  $$->insert(std::move(*$1));
 }
 
 dd_pair:
     number ':' number
 {
-  $$ = new std::pair<node*, node*>();
-  $$->first = new node($1);
-  $$->second = new node($3);
+  $$ = new std::pair<std::unique_ptr<numbert>, std::unique_ptr<numbert>>(
+    std::make_unique<numbert>($1), std::make_unique<numbert>($3));
 }
 
 modes:
 	modes mode  
-{ 
-  $1->push_back(*$2);
-  $$ = $1;
+{
+  auto mode_id = std::make_unique<symbolt>($2->get_mode_id().get_value());
+  $1->emplace(std::move(mode_id), std::move($2));
+  $$ = std::move($1);
 }
 	| mode      
 {
-  $$ = new std::vector<old::modet>();
-  $$->push_back(*$1); 
+  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>>();
+  auto mode_id = std::make_unique<symbolt>($1->get_mode_id().get_value());
+  $$->emplace(std::move(mode_id), std::move($1));
 }
 
 mode:
   '{' mode_declaration time_section invt_section flow_section jump_section '}'
 {
-  $$ = new old::modet();
-  $$->id = $2;
-  $$->time = std::make_pair($3->first, $3->second);
-  $$->invts = *$4;
-  $$->odes = *$5;
-  $$->jumps = *$6;
+  $$ = std::make_unique<modet>(
+    std::move($2), std::move($3), std::move(*$4), std::move($5), std::move(*$6));
+}
+
+mode_id:
+ number
+{
+  $$ = std::make_unique<symbolt>($1);
+}
+  | identifier
+{
+  $$ = std::make_unique<symbolt>($1);
 }
 
 mode_declaration:
-  MODE number ';'
+  MODE mode_id ';'
 {
-  $$ = $2;
-}
-  | MODE identifier ';'
-{
-  $$ = $2;
+  $$ = std::move($2);
 }
 
 time_section:
-  TIME ':' interval ';' { $$ = $3; }
+  TIME ':' interval ';' 
+{ 
+  $$ = std::move($3);
+}
 
 invt_section:
-	INVT ':' invt_list { $$ = $3; }
-	| INVT ':' { $$ = new std::vector<node*>(); }
-  | { $$ = new std::vector<node*>(); }
+	INVT ':' invt_list 
+{ 
+  $$ = std::move($3);
+}
+	| INVT ':' 
+{ 
+  $$ = new std::vector<std::unique_ptr<invtt>>(); 
+}
+  | 
+{ 
+  $$ = new std::vector<std::unique_ptr<invtt>>(); 
+}
 
 invt_list:
 	invt_list prop ';'  
 { 
-  $1->push_back($2);
-  $$ = $1;
+  $1->push_back(std::make_unique<invtt>(std::move($2)));
+  $$ = std::move($1);
 }
 	| prop ';'          
 { 
-  $$ = new std::vector<node*>();
-  $$->push_back($1);  
+  $$ = new std::vector<std::unique_ptr<invtt>>();
+  $$->push_back(std::make_unique<invtt>(std::move($1)));  
 }
 
 props:
 	props prop 
 {
-  $1->push_back($2);
+  $1->push_back(std::move($2));
   $$ = $1;
 }
 	| prop                  
 {
-  $$ = new std::vector<node*>();
-	$$->push_back($1);
+  $$ = new std::vector<std::unique_ptr<bool_exprt>>();
+	$$->push_back(std::move($1));
 }
 
 prop:
     expr EQ expr                
-{ 
-  $$ = new node("=", {new_to_old(*$1), new_to_old(*$3)});
+{
+  $$ = std::make_unique<equalt>(std::move($1), std::move($3)); 
 }
     | expr GT expr              
 { 
-  $$ = new node(">", {new_to_old(*$1), new_to_old(*$3)}); 
+  $$ = std::make_unique<greater_thant>(std::move($1), std::move($3)); 
 }
     | expr LT expr              
 { 
-  $$ = new node("<", {new_to_old(*$1), new_to_old(*$3)}); 
+  $$ = std::make_unique<less_thant>(std::move($1), std::move($3)); 
 }
     | expr GE expr              
 { 
-  $$ = new node(">=", {new_to_old(*$1), new_to_old(*$3)}); 
+  $$ = std::make_unique<greater_equalt>(std::move($1), std::move($3)); 
 }
     | expr LE expr              
 { 
-  $$ = new node("<=", {new_to_old(*$1), new_to_old(*$3)}); 
+  $$ = std::make_unique<less_equalt>(std::move($1), std::move($3)); 
 }
     | expr NE expr              
 { 
-  $$ = new node("!=", {new_to_old(*$1), new_to_old(*$3)}); 
+  $$ = std::make_unique<not_equalt>(std::move($1), std::move($3)); 
 }
-    | TRUE                      { $$ = new node("(true)"); }
-    | FALSE                     { $$ = new node("(false)"); }
-    | '(' prop ')'              { $$ = $2; }
-    | NOT prop                  { $$ = new node("not", {$2}); }
+    | TRUE                      
+{ 
+  $$ = std::make_unique<truet>(); 
+}
+    | FALSE                     
+{ 
+  $$ = std::make_unique<falset>(); 
+}
+    | '(' prop ')'              
+{ 
+  $$ = std::move($2);
+}
+    | NOT prop                  
+{ 
+  $$ = std::make_unique<nott>(std::move($2)); 
+}
+    | '(' IMPLY prop prop ')'   
+{
+  $$ = std::make_unique<implyt>(std::move($3), std::move($4));
+}
     | '(' AND props ')'         
 {
-  $$ = new node("and", *($3)); 
+  $$ = std::make_unique<andt>(std::move(*$3));
+  delete $3;
 }
-    | '(' OR props ')'          { $$ = new node("or", *($3)); }
-    | '(' XOR props ')'         { $$ = new node("xor", *($3)); }
-    | '(' IMPLY prop prop ')'   { $$ = new node("=>", {$3, $4}); }
+    | '(' OR props ')'          
+{ 
+  $$ = std::make_unique<ort>(std::move(*$3));
+  delete $3;
+}
+    | '(' XOR props ')'         
+{ 
+  $$ = std::make_unique<xort>(std::move(*$3));
+  delete $3;
+}
 
 flow_section:
 	FLOW ':' odes 
 {
-  $$ = $3; 
+  $$ = std::make_unique<flowt>(std::move(*$3)); 
 }
 
 odes:
 	odes ode 
-{ 
-  $1->insert(*$2);
-  $$ = $1; 
+{
+  $1->push_back(std::move($2));
+  $$ = std::move($1);
 }
 	| ode 
-{ 
-  $$ = new std::map<std::string, node*>();
-  $$->insert(*$1);
+{
+  $$ = new std::vector<std::unique_ptr<odet>>();
+  $$->push_back(std::move($1));
 }
 
 ode:
 	D_DT '[' identifier ']' EQ expr ';'
 {
-  $$ = new std::pair<std::string, node*>();
-  $$->first = $3;
-  $$->second = new_to_old(*$6);
+  $$ = std::make_unique<odet>(std::make_unique<symbolt>($3), std::move($6));
 }
 
 expr:
@@ -403,97 +469,105 @@ expr:
 assignments:
 	assignments assignment 
 { 
-  $1->insert(*$2);
-  $$ = $1; 
+  $1->push_back(std::move($2));
+  $$ = std::move($1);
 }
   | '(' AND assignments ')' 
 { 
-  $$ = $3;
+  $$ = std::move($3);
 }
 	| assignment 
 { 
-  $$ = new std::map<std::string, node*>();
-  $$->insert(*$1); 
+  $$ = new std::vector<std::unique_ptr<assignt>>();
+  $$->push_back(std::move($1)); 
 }
 
 assignment:
   reset_var EQ expr 
-{ 
-  $$ = new std::pair<std::string, node*>($1, new_to_old(*$3));
+{
+  $$ = std::make_unique<assignt>(std::move($1), std::move($3));
 }
   | '(' assignment ')'                    
 { 
-  $$ = $2;
+  $$ = std::move($2);
 }
 
 reset_var:
   identifier PRIME 	
 {
-  $$ = $1;
+  $$ = std::make_unique<symbolt>($1);
 }
 
 reset_state:
-	'@' number assignments ';'
+	'@' mode_id assignments ';'
 {
-  $$ = new std::pair<std::string, std::map<std::string, node*>>($2, *$3);
+  $$ = std::make_unique<reset_statet>(std::move($2), std::move(*$3));
 }
 
 jump_section:
-	JUMP ':' jumps { $$ = $3; }
-	| JUMP ':' { $$ = new std::vector<old::jumpt>(); }
-  | { $$ = new std::vector<old::jumpt>(); }
+	JUMP ':' jumps 
+{ 
+  $$ = std::move($3); 
+}
+	| JUMP ':' 
+{ 
+  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+}
+  | 
+{ 
+  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+}
 
 jumps:
 	jumps jump 
-{ 
-  $1->push_back(*$2);
-  $$ = $1; 
+{
+  auto mode_id = 
+    std::make_unique<symbolt>($2->get_reset().get_mode_id().get_value());
+  $1->emplace(std::move(mode_id), std::move($2));
+  $$ = std::move($1);
 }
 	| jump 
-{ 
-  $$ = new std::vector<old::jumpt>();
-  $$->push_back(*$1);
+{
+  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+  auto mode_id = 
+    std::make_unique<symbolt>($1->get_reset().get_mode_id().get_value());
+  $$->emplace(std::move(mode_id), std::move($1));
 }
 
 jump:
 	prop TRANS reset_state
 {
-  $$ = new old::jumpt();
-  $$->guard = $1;
-  $$->next_id = $3->first;
-  $$->reset = $3->second;
+  $$ = std::make_unique<jumpt>(std::move($1), std::move($3));
 }
 
 cond_state:
-	'@' number prop ';' 
+	'@' mode_id prop ';' 
 {
-  $$ = new old::statet();
-  $$->id = $2;
-  $$->prop = $3;
+  $$ = std::make_unique<cond_statet>(std::move($2), std::move($3));
 }
 
 cond_states:
   cond_states cond_state 
 { 
-  $1->push_back(*$2);
+  $1->emplace(std::make_unique<symbolt>($2->get_mode_id().get_value()), std::move($2));
   $$ = $1;
  }
   | cond_state 
 { 
-  $$ = new std::vector<old::statet>();
-  $$->push_back(*$1); 
+  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>();
+  $$->emplace(std::make_unique<symbolt>($1->get_mode_id().get_value()), std::move($1));
 }
 
 init:
 	INIT ':' cond_states
 {
-  $$ = $3;
+  $$ = std::move($3);
 }
 
 goal:
 	GOAL ':' cond_states
 {
-  $$ = $3;
+  $$ = std::move($3);
 }
 
 %%
