@@ -130,6 +130,33 @@ public:
   }
 };
 
+class plust : public real_exprt
+{
+private:
+  std::unique_ptr<real_exprt> value;
+
+public:
+  plust(std::unique_ptr<real_exprt> value) : value(std::move(value))
+  {
+  }
+
+  std::string get_type() const override
+  {
+    return "plust";
+  }
+
+  real_exprt &get_value()
+  {
+    return *value;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "( + "
+        << "(" << *value << "))";
+  }
+};
+
 class addt : public real_exprt
 {
 private:
@@ -1741,6 +1768,7 @@ public:
   }
 };
 
+// irep for smt
 class smt_nodet
 {
 public:

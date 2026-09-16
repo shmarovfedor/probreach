@@ -1,21 +1,21 @@
 %{
-#define YY_DECL extern "C" int yylex()
+#include "pdrhparser.hpp"
+
+#define YY_DECL \
+int yylex( \
+  yy::parser::semantic_type *yylval, \
+  yy::parser::location_type *yylloc)
+
 #include "node.h"
-#include "pdrhparser.h"
 
 #define YY_USER_ACTION \
-    yylloc.first_line = yylloc.last_line; \
-    yylloc.first_column = yylloc.last_column; \
-    for(int i = 0; yytext[i] != '\0'; i++) { \
-        if(yytext[i] == '\n') { \
-            yylloc.last_line++; \
-            yylloc.last_column = 0; \
-        } \
-        else { \
-            yylloc.last_column++; \
-        } \
-    }
+  do { \
+    yylloc->step(); \
+    yylloc->columns(yyleng); \
+  } while(0); 
 %}
+
+%option noyywrap
 
 %x COMMENT
 
@@ -26,63 +26,74 @@
 <COMMENT>\n    			{ ; }
 <COMMENT>.    			;
 
-"+"                 { return PLUS; }
-"-"                 { return MINUS; }
-"*"                 { return TIMES; }
-"/"                 { return DIVIDE; }
-"^"                 { return POWER; }
+"+"                 { return yy::parser::token::PLUS; }
+"-"                 { return yy::parser::token::MINUS; }
+"*"                 { return yy::parser::token::TIMES; }
+"/"                 { return yy::parser::token::DIVIDE; }
+"^"                 { return yy::parser::token::POWER; }
 
-"="                 { return EQ; }
-">"                 { return GT; }
-"<"                 { return LT; }
-">="                { return GE; }
-"<="                { return LE; }
-"!="                { return NE; }
+"="                 { return yy::parser::token::EQ; }
+">"                 { return yy::parser::token::GT; }
+"<"                 { return yy::parser::token::LT; }
+">="                { return yy::parser::token::GE; }
+"<="                { return yy::parser::token::LE; }
+"!="                { return yy::parser::token::NE; }
 
-"'"                 { return PRIME; }
+"'"                 { return yy::parser::token::PRIME; }
 
-true                { return TRUE; }
-false               { return FALSE; }
+true                { return yy::parser::token::TRUE; }
+false               { return yy::parser::token::FALSE; }
 
-time                { return TIME; }
+time                { return yy::parser::token::TIME; }
 
-dist_uniform        { return U_DIST; }
-dist_normal         { return N_DIST; }
-dist_exp            { return E_DIST; }
-dist_discrete       { return DD_DIST; }
+dist_uniform        { return yy::parser::token::U_DIST; }
+dist_normal         { return yy::parser::token::N_DIST; }
+dist_exp            { return yy::parser::token::E_DIST; }
+dist_discrete       { return yy::parser::token::DD_DIST; }
 
-mode                { return MODE; }
-invt                { return INVT; }
-flow                { return FLOW; }
-"d/dt"              { return D_DT; }
-jump                { return JUMP; }
-init                { return INIT; }
-goal                { return GOAL; }
+mode                { return yy::parser::token::MODE; }
+invt                { return yy::parser::token::INVT; }
+flow                { return yy::parser::token::FLOW; }
+"d/dt"              { return yy::parser::token::D_DT; }
+jump                { return yy::parser::token::JUMP; }
+init                { return yy::parser::token::INIT; }
+goal                { return yy::parser::token::GOAL; }
 
-not	            		{ return NOT; }
-and                 { return AND; }
-or                  { return OR; }
-xor                 { return XOR; }
-"=>"                { return IMPLY; }
+not	            		{ return yy::parser::token::NOT; }
+and                 { return yy::parser::token::AND; }
+or                  { return yy::parser::token::OR; }
+xor                 { return yy::parser::token::XOR; }
+"=>"                { return yy::parser::token::IMPLY; }
 
-abs                 { return ABS; }
-sqrt              	{ return SQRT; }
-exp              	  { return EXP; }
-log              	  { return LOGN; }
-sin              	  { return SIN; }
-cos              	  { return COS; }
-tan              	  { return TAN; }
-asin              	{ return ASIN; }
-acos              	{ return ACOS; }
-atan              	{ return ATAN; }
+abs                 { return yy::parser::token::ABS; }
+sqrt              	{ return yy::parser::token::SQRT; }
+exp              	  { return yy::parser::token::EXP; }
+log              	  { return yy::parser::token::LOGN; }
+sin              	  { return yy::parser::token::SIN; }
+cos              	  { return yy::parser::token::COS; }
+tan              	  { return yy::parser::token::TAN; }
+asin              	{ return yy::parser::token::ASIN; }
+acos              	{ return yy::parser::token::ACOS; }
+atan              	{ return yy::parser::token::ATAN; }
 
-[+-]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?	{ yylval.str_val = strdup(yytext); return number; }
-[a-zA-Z_][a-zA-Z0-9_]*            { yylval.str_val = strdup(yytext); return identifier; }
+[+-]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?	{ 
+  yylval->emplace<std::string>(yytext);
+  return yy::parser::token::number;
+}
+
+[a-zA-Z_][a-zA-Z0-9_]*            { 
+  yylval->emplace<std::string>(yytext);
+  return yy::parser::token::identifier;
+}
 
 [\[\]\(\):;,\{\}@]	{ return yytext[0]; }
-"==>"	              { return TRANS; }
+"==>"	              { return yy::parser::token::TRANS; }
 
-\n                  { ; }
+\n {
+    yylloc->lines(1);
+    yylloc->step();
+}
+
 [ \t]+				      ;
 
 %%

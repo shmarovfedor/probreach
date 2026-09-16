@@ -17,13 +17,10 @@
 #include <omp.h>
 #endif
 
-extern "C"
-{
-#include "pdrhparser.h"
-}
+#include "pdrhparser.hpp"
 
-extern "C" int yyparse();
-extern "C" FILE *yyin;
+//extern int yyparse();
+extern FILE *yyin;
 
 using namespace std;
 
@@ -38,18 +35,22 @@ static void parse_pdrh_model(string filepath)
   }
   // set lex to read from it instead of defaulting to STDIN:
   yyin = pdrhfile;
+  yy::parser parser;
+  int parse_res = parser.parse();
+  /*
   // parse through the input until there is no more:
   do
   {
     yyparse();
   } while (!feof(yyin));
+  */
 }
 
 TEST(formal_bad_test_4, testing_bad_4_pdrh)
 {
   parse_pdrh_model(
     string(PROBREACH_TEST_MODELS_DIR) + string("/bad/bad_4.pdrh"));
-  std::cout << global_model.to_string() << "\n";
+  std::cout << old::global_model.to_string() << "\n";
   // setting precision for computing the probability interval
   global_config.partition_nondet = true;
   map<string, string> partition_nondet_map = {{"n", "0.1"}};

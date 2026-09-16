@@ -3,41 +3,28 @@
 #include <sstream>
 #include "node.h"
 #include "model.h"
+#include "irep.h"
+#include "new_to_old.h"
 
-// stuff from flex that bison needs to know about:
-extern "C" int yylex();
-extern "C" int yyparse();
-extern "C" FILE *yyin;
-
-void yyerror(const char *s);
+extern FILE *yyin;
 
 %}
 %locations
 
+%code provides {
+int yylex(
+  yy::parser::semantic_type *yylval,
+  yy::parser::location_type *yylloc);
+}
+
 // to make sure that all nameespaces are resolved correctly
 %code requires {
   #include "model.h"
+  #include "irep.h"
 }
 
-%union
-{
-  char*                                                 str_val;
-  node*                                                 node_val;
-  std::vector<node*>*                                   node_list;
-  std::pair<node*, node*>*                              node_node_pair;
-  std::map<node*, node*>*                               node_node_map;
-  statet*                                               state_val;
-  std::vector<statet>*                                  state_list;
-  std::pair<std::string, node*>*                        str_node_pair;
-  std::map<std::string, node*>*                         str_node_map;
-  std::pair<std::string, std::map<std::string, node*>>* reset_state_val;
-  jumpt*                                                jump_val;
-  std::vector<jumpt>*                                   jump_list;
-  modet*                                                mode_val;
-  std::vector<modet>*                                   mode_list;
-  declarationt*                                         decl_val;
-  std::map<std::string, declarationt>*                  decl_map;
-}
+%skeleton "lalr1.cc"
+%define api.value.type variant
 
 // terminals
 %token TIME
@@ -53,8 +40,8 @@ void yyerror(const char *s);
 %token EQ GT LT GE LE NE
 %token TRUE FALSE
 
-%token <str_val> identifier
-%token <str_val> number
+%token <std::string> identifier
+%token <std::string> number
 
 %left EQ LT GT LE GE NE
 %left PLUS MINUS
@@ -62,45 +49,46 @@ void yyerror(const char *s);
 %precedence UMINUS UPLUS
 %right POWER
 
-%type<str_val> mode_declaration
-%type<node_node_pair> time_section
-%type<node_val> expr
-%type<node_list> props
-%type<node_val> prop
-%type<node_node_pair> interval
-%type<node_node_pair> dd_pair
-%type<node_node_map> dd_pairs
-%type<state_val> cond_state
-%type<state_list> cond_states init goal
-%type<str_node_pair> ode
-%type<str_node_map> odes flow_section
-%type<str_val> reset_var
-%type<str_node_pair> assignment
-%type<str_node_map> assignments
-%type<reset_state_val> reset_state
-%type<jump_val> jump
-%type<jump_list> jumps jump_section
-%type<node_list> invt_list invt_section
-%type<mode_val> mode
-%type<mode_list> modes
-%type<decl_val> declaration const_declaration var_declaration dist_declaration
-%type<decl_map> declarations
-%type<node_val> dist
+%type<std::unique_ptr<real_exprt>> expr
+
+%type<std::string> mode_declaration
+%type<std::pair<node*, node*>*> time_section
+%type<std::vector<node*>*> props
+%type<node*> prop
+%type<std::pair<node*, node*>*> interval
+%type<std::pair<node*, node*>*> dd_pair
+%type<std::map<node*, node*>*> dd_pairs
+%type<old::statet*> cond_state
+%type<std::vector<old::statet>*> cond_states init goal
+%type<std::pair<std::string, node*>*> ode
+%type<std::map<std::string, node*>*> odes flow_section
+%type<std::string> reset_var
+%type<std::pair<std::string, node*>*> assignment
+%type<std::map<std::string, node*>*> assignments
+%type<std::pair<std::string, std::map<std::string, node*>>*> reset_state
+%type<old::jumpt*> jump
+%type<std::vector<old::jumpt>*> jumps jump_section
+%type<std::vector<node*>*> invt_list invt_section
+%type<old::modet*> mode
+%type<std::vector<old::modet>*> modes
+%type<old::declarationt*> declaration const_declaration var_declaration dist_declaration
+%type<std::map<std::string, old::declarationt>*> declarations
+%type<node*> dist
 
 // setting global extern variable here
 %{
-modelt global_model;
+old::modelt old::global_model;
 %}
 
 %%
 model:
 	declarations modes init goal 
 {
-  global_model.declarations.decls = *$1;
-  global_model.modes = *$2;
-  global_model.init = *$3;
-  global_model.goal = *$4;
-  global_model.finalise();
+  old::global_model.declarations.decls = *$1;
+  old::global_model.modes = *$2;
+  old::global_model.init = *$3;
+  old::global_model.goal = *$4;
+  old::global_model.finalise();
 }
 
 declarations:
@@ -111,7 +99,7 @@ declarations:
 }
 	| declaration 
 {
-  $$ = new std::map<std::string, declarationt>();
+  $$ = new std::map<std::string, old::declarationt>();
   $$->insert(make_pair($1->sym, *$1));
 }
 
@@ -126,6 +114,7 @@ declaration:
 }
 	| const_declaration 
 { 
+  std::cout << "Const declaration 2\n";
   $$ = $1;
 }
 
@@ -133,7 +122,7 @@ const_declaration:
   '[' number ']' identifier ';' 
 {
   node* decl = new node("const_decl", { new node($2) });
-  $$ = new declarationt($4, decl);
+  $$ = new old::declarationt($4, decl);
 }
 
 interval:
@@ -148,13 +137,13 @@ var_declaration:
 	interval identifier ';'
 {
   node* decl = new node("var_decl", {$1->first, $1->second});
-  $$ = new declarationt($2, decl);
+  $$ = new old::declarationt($2, decl);
 }
 
 dist_declaration:
   dist identifier ';'
 {
-  $$ = new declarationt($2, new node("dist_decl", {$1}));
+  $$ = new old::declarationt($2, new node("dist_decl", {$1}));
 }
 
 dist:
@@ -209,14 +198,14 @@ modes:
 }
 	| mode      
 {
-  $$ = new std::vector<modet>();
+  $$ = new std::vector<old::modet>();
   $$->push_back(*$1); 
 }
 
 mode:
   '{' mode_declaration time_section invt_section flow_section jump_section '}'
 {
-  $$ = new modet();
+  $$ = new old::modet();
   $$->id = $2;
   $$->time = std::make_pair($3->first, $3->second);
   $$->invts = *$4;
@@ -255,25 +244,50 @@ invt_list:
 }
 
 props:
-	props prop { $$->push_back($2); }
+	props prop 
+{
+  $1->push_back($2);
+  $$ = $1;
+}
 	| prop                  
 {
-  $$ = new std::vector<node*>;
+  $$ = new std::vector<node*>();
 	$$->push_back($1);
 }
 
 prop:
-    expr EQ expr                { $$ = new node("=", {$1, $3}); }
-    | expr GT expr              { $$ = new node(">", {$1, $3}); }
-    | expr LT expr              { $$ = new node("<", {$1, $3}); }
-    | expr GE expr              { $$ = new node(">=", {$1, $3}); }
-    | expr LE expr              { $$ = new node("<=", {$1, $3}); }
-    | expr NE expr              { $$ = new node("!=", {$1, $3}); }
+    expr EQ expr                
+{ 
+  $$ = new node("=", {new_to_old(*$1), new_to_old(*$3)});
+}
+    | expr GT expr              
+{ 
+  $$ = new node(">", {new_to_old(*$1), new_to_old(*$3)}); 
+}
+    | expr LT expr              
+{ 
+  $$ = new node("<", {new_to_old(*$1), new_to_old(*$3)}); 
+}
+    | expr GE expr              
+{ 
+  $$ = new node(">=", {new_to_old(*$1), new_to_old(*$3)}); 
+}
+    | expr LE expr              
+{ 
+  $$ = new node("<=", {new_to_old(*$1), new_to_old(*$3)}); 
+}
+    | expr NE expr              
+{ 
+  $$ = new node("!=", {new_to_old(*$1), new_to_old(*$3)}); 
+}
     | TRUE                      { $$ = new node("(true)"); }
     | FALSE                     { $$ = new node("(false)"); }
     | '(' prop ')'              { $$ = $2; }
     | NOT prop                  { $$ = new node("not", {$2}); }
-    | '(' AND props ')'         { $$ = new node("and", *($3)); }
+    | '(' AND props ')'         
+{
+  $$ = new node("and", *($3)); 
+}
     | '(' OR props ')'          { $$ = new node("or", *($3)); }
     | '(' XOR props ')'         { $$ = new node("xor", *($3)); }
     | '(' IMPLY prop prop ')'   { $$ = new node("=>", {$3, $4}); }
@@ -301,30 +315,90 @@ ode:
 {
   $$ = new std::pair<std::string, node*>();
   $$->first = $3;
-  $$->second = $6;
+  $$->second = new_to_old(*$6);
 }
 
 expr:
-  identifier                  { $$ = new node($1); }
-  | number                    { $$ = new node($1); }
-  | MINUS expr %prec UMINUS   { $$ = new node("-", {$2}); }
-  | PLUS expr %prec UPLUS     { $$ = $2; }
-  | expr MINUS expr           { $$ = new node("-", {$1, $3}); }
-  | expr PLUS expr            { $$ = new node("+", {$1, $3}); }
-  | expr TIMES expr           { $$ = new node("*", {$1, $3}); }
-  | expr DIVIDE expr          { $$ = new node("/", {$1, $3}); }
-  | expr POWER expr           { $$ = new node("^", {$1, $3}); }
-  | ABS '(' expr ')'          { $$ = new node("abs", {$3}); }
-  | SQRT '(' expr ')'         { $$ = new node("^", {$3, new node("0.5")}); }
-  | EXP '(' expr ')'          { $$ = new node("exp", {$3}); }
-  | LOGN '(' expr ')'         { $$ = new node("log", {$3}); }
-  | SIN '(' expr ')'          { $$ = new node("sin", {$3}); }
-  | COS '(' expr ')'          { $$ = new node("cos", {$3}); }
-  | TAN '(' expr ')'          { $$ = new node("tan", {$3}); }
-  | ASIN '(' expr ')'         { $$ = new node("asin", {$3}); }
-  | ACOS '(' expr ')'         { $$ = new node("acos", {$3}); }
-  | ATAN '(' expr ')'         { $$ = new node("atan", {$3}); }
-  | '(' expr ')'              { $$ = $2; }
+  identifier                  
+{
+  $$ = std::make_unique<symbolt>($1); 
+}
+  | number                    
+{
+  $$ = std::make_unique<numbert>($1); 
+}
+  | MINUS expr %prec UMINUS   
+{ 
+  $$ = std::make_unique<minust>(std::move($2));
+}
+  | PLUS expr %prec UPLUS     
+{ 
+  $$ = std::make_unique<plust>(std::move($2));
+}
+  | expr MINUS expr           
+{ 
+  $$ = std::make_unique<subt>(std::move($1), std::move($3));
+}
+  | expr PLUS expr            
+{ 
+  $$ = std::make_unique<addt>(std::move($1), std::move($3));
+}
+  | expr TIMES expr           
+{ 
+  $$ = std::make_unique<mult>(std::move($1), std::move($3));
+}
+  | expr DIVIDE expr          
+{ 
+  $$ = std::make_unique<divt>(std::move($1), std::move($3));
+}
+  | expr POWER expr           
+{ 
+  $$ = std::make_unique<powt>(std::move($1), std::move($3));
+}
+  | ABS '(' expr ')'          
+{ 
+  $$ = std::make_unique<abst>(std::move($3));
+}
+  | SQRT '(' expr ')'         
+{ 
+  $$ = std::make_unique<sqrtt>(std::move($3));
+}
+  | EXP '(' expr ')'          
+{ 
+  $$ = std::make_unique<expt>(std::move($3));
+}
+  | LOGN '(' expr ')'         
+{ 
+  $$ = std::make_unique<logt>(std::move($3));
+}
+  | SIN '(' expr ')'          
+{ 
+  $$ = std::make_unique<sint>(std::move($3));
+}
+  | COS '(' expr ')'          
+{ 
+  $$ = std::make_unique<cost>(std::move($3));
+}
+  | TAN '(' expr ')'          
+{ 
+  $$ = std::make_unique<tant>(std::move($3));
+}
+  | ASIN '(' expr ')'         
+{ 
+  $$ = std::make_unique<asint>(std::move($3));
+}
+  | ACOS '(' expr ')'         
+{ 
+  $$ = std::make_unique<acost>(std::move($3));
+}
+  | ATAN '(' expr ')'         
+{ 
+  $$ = std::make_unique<atant>(std::move($3));
+}
+  | '(' expr ')'              
+{ 
+  $$ = std::move($2); 
+}
 
 assignments:
 	assignments assignment 
@@ -345,7 +419,7 @@ assignments:
 assignment:
   reset_var EQ expr 
 { 
-  $$ = new std::pair<std::string, node*>($1, $3);
+  $$ = new std::pair<std::string, node*>($1, new_to_old(*$3));
 }
   | '(' assignment ')'                    
 { 
@@ -366,8 +440,8 @@ reset_state:
 
 jump_section:
 	JUMP ':' jumps { $$ = $3; }
-	| JUMP ':' { $$ = new std::vector<jumpt>(); }
-  | { $$ = new std::vector<jumpt>(); }
+	| JUMP ':' { $$ = new std::vector<old::jumpt>(); }
+  | { $$ = new std::vector<old::jumpt>(); }
 
 jumps:
 	jumps jump 
@@ -377,14 +451,14 @@ jumps:
 }
 	| jump 
 { 
-  $$ = new std::vector<jumpt>();
+  $$ = new std::vector<old::jumpt>();
   $$->push_back(*$1);
 }
 
 jump:
 	prop TRANS reset_state
 {
-  $$ = new jumpt();
+  $$ = new old::jumpt();
   $$->guard = $1;
   $$->next_id = $3->first;
   $$->reset = $3->second;
@@ -393,7 +467,7 @@ jump:
 cond_state:
 	'@' number prop ';' 
 {
-  $$ = new statet();
+  $$ = new old::statet();
   $$->id = $2;
   $$->prop = $3;
 }
@@ -406,7 +480,7 @@ cond_states:
  }
   | cond_state 
 { 
-  $$ = new std::vector<statet>();
+  $$ = new std::vector<old::statet>();
   $$->push_back(*$1); 
 }
 
@@ -424,9 +498,16 @@ goal:
 
 %%
 
-void yyerror(const char *s)
+void yy::parser::error(
+    const location_type& loc,
+    const std::string& msg)
 {
-  std::cerr << "error at " << yylloc.first_line << ":" 
-    << (yylloc.first_column + 1) << ":" << s << "\n";
-  exit(EXIT_FAILURE);
+    std::cerr
+        << "error at "
+        << loc.begin.line
+        << ":"
+        << loc.begin.column
+        << ": "
+        << msg
+        << '\n';
 }

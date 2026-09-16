@@ -13,9 +13,9 @@ namespace smt2_generator
 {
 
 // generates reachability formulas
-std::string reach_to_smt2(std::vector<modet *>, std::vector<box>);
-std::string reach_c_to_smt2(std::vector<modet *>, std::vector<box>);
-std::string reach_c_to_smt2(int, std::vector<modet *>, std::vector<box>);
+std::string reach_to_smt2(std::vector<old::modet *>, std::vector<box>);
+std::string reach_c_to_smt2(std::vector<old::modet *>, std::vector<box>);
+std::string reach_c_to_smt2(int, std::vector<old::modet *>, std::vector<box>);
 
 } // namespace smt2_generator
 

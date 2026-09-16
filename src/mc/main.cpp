@@ -15,13 +15,10 @@
 #include <omp.h>
 #endif
 
-extern "C"
-{
-#include "pdrhparser.h"
-}
+#include "pdrhparser.hpp"
 
-extern "C" int yyparse();
-extern "C" FILE *yyin;
+//extern int yyparse();
+extern FILE *yyin;
 
 using namespace std;
 
@@ -41,14 +38,18 @@ int main(int argc, char *argv[])
   }
   // set lex to read from it instead of defaulting to STDIN:
   yyin = pdrhfile;
+  yy::parser parser;
+  int parse_res = parser.parse();
+  /*
   // parse through the input until there is no more:
   do
   {
     yyparse();
   } while (!feof(yyin));
+  */
 
   // only the following cases are supported in the formal setting
-  if (global_model.model_type == modelt::type::PHA)
+  if (old::global_model.model_type == old::modelt::type::PHA)
   {
     capd::interval probability = algorithm::evaluate_pha_bayesian(
       global_config.reach_depth_min,
@@ -59,7 +60,7 @@ int main(int argc, char *argv[])
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (global_model.model_type == modelt::type::NPHA)
+  else if (old::global_model.model_type == old::modelt::type::NPHA)
   {
     pair<box, capd::interval> probability =
       algorithm::evaluate_npha_cross_entropy_normal(

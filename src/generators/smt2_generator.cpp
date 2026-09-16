@@ -10,14 +10,14 @@ using namespace std;
 using namespace capd;
 
 // getting a string representation of reachability formula in smt2 format for all combinations of initial and goal modes
-string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
+string smt2_generator::reach_to_smt2(vector<old::modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = global_model.declarations.var_map.cbegin();
-       it != global_model.declarations.var_map.cend();
+  for (auto it = old::global_model.declarations.var_map.cbegin();
+       it != old::global_model.declarations.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -92,7 +92,7 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   }
   s << "\n; defining initial states\n";
   s << "(assert (or \n";
-  for (statet st : global_model.init)
+  for (old::statet st : old::global_model.init)
   {
     if (st.id == path.front()->id)
     {
@@ -101,7 +101,7 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   }
   s << "))" << endl;
   int step = 0;
-  for (modet *m : path)
+  for (old::modet *m : path)
   {
     s << "\n; step " << step << ", mode " << m->id << "\n";
     s << "; flow\n";
@@ -126,7 +126,7 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
     if (step < path.size() - 1)
     {
       // defining jumps
-      for (jumpt j : m->jumps)
+      for (old::jumpt j : m->jumps)
       {
         // only the jumps to the next mode in the path
         if (j.next_id == path.at(step + 1)->id)
@@ -151,7 +151,7 @@ string smt2_generator::reach_to_smt2(vector<modet *> path, vector<box> boxes)
   }
   s << "\n; defining the GOAL\n";
   s << "(assert (or \n";
-  for (statet st : global_model.goal)
+  for (old::statet st : old::global_model.goal)
   {
     if (st.id == path.back()->id)
     {
@@ -220,14 +220,14 @@ node *get_node_neg_by_value(node *root, vector<string> values)
   return res_node;
 }
 
-string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
+string smt2_generator::reach_c_to_smt2(vector<old::modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = global_model.declarations.var_map.cbegin();
-       it != global_model.declarations.var_map.cend();
+  for (auto it = old::global_model.declarations.var_map.cbegin();
+       it != old::global_model.declarations.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -305,7 +305,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
   s << "(assert (and (and " << endl;
   // defining initial states
   s << "(or ";
-  for (statet st : global_model.init)
+  for (old::statet st : old::global_model.init)
   {
     if (path.front()->id == st.id)
     {
@@ -334,7 +334,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
   }
   // defining trajectory
   int step = 0;
-  for (modet *m : path)
+  for (old::modet *m : path)
   {
     // defining integrals
     s << "(= [";
@@ -362,7 +362,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
     if (step < path.size() - 1)
     {
       // defining jumps
-      for (jumpt j : m->jumps)
+      for (old::jumpt j : m->jumps)
       {
         if (j.next_id == path.at(step + 1)->id)
         {
@@ -384,7 +384,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
   s << ")";
   // defining goal
   s << "(and ";
-  for (statet st : global_model.goal)
+  for (old::statet st : old::global_model.goal)
   {
     if (path.back()->id == st.id)
     {
@@ -440,7 +440,7 @@ string smt2_generator::reach_c_to_smt2(vector<modet *> path, vector<box> boxes)
 
 string smt2_generator::reach_c_to_smt2(
   int depth,
-  vector<modet *> path,
+  vector<old::modet *> path,
   vector<box> boxes)
 {
   if (depth == path.size() - 1)
@@ -453,8 +453,8 @@ string smt2_generator::reach_c_to_smt2(
     // setting logic
     s << "(set-logic QF_NRA_ODE)" << endl;
     // declaring variables and defining bounds
-    for (auto it = global_model.declarations.var_map.cbegin();
-         it != global_model.declarations.var_map.cend();
+    for (auto it = old::global_model.declarations.var_map.cbegin();
+         it != old::global_model.declarations.var_map.cend();
          it++)
     {
       s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -538,7 +538,7 @@ string smt2_generator::reach_c_to_smt2(
     s << "(assert (and (and " << endl;
     // defining initial states
     s << "(or ";
-    for (statet st : global_model.init)
+    for (old::statet st : old::global_model.init)
     {
       if (path.front()->id == st.id)
       {
@@ -568,7 +568,7 @@ string smt2_generator::reach_c_to_smt2(
     // defining trajectory
     for (int i = 0; i <= depth; i++)
     {
-      modet *m = path.at(i);
+      old::modet *m = path.at(i);
       // defining integrals
       s << "(= [";
       for (auto ode_it = m->odes.cbegin(); ode_it != m->odes.cend(); ode_it++)
@@ -595,7 +595,7 @@ string smt2_generator::reach_c_to_smt2(
       if (i < depth)
       {
         // defining jumps
-        for (jumpt j : m->jumps)
+        for (old::jumpt j : m->jumps)
         {
           // getting only the jumps leading to the next mode in the path
           if (j.next_id == path.at(i + 1)->id)
@@ -617,7 +617,7 @@ string smt2_generator::reach_c_to_smt2(
     s << ")" << endl;
     // defining the last jump
     s << "(and ";
-    for (jumpt j : path.at(depth)->jumps)
+    for (old::jumpt j : path.at(depth)->jumps)
     {
       if (j.next_id == path.at(depth + 1)->id)
       {

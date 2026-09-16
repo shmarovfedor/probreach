@@ -9,43 +9,45 @@ add_custom_target(pdrhparser
 # create custom command for flex/lex (note the outputs)
 add_custom_command(
   COMMAND ${FLEX_EXECUTABLE}
-  ARGS -o ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.c
+  ARGS -o ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp
   ${PROBREACH_SOURCE_DIR}/frontend/parser/pdrhlexer.l
   DEPENDS pdrhparser
   DEPENDS ${PROBREACH_SOURCE_DIR}/frontend/parser/pdrhlexer.l
-  OUTPUT  ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.c
-  COMMENT "Generating ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.c")
+  OUTPUT  ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp
+  COMMENT "Generating ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp")
 
 # create custom command for bison/yacc (note the DEPENDS)
 add_custom_command(
   COMMAND ${BISON_EXECUTABLE}
-  ARGS -d -y ${PROBREACH_SOURCE_DIR}/frontend/parser/pdrhparser.y
-  -o ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.c
-  DEPENDS ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.c
+  ARGS -d ${PROBREACH_SOURCE_DIR}/frontend/parser/pdrhparser.y
+  -o ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.cpp
+  DEPENDS ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp
   DEPENDS ${PROBREACH_SOURCE_DIR}/frontend/parser/pdrhparser.y
-  OUTPUT  ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.c
-  COMMENT "Generating ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.c")
+  OUTPUT  ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.cpp
+  COMMENT "Generating ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.cpp")
 
 # setting propeties for the generated lexer and parser files
-set_source_files_properties(${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.c GENERATED PROPERTIES LANGUAGE CXX)
-set_source_files_properties(${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.c GENERATED PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.cpp GENERATED PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp GENERATED PROPERTIES LANGUAGE CXX)
 # including the parser directory
 include_directories("${PROBREACH_BINARY_DIR}/frontend/parser")
 
 # building the frontend
 file(GLOB PROBREACH_FRONTEND_SRC
         ${PROBREACH_SOURCE_DIR}/frontend/irep/model.cpp
-        ${PROBREACH_SOURCE_DIR}/frontend/irep/node.cpp)
+        ${PROBREACH_SOURCE_DIR}/frontend/irep/node.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/irep/new_to_old.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/irep/irep.cpp)
 
 set(PROBREACH_FRONTEND_SRC ${PROBREACH_FRONTEND_SRC}      
-        ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.c
-        ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.c)
+        ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.cpp
+        ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp)
 
 add_library(probreach_frontend ${PROBREACH_FRONTEND_SRC})
 
-if(APPLE)
-    target_link_libraries(probreach_frontend -ll)
-else(APPLE)
-    target_link_libraries(probreach_frontend -lfl)
-endif(APPLE)
+#if(APPLE)
+#    target_link_libraries(probreach_frontend -ll)
+#else(APPLE)
+#    target_link_libraries(probreach_frontend -lfl)
+#endif(APPLE)
 

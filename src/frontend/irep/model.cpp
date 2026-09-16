@@ -11,7 +11,7 @@
 using namespace std;
 
 // adding a variable
-void modelt::push_var(string var, node *left, node *right)
+void old::modelt::push_var(string var, node *left, node *right)
 {
   if (
     declarations.var_map.find(var) != declarations.var_map.cend())
@@ -26,7 +26,7 @@ void modelt::push_var(string var, node *left, node *right)
   }
 }
 
-void modelt::finalise()
+void old::modelt::finalise()
 {
   // extracting declarations and populating the maps
   for (auto it = declarations.decls.cbegin();
@@ -73,7 +73,7 @@ void modelt::finalise()
 
   // collecting all variables for which an ode is defined
   std::set<std::string> flow_vars;
-  for (modet m : modes)
+  for (old::modet m : modes)
     for (auto it : m.odes)
       flow_vars.insert(it.first);
 
@@ -126,27 +126,27 @@ void modelt::finalise()
 }
 
 // adding continuous random variable
-void modelt::push_rv(string var, node *pdf, node *left, node *right, node *start)
+void old::modelt::push_rv(string var, node *pdf, node *left, node *right, node *start)
 {
   declarations.rv_map.insert(
     make_pair(var, make_tuple(pdf, left, right, start)));
 }
 
 // adding discrete random variable
-void modelt::push_dd(string var, map<node *, node *> m)
+void old::modelt::push_dd(string var, map<node *, node *> m)
 {
   push_var(var, new node("-infty"), new node("infty"));
   declarations.dd_map.insert(make_pair(var, m));
 }
 
-void modelt::push_uniform(string var, node *a, node *b)
+void old::modelt::push_uniform(string var, node *a, node *b)
 {
   push_var(var, a, b);
   push_rv(var, uniform_to_node(a, b), a, b, a);
   declarations.uniform.insert(make_pair(var, make_pair(a, b)));
 }
 
-void modelt::push_normal(string var, node *mu, node *sigma)
+void old::modelt::push_normal(string var, node *mu, node *sigma)
 {
   push_var(var, new node("-infty"), new node("infty"));
   push_rv(
@@ -158,7 +158,7 @@ void modelt::push_normal(string var, node *mu, node *sigma)
   declarations.normal.insert(make_pair(var, make_pair(mu, sigma)));
 }
 
-void modelt::push_exp(string var, node *lambda)
+void old::modelt::push_exp(string var, node *lambda)
 {
   push_var(var, new node("0"), new node("infty"));
   push_rv(
@@ -171,7 +171,7 @@ void modelt::push_exp(string var, node *lambda)
 }
 
 // getting pointer to the mode by id
-modet *modelt::get_mode(std::string id)
+old::modet *old::modelt::get_mode(std::string id)
 {
   for (size_t i = 0; i < modes.size(); i++)
   {
@@ -184,15 +184,15 @@ modet *modelt::get_mode(std::string id)
 }
 
 // getting all paths of length path_length between begin and end modes
-vector<vector<modet *>>
-modelt::get_paths(modet *begin, modet *end, int path_length)
+vector<vector<old::modet *>>
+old::modelt::get_paths(old::modet *begin, old::modet *end, int path_length)
 {
   // initializing the set of paths
-  vector<std::vector<modet *>> paths;
-  vector<modet *> path;
+  vector<std::vector<old::modet *>> paths;
+  vector<old::modet *> path;
   path.push_back(begin);
   // initializing the stack
-  vector<vector<modet *>> stack;
+  vector<vector<old::modet *>> stack;
   stack.push_back(path);
   while (!stack.empty())
   {
@@ -208,13 +208,13 @@ modelt::get_paths(modet *begin, modet *end, int path_length)
     else if (path.size() < path_length + 1)
     {
       // getting the last mode in the path
-      modet *cur_mode = path.back();
+      old::modet *cur_mode = path.back();
       // getting the successors of the mode
-      vector<modet *> successors = get_successors(cur_mode);
-      for (modet *suc_mode : successors)
+      vector<old::modet *> successors = get_successors(cur_mode);
+      for (old::modet *suc_mode : successors)
       {
         // appending the successor the current paths
-        vector<modet *> new_path = path;
+        vector<old::modet *> new_path = path;
         new_path.push_back(suc_mode);
         // pushing the new path to the set of the paths
         stack.push_back(new_path);
@@ -226,14 +226,14 @@ modelt::get_paths(modet *begin, modet *end, int path_length)
 
 // getting all paths of length path_length for
 // all combinations of init and goal modes
-vector<vector<modet *>> modelt::get_all_paths(int path_length)
+vector<vector<old::modet *>> old::modelt::get_all_paths(int path_length)
 {
-  vector<vector<modet *>> res;
-  for (statet i : init)
+  vector<vector<old::modet *>> res;
+  for (old::statet i : init)
   {
-    for (statet g : goal)
+    for (old::statet g : goal)
     {
-      vector<vector<modet *>> paths = get_paths(
+      vector<vector<old::modet *>> paths = get_paths(
         get_mode(i.id), get_mode(g.id), path_length);
       res.insert(res.end(), paths.begin(), paths.end());
     }
@@ -241,24 +241,24 @@ vector<vector<modet *>> modelt::get_all_paths(int path_length)
   return res;
 }
 
-vector<vector<modet *>> modelt::get_all_paths(int min_depth, int max_depth)
+vector<vector<old::modet *>> old::modelt::get_all_paths(int min_depth, int max_depth)
 {
-  vector<vector<modet *>> res;
+  vector<vector<old::modet *>> res;
   for (int i = min_depth; i <= max_depth; i++)
   {
-    vector<vector<modet *>> paths = get_all_paths(i);
+    vector<vector<old::modet *>> paths = get_all_paths(i);
     res.insert(res.end(), paths.begin(), paths.end());
   }
   return res;
 }
 
 // getting successors of the mode m
-vector<modet *> modelt::get_successors(modet *m)
+vector<old::modet *> old::modelt::get_successors(old::modet *m)
 {
-  vector<modet *> res;
-  for (jumpt j : m->jumps)
+  vector<old::modet *> res;
+  for (old::jumpt j : m->jumps)
   {
-    modet *tmp = get_mode(j.next_id);
+    old::modet *tmp = get_mode(j.next_id);
     if (tmp != NULL)
     {
       res.push_back(tmp);
@@ -275,13 +275,13 @@ vector<modet *> modelt::get_successors(modet *m)
   return res;
 }
 
-node *modelt::uniform_to_node(node *a, node *b)
+node *old::modelt::uniform_to_node(node *a, node *b)
 {
   node *minus_node = new node("+", {b, a});
   return new node("/", {new node("1"), minus_node});
 }
 
-node *modelt::normal_to_node(string var, node *mu, node *sigma)
+node *old::modelt::normal_to_node(string var, node *mu, node *sigma)
 {
   node *power_node_1 = new node("^", {sigma, new node("2")});
   node *mult_node_1 = new node("*", {new node("2"), power_node_1});
@@ -297,7 +297,7 @@ node *modelt::normal_to_node(string var, node *mu, node *sigma)
   return new node("*", {exp_node, divide_node_2});
 }
 
-node *modelt::exp_to_node(string var, node *lambda)
+node *old::modelt::exp_to_node(string var, node *lambda)
 {
   node *times_node = new node("*", {lambda, new node(var)});
   node *unary_minus_node = new node("-", {times_node});
@@ -305,26 +305,26 @@ node *modelt::exp_to_node(string var, node *lambda)
   return new node("*", {exp_node, lambda});
 }
 
-void modelt::set_model_type()
+void old::modelt::set_model_type()
 {
   if (
     declarations.rv_map.empty() && declarations.dd_map.empty() &&
     declarations.par_map.empty())
   {
-    modelt::model_type = type::HA;
+    old::modelt::model_type = type::HA;
   }
   else if (declarations.par_map.empty())
   {
-    modelt::model_type = type::PHA;
+    old::modelt::model_type = type::PHA;
   }
   else
   {
-    modelt::model_type = type::NPHA;
+    old::modelt::model_type = type::NPHA;
   }
 }
 
 // getting string representation of the model
-string modelt::to_string()
+string old::modelt::to_string()
 {
   stringstream out;
   out << "MODEL TYPE: " << model_type << endl;
@@ -375,7 +375,7 @@ string modelt::to_string()
     out << ")" << endl;
   }
   out << "MODES:" << endl;
-  for (modet m : modes)
+  for (old::modet m : modes)
   {
     out << "|   MODE: " << m.id << ";" << endl;
     out << "|   TIME DOMAIN: [" << m.time.first->to_prefix() << ", "
@@ -392,7 +392,7 @@ string modelt::to_string()
           << endl;
     }
     out << "|   JUMPS:" << endl;
-    for (jumpt j : m.jumps)
+    for (old::jumpt j : m.jumps)
     {
       out << "|   |   GUARD: " << j.guard->to_prefix() << endl;
       out << "|   |   SUCCESSOR: " << j.next_id << endl;
@@ -405,7 +405,7 @@ string modelt::to_string()
     }
   }
   out << "INIT:" << endl;
-  for (statet s : init)
+  for (old::statet s : init)
   {
     out << "|   MODE: " << s.id << endl;
     out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;
@@ -413,7 +413,7 @@ string modelt::to_string()
   if (goal.size() > 0)
   {
     out << "GOAL:" << endl;
-    for (statet s : goal)
+    for (old::statet s : goal)
     {
       out << "|   MODE: " << s.id << endl;
       out << "|   PROPOSITION: " << s.prop->to_prefix() << endl;

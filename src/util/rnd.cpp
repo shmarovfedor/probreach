@@ -16,55 +16,55 @@ box rnd::get_random_sample(gsl_rng *r)
   map<std::string, capd::interval> edges;
 
   // uniform distributions
-  for (auto it = global_model.declarations.uniform.cbegin();
-       it != global_model.declarations.uniform.cend();
+  for (auto it = old::global_model.declarations.uniform.cbegin();
+       it != old::global_model.declarations.uniform.cend();
        it++)
   {
     edges.insert(make_pair(
       it->first,
       node_utils::node_to_interval(
-        global_model.declarations.uniform[it->first].first) +
+        old::global_model.declarations.uniform[it->first].first) +
         gsl_rng_uniform(r) *
           (node_utils::node_to_interval(
-             global_model.declarations.uniform[it->first].second) -
+             old::global_model.declarations.uniform[it->first].second) -
            node_utils::node_to_interval(
-             global_model.declarations.uniform[it->first].first))));
+             old::global_model.declarations.uniform[it->first].first))));
   }
   // normal distributions
-  for (auto it = global_model.declarations.normal.cbegin();
-       it != global_model.declarations.normal.cend();
+  for (auto it = old::global_model.declarations.normal.cbegin();
+       it != old::global_model.declarations.normal.cend();
        it++)
   {
     edges.insert(make_pair(
       it->first,
       node_utils::node_to_interval(
-        global_model.declarations.normal[it->first].first) +
+        old::global_model.declarations.normal[it->first].first) +
         gsl_ran_gaussian_ziggurat(
           r,
           node_utils::node_to_interval(
-            global_model.declarations.normal[it->first].second)
+            old::global_model.declarations.normal[it->first].second)
             .mid()
             .leftBound())));
   }
   // exponential distributions
-  for (auto it = global_model.declarations.exp.cbegin();
-       it != global_model.declarations.exp.cend();
+  for (auto it = old::global_model.declarations.exp.cbegin();
+       it != old::global_model.declarations.exp.cend();
        it++)
   {
     edges.insert(make_pair(
       it->first,
       gsl_ran_exponential(
         r,
-        1 / node_utils::node_to_interval(global_model.declarations.exp[it->first])
+        1 / node_utils::node_to_interval(old::global_model.declarations.exp[it->first])
               .mid()
               .leftBound())));
   }
   //discrete distributions
-  for (auto it = global_model.declarations.dd_map.cbegin();
-       it != global_model.declarations.dd_map.cend();
+  for (auto it = old::global_model.declarations.dd_map.cbegin();
+       it != old::global_model.declarations.dd_map.cend();
        it++)
   {
-    map<node *, node *> mass_map = global_model.declarations.dd_map[it->first];
+    map<node *, node *> mass_map = old::global_model.declarations.dd_map[it->first];
     double *p_mass = new double[mass_map.size()];
     node **p_value = new node *[mass_map.size()];
     size_t i = 0;
@@ -92,8 +92,8 @@ box rnd::get_random_sample(gsl_rng *r)
 box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
 {
   map<std::string, capd::interval> edges;
-  for (auto it = global_model.declarations.par_map.cbegin();
-       it != global_model.declarations.par_map.cend();
+  for (auto it = old::global_model.declarations.par_map.cbegin();
+       it != old::global_model.declarations.par_map.cend();
        it++)
   {
     if (it->second.first->value != it->second.second->value)

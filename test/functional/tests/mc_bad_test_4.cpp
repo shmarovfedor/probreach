@@ -17,13 +17,10 @@
 #include <omp.h>
 #endif
 
-extern "C"
-{
-#include "pdrhparser.h"
-}
+#include "pdrhparser.hpp"
 
-extern "C" int yyparse();
-extern "C" FILE *yyin;
+//extern int yyparse();
+extern FILE *yyin;
 
 using namespace std;
 
@@ -38,11 +35,15 @@ static void parse_pdrh_model(string filepath)
   }
   // set lex to read from it instead of defaulting to STDIN:
   yyin = pdrhfile;
+  yy::parser parser;
+  int parse_res = parser.parse();
+ /* 
   // parse through the input until there is no more:
   do
   {
     yyparse();
   } while (!feof(yyin));
+  */
 }
 
 TEST(mc_bad_test_4, testing_bad_4_pdrh)

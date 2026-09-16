@@ -10,6 +10,9 @@
 #include <tuple>
 #include "node.h"
 
+namespace old
+{
+
 class jumpt
 {
 public:
@@ -144,5 +147,6 @@ public:
 };
 
 extern modelt global_model;
+}
 
 #endif //PROBREACH_MODEL_H
