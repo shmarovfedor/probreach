@@ -3,7 +3,7 @@
 
 node *new_to_old(real_exprt &e)
 {
-  if (auto ptr = dynamic_cast<symbolt *>(&e))
+  if (auto ptr = dynamic_cast<symbol_exprt *>(&e))
   {
     return new_to_old(*ptr);
   }
@@ -82,6 +82,11 @@ node *new_to_old(real_exprt &e)
 }
 
 node *new_to_old(symbolt &e)
+{
+  return new node(e.get_value());
+}
+
+node *new_to_old(symbol_exprt &e)
 {
   return new node(e.get_value());
 }

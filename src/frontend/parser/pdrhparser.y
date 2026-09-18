@@ -365,7 +365,7 @@ ode:
 expr:
   identifier                  
 {
-  $$ = std::make_unique<symbolt>($1); 
+  $$ = std::make_unique<symbol_exprt>($1); 
 }
   | number                    
 {

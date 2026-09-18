@@ -10,8 +10,10 @@
 #include "model.h"
 #include "ast.h"
 
-node *new_to_old(real_exprt &e);
 node *new_to_old(symbolt &e);
+
+node *new_to_old(real_exprt &e);
+node *new_to_old(symbol_exprt &e);
 node *new_to_old(numbert &e);
 node *new_to_old(minust &e);
 node *new_to_old(plust &e);

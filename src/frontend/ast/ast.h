@@ -39,8 +39,7 @@ public:
   virtual ~real_exprt() = default;
 };
 
-/// Real valued terminal values
-class symbolt : public real_exprt
+class symbolt
 {
 private:
   std::string value;
@@ -55,9 +54,47 @@ public:
     return value == other.value;
   }
 
-  std::string get_type() const override
+  std::string get_type() const
   {
     return "symbolt";
+  }
+
+  std::string get_value()
+  {
+    return value;
+  }
+
+  void print(std::ostream &out) const
+  {
+    out << value;
+  }
+  
+  friend std::ostream &operator<<(std::ostream &os, const symbolt &e)
+  {
+    e.print(os);
+    return os;
+  }
+};
+
+/// Real valued terminal values
+class symbol_exprt : public real_exprt
+{
+private:
+  std::string value;
+
+public:
+  symbol_exprt(std::string value) : value(value)
+  {
+  }
+
+  bool operator==(const symbol_exprt &other) const
+  {
+    return value == other.value;
+  }
+
+  std::string get_type() const override
+  {
+    return "symbol_exprt";
   }
 
   std::string get_value()
@@ -1038,9 +1075,6 @@ public:
 
 class cont_distt : public distt
 {
-public:
-  virtual std::unique_ptr<real_exprt>
-  pdf(const std::unique_ptr<symbolt> sym) const = 0;
 };
 
 class uniform_distt : public cont_distt
@@ -1073,20 +1107,6 @@ public:
   void print(std::ostream &out) const override
   {
     out << "dist_uniform(" << *left << ", " << *right << ")";
-  }
-
-  std::unique_ptr<real_exprt>
-  pdf(const std::unique_ptr<symbolt> sym) const override
-  {
-    return std::make_unique<divt>(
-      std::make_unique<numbert>("1"),
-      std::make_unique<subt>(
-        std::make_unique<numbert>(*right), std::make_unique<numbert>(*left)));
-  }
-
-  std::unique_ptr<real_exprt> pdf()
-  {
-    return pdf(std::make_unique<symbolt>(""));
   }
 };
 
@@ -1121,33 +1141,6 @@ public:
   {
     out << "dist_normal(" << *mu << ", " << *sigma << ")";
   }
-
-  std::unique_ptr<real_exprt>
-  pdf(const std::unique_ptr<symbolt> sym) const override
-  {
-    return std::make_unique<mult>(
-      std::make_unique<divt>(
-        std::make_unique<numbert>("1"),
-        std::make_unique<powt>(
-          std::make_unique<mult>(
-            std::make_unique<numbert>("2"),
-            std::make_unique<mult>(
-              std::make_unique<numbert>("3.14159"),
-              std::make_unique<powt>(
-                std::make_unique<numbert>(*sigma),
-                std::make_unique<numbert>("2")))),
-          std::make_unique<numbert>("0.5"))),
-      std::make_unique<expt>(std::make_unique<minust>(std::make_unique<divt>(
-        std::make_unique<powt>(
-          std::make_unique<subt>(
-            std::make_unique<symbolt>(*sym), std::make_unique<numbert>(*mu)),
-          std::make_unique<numbert>("2")),
-        std::make_unique<mult>(
-          std::make_unique<numbert>("2"),
-          std::make_unique<powt>(
-            std::make_unique<numbert>(*sigma),
-            std::make_unique<numbert>("2")))))));
-  }
 };
 
 class exp_distt : public cont_distt
@@ -1173,15 +1166,6 @@ public:
   void print(std::ostream &out) const override
   {
     out << "dist_exp(" << *lambda << ")";
-  }
-
-  std::unique_ptr<real_exprt>
-  pdf(const std::unique_ptr<symbolt> sym) const override
-  {
-    return std::make_unique<mult>(
-      std::make_unique<numbert>(*lambda),
-      std::make_unique<expt>(std::make_unique<minust>(std::make_unique<mult>(
-        std::make_unique<numbert>(*lambda), std::make_unique<symbolt>(*sym)))));
   }
 };
 

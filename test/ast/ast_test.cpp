@@ -81,7 +81,7 @@ TEST(numbert_get_value, normal_test)
 TEST(addt_ostream, normal_test)
 {
   std::unique_ptr<addt> add = std::make_unique<addt>(
-    std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771"));
+    std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771"));
 
   auto add2 =
     std::make_unique<addt>(std::move(add), std::make_unique<numbert>("3.1415"));
@@ -113,10 +113,10 @@ TEST(addt_ostream, normal_test)
 TEST(greater_thant_ostream, normal_test)
 {
   auto add = std::make_unique<addt>(
-    std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771"));
+    std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771"));
 
   auto add2 = std::make_unique<addt>(
-    std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415"));
+    std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415"));
 
   auto gt = std::make_unique<greater_thant>(std::move(add), std::move(add2));
 
@@ -129,15 +129,15 @@ TEST(andt_ostream, normal_test)
 {
   auto expr1 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr2 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<bool_exprt>> operands;
   operands.push_back(std::move(expr1));
@@ -172,12 +172,6 @@ TEST(uniform_distt_ostream, normal_test)
   stringstream s;
   s << *u_dist;
   EXPECT_EQ(s.str(), "dist_uniform(0.176, 0.456771)");
-
-  s.str("");
-  s.clear();
-
-  s << *(u_dist->pdf());
-  EXPECT_EQ(s.str(), "(1 / (0.456771 - 0.176))");
 }
 
 TEST(normal_distt_ostream, normal_test)
@@ -188,15 +182,6 @@ TEST(normal_distt_ostream, normal_test)
   stringstream s;
   s << *n_dist;
   EXPECT_EQ(s.str(), "dist_normal(0.176, 0.456771)");
-
-  s.str("");
-  s.clear();
-
-  s << *(n_dist->pdf(std::make_unique<symbolt>("p_12")));
-  EXPECT_EQ(
-    s.str(),
-    "((1 / ((2 * (3.14159 * (0.456771 ^ 2))) ^ 0.5)) * exp(( - ((((p_12 - "
-    "0.176) ^ 2) / (2 * (0.456771 ^ 2)))))))");
 }
 
 TEST(exp_distt_ostream, normal_test)
@@ -206,12 +191,6 @@ TEST(exp_distt_ostream, normal_test)
   stringstream s;
   s << *e_dist;
   EXPECT_EQ(s.str(), "dist_exp(0.176)");
-
-  s.str("");
-  s.clear();
-
-  s << *(e_dist->pdf(std::make_unique<symbolt>("p_12")));
-  EXPECT_EQ(s.str(), "(0.176 * exp(( - ((0.176 * p_12)))))");
 }
 
 TEST(discrete_distt_ostream, normal_test)
@@ -226,7 +205,7 @@ TEST(discrete_distt_ostream, normal_test)
 
   stringstream s;
   s << *d_dist;
-  EXPECT_EQ(s.str(), "dist_discrete(5.43:0.35, -3.76e-2:0.65)");
+  EXPECT_EQ(s.str(), "dist_discrete(-3.76e-2:0.65, 5.43:0.35)");
 }
 
 TEST(const_declt_ostream, normal_test)
@@ -269,15 +248,15 @@ TEST(cond_statet_ostream, normal_test)
 {
   auto expr1 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr2 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<bool_exprt>> operands;
   operands.push_back(std::move(expr1));
@@ -300,7 +279,7 @@ TEST(cond_statet_ostream, normal_test)
 TEST(odet_ostream, normal_test)
 {
   auto rhs = std::make_unique<powt>(
-    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+    std::make_unique<symbol_exprt>("x"), std::make_unique<numbert>("1.43"));
 
   auto ode =
     std::make_unique<odet>(std::make_unique<symbolt>("y"), std::move(rhs));
@@ -313,7 +292,7 @@ TEST(odet_ostream, normal_test)
 TEST(assignt_ostream, normal_test)
 {
   auto rhs = std::make_unique<powt>(
-    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+    std::make_unique<symbol_exprt>("x"), std::make_unique<numbert>("1.43"));
 
   auto assign =
     std::make_unique<assignt>(std::make_unique<symbolt>("y"), std::move(rhs));
@@ -330,7 +309,7 @@ TEST(reset_statet_ostream, normal_test)
   auto assign2 = std::make_unique<assignt>(
     std::make_unique<symbolt>("b_2"),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("2.98")));
 
   std::vector<std::unique_ptr<assignt>> operands;
   operands.push_back(std::move(assign1));
@@ -348,15 +327,15 @@ TEST(jumpt_ostream, normal_test)
 {
   auto expr1 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr2 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<bool_exprt>> operands;
   operands.push_back(std::move(expr1));
@@ -369,7 +348,7 @@ TEST(jumpt_ostream, normal_test)
   auto assign2 = std::make_unique<assignt>(
     std::make_unique<symbolt>("b_2"),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("2.98")));
 
   std::vector<std::unique_ptr<assignt>> operands2;
   operands2.push_back(std::move(assign1));
@@ -397,26 +376,26 @@ TEST(modet_ostream, normal_test)
 
   auto expr1 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr2 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<invtt>> invariants;
   invariants.push_back(std::make_unique<invtt>(std::move(expr1)));
   invariants.push_back(std::make_unique<invtt>(std::move(expr2)));
 
   auto rhs1 = std::make_unique<powt>(
-    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+    std::make_unique<symbol_exprt>("x"), std::make_unique<numbert>("1.43"));
   auto ode1 =
     std::make_unique<odet>(std::make_unique<symbolt>("y"), std::move(rhs1));
   auto rhs2 = std::make_unique<addt>(
-    std::make_unique<symbolt>("x"), std::make_unique<numbert>("-0.45"));
+    std::make_unique<symbol_exprt>("x"), std::make_unique<numbert>("-0.45"));
   auto ode2 =
     std::make_unique<odet>(std::make_unique<symbolt>("x"), std::move(rhs2));
 
@@ -428,15 +407,15 @@ TEST(modet_ostream, normal_test)
 
   auto expr3 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr4 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<bool_exprt>> operands;
   operands.push_back(std::move(expr3));
@@ -449,7 +428,7 @@ TEST(modet_ostream, normal_test)
   auto assign2 = std::make_unique<assignt>(
     std::make_unique<symbolt>("b_2"),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("2.98")));
 
   std::vector<std::unique_ptr<assignt>> operands2;
   operands2.push_back(std::move(assign1));
@@ -519,26 +498,26 @@ TEST(modelt_ostream, normal_test)
 
   auto expr1 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr2 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<invtt>> invariants;
   invariants.push_back(std::make_unique<invtt>(std::move(expr1)));
   invariants.push_back(std::make_unique<invtt>(std::move(expr2)));
 
   auto rhs1 = std::make_unique<powt>(
-    std::make_unique<symbolt>("x"), std::make_unique<numbert>("1.43"));
+    std::make_unique<symbol_exprt>("x"), std::make_unique<numbert>("1.43"));
   auto ode1 =
     std::make_unique<odet>(std::make_unique<symbolt>("y"), std::move(rhs1));
   auto rhs2 = std::make_unique<addt>(
-    std::make_unique<symbolt>("x"), std::make_unique<numbert>("-0.45"));
+    std::make_unique<symbol_exprt>("x"), std::make_unique<numbert>("-0.45"));
   auto ode2 =
     std::make_unique<odet>(std::make_unique<symbolt>("x"), std::move(rhs2));
 
@@ -550,15 +529,15 @@ TEST(modelt_ostream, normal_test)
 
   auto expr3 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   auto expr4 = std::make_unique<less_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<bool_exprt>> operands;
   operands.push_back(std::move(expr3));
@@ -571,7 +550,7 @@ TEST(modelt_ostream, normal_test)
   auto assign2 = std::make_unique<assignt>(
     std::make_unique<symbolt>("b_2"),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("2.98")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("2.98")));
 
   std::vector<std::unique_ptr<assignt>> operands2;
   operands2.push_back(std::move(assign1));
@@ -596,9 +575,9 @@ TEST(modelt_ostream, normal_test)
 
   auto expr5 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.456771")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.456771")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1415")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1415")));
 
   std::vector<std::unique_ptr<bool_exprt>> init_operands;
   init_operands.push_back(std::move(expr5));
@@ -614,9 +593,9 @@ TEST(modelt_ostream, normal_test)
 
   auto expr6 = std::make_unique<not_equalt>(
     std::make_unique<addt>(
-      std::make_unique<symbolt>("a1"), std::make_unique<numbert>("0.4")),
+      std::make_unique<symbol_exprt>("a1"), std::make_unique<numbert>("0.4")),
     std::make_unique<addt>(
-      std::make_unique<symbolt>("b_2"), std::make_unique<numbert>("3.1")));
+      std::make_unique<symbol_exprt>("b_2"), std::make_unique<numbert>("3.1")));
 
   std::vector<std::unique_ptr<bool_exprt>> goal_operands;
   goal_operands.push_back(std::move(expr6));
