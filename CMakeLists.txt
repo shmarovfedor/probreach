@@ -86,8 +86,6 @@ include_directories("${PROBREACH_SOURCE_DIR}/config")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/generators")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
-include_directories("${PROBREACH_SOURCE_DIR}/frontend/irep")
-include_directories("${PROBREACH_SOURCE_DIR}/frontend/parser")
 
 # searching for GSL
 find_package(GSL)

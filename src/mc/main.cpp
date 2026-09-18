@@ -15,10 +15,7 @@
 #include <omp.h>
 #endif
 
-#include "pdrhparser.hpp"
-
-//extern int yyparse();
-extern FILE *yyin;
+#include "frontend.h"
 
 using namespace std;
 
@@ -28,25 +25,10 @@ int main(int argc, char *argv[])
   cout << setprecision(16);
   // parse command line
   parse_pdrh_config(argc, argv);
-
-  // opening pdrh file
-  FILE *pdrhfile = fopen(global_config.model_filename.c_str(), "r");
-  if (!pdrhfile)
-  {
-    cerr << "Couldn't open the file: " << endl;
-    exit(EXIT_FAILURE);
-  }
-  // set lex to read from it instead of defaulting to STDIN:
-  yyin = pdrhfile;
-  yy::parser parser;
-  int parse_res = parser.parse();
-  /*
-  // parse through the input until there is no more:
-  do
-  {
-    yyparse();
-  } while (!feof(yyin));
-  */
+  
+  frontendt frontend;
+  if (frontend.parse(global_config.model_filename) != 0)
+    return EXIT_FAILURE;
 
   // only the following cases are supported in the formal setting
   if (old::global_model.model_type == old::modelt::type::PHA)

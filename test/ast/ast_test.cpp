@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "irep.h"
+#include "ast.h"
 
 using namespace std;
 

@@ -32,22 +32,19 @@ set_source_files_properties(${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cp
 # including the parser directory
 include_directories("${PROBREACH_BINARY_DIR}/frontend/parser")
 
+include_directories("${PROBREACH_SOURCE_DIR}/frontend")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/irep")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/parser")
+
 # building the frontend
 file(GLOB PROBREACH_FRONTEND_SRC
-        ${PROBREACH_SOURCE_DIR}/frontend/irep/model.cpp
-        ${PROBREACH_SOURCE_DIR}/frontend/irep/node.cpp
-        ${PROBREACH_SOURCE_DIR}/frontend/irep/new_to_old.cpp
-        ${PROBREACH_SOURCE_DIR}/frontend/irep/irep.cpp)
+        ${PROBREACH_SOURCE_DIR}/frontend/ast/model.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/ast/node.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/ast/new_to_old.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/frontend.cpp)
 
 set(PROBREACH_FRONTEND_SRC ${PROBREACH_FRONTEND_SRC}      
         ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhparser.cpp
         ${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cpp)
 
 add_library(probreach_frontend ${PROBREACH_FRONTEND_SRC})
-
-#if(APPLE)
-#    target_link_libraries(probreach_frontend -ll)
-#else(APPLE)
-#    target_link_libraries(probreach_frontend -lfl)
-#endif(APPLE)
-

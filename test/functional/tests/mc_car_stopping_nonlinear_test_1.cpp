@@ -17,40 +17,19 @@
 #include <omp.h>
 #endif
 
-#include "pdrhparser.hpp"
-
-//extern int yyparse();
-extern FILE *yyin;
+#include "frontend.h"
 
 using namespace std;
 
-static void parse_pdrh_model(string filepath)
-{
-  // opening the model file
-  FILE *pdrhfile = fopen(filepath.c_str(), "r");
-  if (!pdrhfile)
-  {
-    cerr << "Couldn't open the file: " << filepath << endl;
-    exit(EXIT_FAILURE);
-  }
-  // set lex to read from it instead of defaulting to STDIN:
-  yyin = pdrhfile;
-  yy::parser parser;
-  int parse_res = parser.parse();
-  /*
-  // parse through the input until there is no more:
-  do
-  {
-    yyparse();
-  } while (!feof(yyin));
-  */
-}
-
 TEST(mc_cars_stopping_nonliner_test_1, testing_cars_stopping_1_pdrh)
 {
-  parse_pdrh_model(
-    string(PROBREACH_TEST_MODELS_DIR) +
-    string("/cars/car_stopping_nonlinear_1.pdrh"));
+  // parsing the model
+  frontendt frontend;
+  if (frontend.parse(
+      string(PROBREACH_TEST_MODELS_DIR) + 
+      string("/cars/car_stopping_nonlinear_1.pdrh")) != 0)
+    return EXIT_FAILURE;
+  
   // setting precision for computing the probability interval
   double acc = 2e-2;
   double conf = 0.99;

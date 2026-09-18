@@ -1,6 +1,14 @@
+//
+// Created by fedor on 01/09/2026.
+//
+
+#ifndef PROBREACH_NEW_TO_OLD_H
+#define PROBREACH_NEW_TO_OLD_H
+
+
 #include "node.h"
 #include "model.h"
-#include "irep.h"
+#include "ast.h"
 
 node *new_to_old(real_exprt &e);
 node *new_to_old(symbolt &e);
@@ -72,4 +80,4 @@ std::map<std::string, old::declarationt> new_to_old(std::map<std::unique_ptr<sym
 
 old::modelt new_to_old(modelt &e);
 
-
+#endif // PROBREACH_NEW_TO_OLD_H

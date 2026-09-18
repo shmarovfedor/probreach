@@ -2,8 +2,8 @@
 // Created by fedor on 01/09/2026.
 //
 
-#ifndef PROBREACH_IREP_H
-#define PROBREACH_IREP_H
+#ifndef PROBREACH_AST_H
+#define PROBREACH_AST_H
 
 #include <string>
 #include <ostream>
@@ -1525,7 +1525,7 @@ public:
   {
   }
 
-  bool_exprt &get_cond()
+  bool_exprt &get_condition()
   {
     return *cond;
   }
@@ -1832,4 +1832,4 @@ public:
 };
 
 
-#endif // PROBREACH_IREP_H
+#endif // PROBREACH_AST_H

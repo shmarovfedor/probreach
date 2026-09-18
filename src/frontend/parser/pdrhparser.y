@@ -1,10 +1,6 @@
 %{
 #include <iostream>
 #include <sstream>
-#include "node.h"
-#include "model.h"
-#include "irep.h"
-#include "new_to_old.h"
 
 extern FILE *yyin;
 
@@ -19,12 +15,14 @@ int yylex(
 
 // to make sure that all nameespaces are resolved correctly
 %code requires {
-  #include "model.h"
-  #include "irep.h"
+  #include "ast.h"
+  #include "frontend.h"
 }
 
 %skeleton "lalr1.cc"
 %define api.value.type variant
+
+%parse-param { frontendt &frontend }
 
 // terminals
 %token TIME
@@ -91,19 +89,16 @@ int yylex(
 %type<std::unique_ptr<declt>> dist_declaration
 %type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>>*> declarations
 
-// setting global extern variable here
-%{
-old::modelt old::global_model;
-%}
-
 %%
 model:
 	declarations modes init goal 
 {
-  auto model = std::make_unique<modelt>(
-    std::move(*$1), std::move(*$2), std::move(*$3), std::move(*$4));
-  old::global_model = new_to_old(*model);
-  old::global_model.finalise();
+  frontend.set_model(
+    std::make_unique<modelt>(
+      std::move(*$1),
+      std::move(*$2),
+      std::move(*$3),
+      std::move(*$4)));
 }
 
 declarations:

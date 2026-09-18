@@ -361,7 +361,7 @@ old::statet new_to_old(cond_statet &e)
 {
   old::statet res;
   res.id = e.get_mode_id().get_value();
-  res.prop = new_to_old(e.get_cond());
+  res.prop = new_to_old(e.get_condition());
   return res;
 }
 

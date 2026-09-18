@@ -6,8 +6,6 @@ int yylex( \
   yy::parser::semantic_type *yylval, \
   yy::parser::location_type *yylloc)
 
-#include "node.h"
-
 #define YY_USER_ACTION \
   do { \
     yylloc->step(); \

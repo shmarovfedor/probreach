@@ -2,6 +2,7 @@ enable_testing()
 
 include_directories("${PROBREACH_SOURCE_DIR}/")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend/parser")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend/irep")
 include_directories("${PROBREACH_SOURCE_DIR}/formal")
