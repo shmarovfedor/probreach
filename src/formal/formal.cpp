@@ -51,7 +51,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   // evaluating boxes
   for (box dd : dd_partition)
   {
-    if (old::global_model.sym_table.rv_map.size() > 0)
+    if (rv_domain.get_map().size() > 0)
       probability = capd::interval(
         0,
         2 - measure::p_measure(rv_domain, global_config.precision_prob)
@@ -101,12 +101,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
         for (std::vector<old::modet *> path : paths)
         {
           std::string solver_opt;
-          std::stringstream p_stream;
-          for (old::modet *m : path)
-          {
-            p_stream << m->id << " ";
-          }
-          // removing trailing whitespace
           std::stringstream s;
 // changing solver precision
 #pragma omp critical
@@ -114,7 +108,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
             solver_opt = global_config.solver_opt;
             s << solver_opt << " --precision "
               << rv.volume().leftBound() * global_config.solver_precision_ratio;
-            //global_config.solver_opt = s.str();
           }
           int res = decision_procedure::evaluate(
             path, boxes, global_config.solver_bin, s.str());
@@ -180,7 +173,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
       rv_partition = rv_stack;
       rv_stack.clear();
       // breaking out of the loop if there are no continuous random variables
-      if (old::global_model.sym_table.rv_map.size() == 0)
+      if (rv_domain.get_map().size() == 0)
       {
         rv_partition.push_back(box());
         break;

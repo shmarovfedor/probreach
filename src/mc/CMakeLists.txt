@@ -5,7 +5,7 @@ file(GLOB PROBREACH_MC_SRC
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
         ${PROBREACH_SOURCE_DIR}/util/box_factory.cpp
         ${PROBREACH_SOURCE_DIR}/util/measure.cpp
-        ${PROBREACH_SOURCE_DIR}/util/decision_procedure.cpp
+        ${PROBREACH_SOURCE_DIR}/solver/decision_procedure.cpp
         ${PROBREACH_SOURCE_DIR}/solver/dreal_wrapper.cpp
         ${PROBREACH_SOURCE_DIR}/generators/smt2_generator.cpp)
 

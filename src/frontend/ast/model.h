@@ -73,11 +73,13 @@ public:
 class symbol_tablet
 {
 public:
+  /// distributions info
   std::map<std::string, std::pair<node *, node *>> uniform;
   std::map<std::string, std::pair<node *, node *>> normal;
   std::map<std::string, node *> exp;
-  std::map<std::string, std::tuple<node *, node *, node *, node *>> rv_map;
   std::map<std::string, std::map<node *, node *>> dd_map;
+  /// bounds info
+  std::map<std::string, std::tuple<node *, node *, node *, node *>> rv_map;
   std::map<std::string, std::pair<node *, node *>> var_map;
   std::map<std::string, std::pair<node *, node *>> par_map;
 
@@ -105,7 +107,6 @@ public:
   {
     HA,
     PHA,
-    NHA,
     NPHA
   };
 
@@ -140,7 +141,6 @@ public:
   void complete_resets();
   void set_model_type();
   void finalise();
-
 };
 
 extern modelt global_model;
