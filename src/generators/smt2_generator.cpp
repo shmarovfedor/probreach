@@ -16,8 +16,8 @@ string smt2_generator::reach_to_smt2(vector<old::modet *> path, vector<box> boxe
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = old::global_model.declarations.var_map.cbegin();
-       it != old::global_model.declarations.var_map.cend();
+  for (auto it = old::global_model.sym_table.var_map.cbegin();
+       it != old::global_model.sym_table.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -226,8 +226,8 @@ string smt2_generator::reach_c_to_smt2(vector<old::modet *> path, vector<box> bo
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
   s << "\n; declaring variables and defining bounds\n";
-  for (auto it = old::global_model.declarations.var_map.cbegin();
-       it != old::global_model.declarations.var_map.cend();
+  for (auto it = old::global_model.sym_table.var_map.cbegin();
+       it != old::global_model.sym_table.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
@@ -453,8 +453,8 @@ string smt2_generator::reach_c_to_smt2(
     // setting logic
     s << "(set-logic QF_NRA_ODE)" << endl;
     // declaring variables and defining bounds
-    for (auto it = old::global_model.declarations.var_map.cbegin();
-         it != old::global_model.declarations.var_map.cend();
+    for (auto it = old::global_model.sym_table.var_map.cbegin();
+         it != old::global_model.sym_table.var_map.cend();
          it++)
     {
       s << "(declare-fun " << it->first << " () Real)" << endl;

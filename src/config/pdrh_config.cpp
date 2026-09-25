@@ -142,13 +142,6 @@ void parse_pdrh_config(int argc, char *argv[])
         exit(EXIT_FAILURE);
       }
     }
-    // maximum reachability depth
-    else if (strcmp(argv[i], "--decision-method") == 0)
-    {
-      i++;
-      istringstream is(argv[i]);
-      is >> global_config.decision_method;
-    }
     // partition nondeterministic parameter according to the given precision
     else if (strcmp(argv[i], "--partition-nondet") == 0)
     {

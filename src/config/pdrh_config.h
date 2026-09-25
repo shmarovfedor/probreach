@@ -12,7 +12,6 @@
 
 struct pdrh_config
 {
-  int decision_method = 0;
   // verified integration options
   double integral_inf_coeff = 1e-01;
   double integral_pdf_step = 1e-01;

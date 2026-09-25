@@ -48,12 +48,13 @@ capd::interval algorithm::evaluate_pha_chernoff(
     cout << "Chernoff-Hoeffding algorithm started\n";
   if (global_config.verbose_result)
     cout << "Random sample size: " << sample_size << "\n";
+  old::symext symex(old::global_model);
 #pragma omp parallel for schedule(dynamic)
   for (long int ctr = 0; ctr < sample_size; ctr++)
   {
     // getting all paths
     std::vector<std::vector<old::modet *>> paths =
-      old::global_model.get_all_paths(min_depth, max_depth);
+      symex.get_all_paths(min_depth, max_depth);
     // getting a sample
     box b = rnd::get_random_sample(r);
     if (global_config.verbose)
@@ -174,11 +175,9 @@ capd::interval algorithm::evaluate_pha_bayesian(
   if (global_config.verbose_result)
     cout << "Bayesian estimations algorithm started\n";
   // getting set of all paths
-  vector<vector<old::modet *>> paths;
-  if (global_config.decision_method == 0)
-  {
-    paths = old::global_model.get_all_paths(min_depth, max_depth);
-  }
+  old::symext symex(old::global_model);
+  vector<vector<old::modet *>> paths = 
+    symex.get_all_paths(min_depth, max_depth);
 #pragma omp parallel
   while (post_prob < conf)
   {
@@ -195,29 +194,15 @@ capd::interval algorithm::evaluate_pha_bayesian(
     boxes.insert(boxes.end(), nondet_boxes.begin(), nondet_boxes.end());
 
     int res = decision_procedure::UNDET;
-    switch (global_config.decision_method)
+    if (global_config.delta_sat)
     {
-    case 0:
-      if (global_config.delta_sat)
-      {
-        res = decision_procedure::evaluate_delta_sat(
-          paths, boxes, global_config.solver_bin, global_config.solver_opt);
-      }
-      else
-      {
-        res = decision_procedure::evaluate(
-          paths, boxes, global_config.solver_bin, global_config.solver_opt);
-      }
-      break;
-    case 1:
-      //res = ap::verify(min_depth, max_depth, boxes);
-      //break;
-    case 2:
-      //res = ap::simulate(min_depth, max_depth, boxes);
-      //break;
-    default:
-      cerr << "Unknown decision procedure method" << endl;
-      exit(EXIT_FAILURE);
+      res = decision_procedure::evaluate_delta_sat(
+        paths, boxes, global_config.solver_bin, global_config.solver_opt);
+    }
+    else
+    {
+      res = decision_procedure::evaluate(
+        paths, boxes, global_config.solver_bin, global_config.solver_opt);
     }
 // updating the counters
 #pragma omp critical

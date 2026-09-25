@@ -1685,18 +1685,18 @@ public:
 class modelt
 {
 private:
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> sym_table;
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> decls;
   std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes;
   std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits;
   std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals;
 
 public:
   modelt(
-    std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> sym_table,
+    std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> decls,
     std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes,
     std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits,
     std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals) :
-  sym_table(std::move(sym_table)),
+  decls(std::move(decls)),
   modes(std::move(modes)),
   inits(std::move(inits)),
   goals(std::move(goals))
@@ -1708,9 +1708,9 @@ public:
     return "modelt";
   }
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &get_symbol_table()
+  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &get_declarations()
   {
-    return sym_table;
+    return decls;
   }
 
   std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> &get_modes()
@@ -1730,7 +1730,7 @@ public:
 
   void print(std::ostream &out) const
   {
-    for (auto it = sym_table.cbegin(); it != sym_table.cend(); ++it)
+    for (auto it = decls.cbegin(); it != decls.cend(); ++it)
       out << *(it->second) << ";\n";
 
     for (auto it = modes.cbegin(); it != modes.cend(); ++it)

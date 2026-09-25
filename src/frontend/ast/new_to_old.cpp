@@ -524,7 +524,7 @@ new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &e)
 old::modelt new_to_old(modelt &e)
 {
   old::modelt res;
-  res.declarations.decls = new_to_old(e.get_symbol_table());
+  res.decls = new_to_old(e.get_declarations());
   res.modes = new_to_old(e.get_modes());
   res.init = new_to_old(e.get_inits());
   res.goal = new_to_old(e.get_goals());
