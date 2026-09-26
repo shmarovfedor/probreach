@@ -239,12 +239,12 @@ node *new_to_old(bool_exprt &e)
 
 node *new_to_old(truet &e)
 {
-  return new node("(true)");
+  return new node("true");
 }
 
 node *new_to_old(falset &e)
 {
-  return new node("(false)");
+  return new node("false");
 }
 
 node *new_to_old(greater_thant &e)

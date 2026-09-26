@@ -524,7 +524,11 @@ jump:
 }
 
 cond_state:
-	'@' mode_id prop ';' 
+  '@' mode_id ';' 
+{
+  $$ = std::make_unique<cond_statet>(std::move($2), std::make_unique<truet>());
+}
+  | '@' mode_id prop ';' 
 {
   $$ = std::make_unique<cond_statet>(std::move($2), std::move($3));
 }
