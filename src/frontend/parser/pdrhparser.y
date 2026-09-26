@@ -477,7 +477,12 @@ reset_var:
 }
 
 reset_state:
-	'@' mode_id assignments ';'
+  '@' mode_id ';'
+{
+  $$ = std::make_unique<reset_statet>(std::move($2), 
+    std::vector<std::unique_ptr<assignt>>());
+}
+  | '@' mode_id assignments ';'
 {
   $$ = std::make_unique<reset_statet>(std::move($2), std::move(*$3));
 }

@@ -24,7 +24,7 @@ d/dt[s]= v;
 d/dt[v]= alpha*exp(-alpha*tau+beta)-drag*v*v;
 d/dt[tau]= 1.0;
 jump:
-(and (v >= v_100))==>@2(and(s'=s)(v'=v)(tau'=0)(beta'=beta));
+(v >= v_100)==>@2(tau' = 0);
 }
 
 // reacting
@@ -36,7 +36,7 @@ d/dt[s]= v;
 d/dt[v]= -drag*v*v;
 d/dt[tau]= 1.0;
 jump:
-(and (tau = t_react))==>@3(and(s'=s)(v'=v)(tau'=0)(beta'=beta));
+(tau = t_react)==>@3(tau'=0);
 }
 
 // braking
@@ -48,7 +48,7 @@ d/dt[s]= v;
 d/dt[v]= -a_d-drag*v*v;
 d/dt[tau]= 1.0;
 jump:
-(and (v <= 0))==>@4(and(s'=s)(v'=v)(tau'=0)(beta'=beta));
+(v <= 0)==>@4(tau'=0);
 }
 
 // stopped
