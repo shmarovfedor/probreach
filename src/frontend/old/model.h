@@ -154,13 +154,13 @@ public:
   {
   }
 
-  // this actually generates paths of the given length (like symbolic execution);
-  // this should not be part of the irep
   std::vector<modet *> get_successors(modet *);
 
-  std::vector<std::vector<modet *>> get_paths(modet *, modet *, int);
   std::vector<std::vector<modet *>> get_all_paths(int);
   std::vector<std::vector<modet *>> get_all_paths(int, int);
+
+private:
+  std::vector<std::vector<modet *>> get_paths(modet *, modet *, int);
 };
 
 

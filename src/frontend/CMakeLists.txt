@@ -33,14 +33,15 @@ set_source_files_properties(${PROBREACH_BINARY_DIR}/frontend/parser/pdrhlexer.cp
 include_directories("${PROBREACH_BINARY_DIR}/frontend/parser")
 
 include_directories("${PROBREACH_SOURCE_DIR}/frontend")
-include_directories("${PROBREACH_SOURCE_DIR}/frontend/irep")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/ast")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend/parser")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/old")
 
 # building the frontend
 file(GLOB PROBREACH_FRONTEND_SRC
-        ${PROBREACH_SOURCE_DIR}/frontend/ast/model.cpp
-        ${PROBREACH_SOURCE_DIR}/frontend/ast/node.cpp
-        ${PROBREACH_SOURCE_DIR}/frontend/ast/new_to_old.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/model.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/node.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/new_to_old.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/frontend.cpp)
 
 set(PROBREACH_FRONTEND_SRC ${PROBREACH_FRONTEND_SRC}      
