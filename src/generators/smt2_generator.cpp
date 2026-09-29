@@ -15,42 +15,13 @@ string smt2_generator::reach_to_smt2(vector<old::modet *> path, vector<box> boxe
   stringstream s;
   // setting logic
   s << "(set-logic QF_NRA_ODE)" << endl;
-  s << "\n; declaring variables and defining bounds\n";
+  s << "; declaring ODEs\n";
   for (auto it = old::global_model.sym_table.var_map.cbegin();
        it != old::global_model.sym_table.var_map.cend();
        it++)
   {
     s << "(declare-fun " << it->first << " () Real)" << endl;
-    for (int i = 0; i < path.size(); i++)
-    {
-      s << "(declare-fun " << it->first << "_" << i << "_0 () Real)" << endl;
-      s << "(declare-fun " << it->first << "_" << i << "_t () Real)" << endl;
-      if (it->second.first->value != "-infty")
-      {
-        s << "(assert (>= " << it->first << "_" << i << "_0 "
-          << it->second.first->to_prefix() << "))" << endl;
-        s << "(assert (>= " << it->first << "_" << i << "_t "
-          << it->second.first->to_prefix() << "))" << endl;
-      }
-      if (it->second.second->value != "infty")
-      {
-        s << "(assert (<= " << it->first << "_" << i << "_0 "
-          << it->second.second->to_prefix() << "))" << endl;
-        s << "(assert (<= " << it->first << "_" << i << "_t "
-          << it->second.second->to_prefix() << "))" << endl;
-      }
-    }
   }
-  s << "\n; declaring TIME variables and bounds\n";
-  for (int i = 0; i < path.size(); i++)
-  {
-    s << "(declare-fun time_" << i << " () Real)" << endl;
-    s << "(assert (>= time_" << i << " "
-      << path.at(i)->time.first->to_prefix(i, "0") << "))" << endl;
-    s << "(assert (<= time_" << i << " "
-      << path.at(i)->time.second->to_prefix(i, "0") << "))" << endl;
-  }
-  s << "\n; defining ODEs\n";
   for (auto path_it = path.cbegin(); path_it != path.cend(); path_it++)
   {
     if (find(path.cbegin(), path_it, *path_it) == path_it)
@@ -66,29 +37,82 @@ string smt2_generator::reach_to_smt2(vector<old::modet *> path, vector<box> boxe
       s << "))" << endl;
     }
   }
+  // declaring all the variables
+  s << "; declaring all variables\n";
+  for (auto it = old::global_model.sym_table.var_map.cbegin();
+       it != old::global_model.sym_table.var_map.cend();
+       it++)
+  {
+    for (int i = 0; i < path.size(); i++)
+    {
+      s << "(declare-fun " << it->first << "_" << i << "_0 () Real)" << endl;
+      s << "(declare-fun " << it->first << "_" << i << "_t () Real)" << endl;
+    }
+  }
+  for (int i = 0; i < path.size(); i++)
+  {
+    s << "(declare-fun time_" << i << " () Real)" << endl;
+  }
+  // setting bounds bounds
+  s << "; setting bounds\n";
+  for (int i = 0; i < path.size(); i++)
+  {
+    s << "(assert (and (>= time_" << i << " "
+      << path.at(i)->time.first->to_prefix(i, "0") << ") "
+      << "(<= time_" << i << " "
+      << path.at(i)->time.second->to_prefix(i, "0") << ")))" << endl;
+  }
+  for (auto it = old::global_model.sym_table.var_map.cbegin();
+       it != old::global_model.sym_table.var_map.cend();
+       it++)
+  {
+    // skipping bounds if it is a parameter box
+    bool param_var = false;
+    for (box b : boxes)
+    {
+      std::map<std::string, capd::interval> m = b.get_map();
+      if (m.find(it->first) != m.cend())
+      {
+        param_var = true;
+        break;
+      }
+    }
+    for (int i = 0; i < path.size(); i++)
+    {
+      if (it->second.first->value != "-infty" && !param_var)
+      {
+        s << "(assert (and (>= " << it->first << "_" << i << "_0 "
+          << it->second.first->to_prefix() << ") (<= " 
+          << it->first << "_" << i << "_0 "
+          << it->second.second->to_prefix() << ")))" << endl;
+      }
+    }
+  }
   for (box b : boxes)
   {
     // skipping if there are any empty boxes
     if (b.empty())
       continue;
-    s << "\n; defining parameter box: " << b << "\n";
     std::map<string, capd::interval> m = b.get_map();
-    for (int i = 0; i < path.size(); i++)
-    {
-      s << "(assert (and \n";
+    int i = 0;
+//    for (int i = 0; i < path.size(); i++)
+//    {
       for (auto it = m.cbegin(); it != m.cend(); it++)
       {
-        s << "\t(>= " << it->first << "_" << i << "_0 "
-          << it->second.leftBound() << ")" << endl;
-        s << "\t(<= " << it->first << "_" << i << "_0 "
-          << it->second.rightBound() << ")" << endl;
-        s << "\t(>= " << it->first << "_" << i << "_t "
-          << it->second.leftBound() << ")" << endl;
-        s << "\t(<= " << it->first << "_" << i << "_t "
-          << it->second.rightBound() << ")" << endl;
+        s << "(assert (and ";
+        s << "(>= " << it->first << "_" << i << "_0 "
+          << it->second.leftBound() << ")"
+          << "(<= " << it->first << "_" << i << "_0 "
+          << it->second.rightBound() << ")))\n";
+        /*
+        s << "(assert (and ";
+        s << "(>= " << it->first << "_" << i << "_t "
+          << it->second.leftBound() << ")"
+          << "(<= " << it->first << "_" << i << "_t "
+          << it->second.rightBound() << ")))\n";
+          */
       }
-      s << "))\n";
-    }
+//    }
   }
   s << "\n; defining initial states\n";
   s << "(assert (or \n";
@@ -162,6 +186,8 @@ string smt2_generator::reach_to_smt2(vector<old::modet *> path, vector<box> boxe
   // final statements
   s << "(check-sat)" << endl;
   s << "(exit)" << endl;
+  std::cout << "FORMULA\n";
+  std::cout << s.str();
   return s.str();
 }
 

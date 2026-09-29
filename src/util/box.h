@@ -48,6 +48,11 @@ public:
   friend box operator*(const box &, const box &);
   friend box operator/(const box &, const box &);
   friend box operator/(const box &, double);
+  
+  const capd::interval& operator[](const std::string &key)
+  {
+    return edges.at(key);
+  }
 
   /// Returns a map representation of the box, whether the map keys contain
   /// the edges names, and the map values contain the intervals

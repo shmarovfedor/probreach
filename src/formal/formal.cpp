@@ -59,8 +59,6 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
     vector<box> rv_partition = init_rv_partition;
     // setting the right bound to 1 if it is smaller due to rounding errors
     // in the calculations earlier. This will need to be addressed.
-    //if(probability.rightBound() < 1)
-    //  probability.setRightBound(1);
     std::vector<box> rv_stack;
     while (capd::intervals::width(probability) > global_config.precision_prob)
     {
