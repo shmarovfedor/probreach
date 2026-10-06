@@ -5,12 +5,14 @@
 #include <capd/intervals/lib.h>
 #include <iomanip>
 #include <omp.h>
+
 #include "node_utils.h"
 #include "formal.h"
 #include "decision_procedure.h"
 #include "pdrh_config.h"
 #include "measurer.h"
 #include "box_utils.h"
+#include "symex.h"
 
 using namespace std;
 

@@ -84,7 +84,7 @@ include_directories("${CAPD_INCLUDE_DIR}")
 # including all the ProbReach headers
 include_directories("${PROBREACH_SOURCE_DIR}/config")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
-include_directories("${PROBREACH_SOURCE_DIR}/generators")
+include_directories("${PROBREACH_SOURCE_DIR}/codegen")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
 
 # searching for GSL

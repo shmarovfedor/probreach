@@ -2,6 +2,7 @@
 // Created by fedor on 27/12/15.
 //
 #include <capd/capdlib.h>
+
 #include "measurer.h"
 #include "box_utils.h"
 #include "pdrh_config.h"
@@ -216,7 +217,7 @@ std::pair<capd::interval, std::vector<capd::interval>> measurert::bounds_from_pd
     {
       std::stringstream s;
       s << "Unable to bound the integral of the pdf on " << domain
-        << " by the value " << precision * global_config.integral_inf_coeff;
+        << " by the value " << precision * inf_cutoff;
       throw std::out_of_range(s.str());
     }
   }

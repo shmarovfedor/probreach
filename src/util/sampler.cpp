@@ -8,7 +8,6 @@
 #include <chrono>
 
 #include "sampler.h"
-#include "model.h"
 #include "node_utils.h"
 
 using namespace std;
@@ -33,55 +32,55 @@ box samplert::get_random_sample()
   map<std::string, capd::interval> edges;
 
   // uniform distributions
-  for (auto it = old::global_model.sym_table.uniform.cbegin();
-       it != old::global_model.sym_table.uniform.cend();
-       it++)
+  for (auto it = sym_table.uniform.cbegin(); 
+      it != sym_table.uniform.cend(); 
+      ++it)
   {
     edges.insert(make_pair(
       it->first,
       node_utils::node_to_interval(
-        old::global_model.sym_table.uniform[it->first].first) +
+        sym_table.uniform[it->first].first) +
         gsl_rng_uniform(r) *
           (node_utils::node_to_interval(
-             old::global_model.sym_table.uniform[it->first].second) -
+             sym_table.uniform[it->first].second) -
            node_utils::node_to_interval(
-             old::global_model.sym_table.uniform[it->first].first))));
+             sym_table.uniform[it->first].first))));
   }
   // normal distributions
-  for (auto it = old::global_model.sym_table.normal.cbegin();
-       it != old::global_model.sym_table.normal.cend();
-       it++)
+  for (auto it = sym_table.normal.cbegin();
+      it != sym_table.normal.cend();
+      ++it)
   {
     edges.insert(make_pair(
       it->first,
       node_utils::node_to_interval(
-        old::global_model.sym_table.normal[it->first].first) +
+        sym_table.normal[it->first].first) +
         gsl_ran_gaussian_ziggurat(
           r,
           node_utils::node_to_interval(
-            old::global_model.sym_table.normal[it->first].second)
+            sym_table.normal[it->first].second)
             .mid()
             .leftBound())));
   }
   // exponential distributions
-  for (auto it = old::global_model.sym_table.exp.cbegin();
-       it != old::global_model.sym_table.exp.cend();
-       it++)
+  for (auto it = sym_table.exp.cbegin();
+       it != sym_table.exp.cend();
+       ++it)
   {
     edges.insert(make_pair(
       it->first,
       gsl_ran_exponential(
         r,
-        1 / node_utils::node_to_interval(old::global_model.sym_table.exp[it->first])
+        1 / node_utils::node_to_interval(sym_table.exp[it->first])
               .mid()
               .leftBound())));
   }
   //discrete distributions
-  for (auto it = old::global_model.sym_table.dd_map.cbegin();
-       it != old::global_model.sym_table.dd_map.cend();
-       it++)
+  for (auto it = sym_table.dd_map.cbegin();
+       it != sym_table.dd_map.cend();
+       ++it)
   {
-    map<node *, node *> mass_map = old::global_model.sym_table.dd_map[it->first];
+    map<node *, node *> mass_map = sym_table.dd_map[it->first];
     double *p_mass = new double[mass_map.size()];
     node **p_value = new node *[mass_map.size()];
     size_t i = 0;
@@ -109,9 +108,9 @@ box samplert::get_random_sample()
 box samplert::get_normal_random_sample(box mu, box sigma)
 {
   map<std::string, capd::interval> edges;
-  for (auto it = old::global_model.sym_table.par_map.cbegin();
-       it != old::global_model.sym_table.par_map.cend();
-       it++)
+  for (auto it = sym_table.par_map.cbegin();
+       it != sym_table.par_map.cend();
+       ++it)
   {
     if (it->second.first->value != it->second.second->value)
     {

@@ -40,6 +40,8 @@ include_directories("${PROBREACH_SOURCE_DIR}/frontend/old")
 # building the frontend
 file(GLOB PROBREACH_FRONTEND_SRC
         ${PROBREACH_SOURCE_DIR}/frontend/old/model.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/symex.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/symbol_table.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/old/node.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/old/new_to_old.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/frontend.cpp)

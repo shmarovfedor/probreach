@@ -13,6 +13,7 @@
 #include "pdrh_config.h"
 #include "measurer.h"
 #include "box_utils.h"
+#include "symex.h"
 
 using namespace std;
 

@@ -33,6 +33,8 @@ add_executable(node_utils_test ${PROBREACH_TEST_DIR}/util/node_utils_test.cpp
         ${PROBREACH_TEST_DIR}/main_test.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/old/node.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/old/model.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/symex.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/old/symbol_table.cpp
         ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp)
 target_link_libraries(node_utils_test ${CAPD_LIBRARIES} -lgtest)

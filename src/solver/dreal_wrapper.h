@@ -5,6 +5,8 @@
 #ifndef PROBREACH_DREAL_WRAPPER_H
 #define PROBREACH_DREAL_WRAPPER_H
 
+#include <string>
+
 #include "box.h"
 
 namespace dreal
