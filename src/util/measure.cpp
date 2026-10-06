@@ -4,14 +4,21 @@
 #include <capd/capdlib.h>
 #include "measure.h"
 #include "box_factory.h"
-#include "model.h"
 #include "pdrh_config.h"
 #include "node_utils.h"
 
 using namespace std;
 
-std::pair<capd::interval, std::vector<capd::interval>>
-measure::integral(std::string var, std::string fun, capd::interval it, double e)
+measurert::measurert(old::symbol_tablet sym_table) 
+{
+  this->sym_table = sym_table;
+}
+
+std::pair<capd::interval, std::vector<capd::interval>> measurert::integral(
+    std::string var, 
+    std::string fun, 
+    capd::interval it, 
+    double precision)
 {
   std::vector<capd::interval> stack, partition;
   capd::interval value(0);
@@ -34,7 +41,7 @@ measure::integral(std::string var, std::string fun, capd::interval it, double e)
                          (power(capd::intervals::width(i), 5) / 2880) * f4;
     if (
       capd::intervals::width(itg) <=
-      e * (capd::intervals::width(i) / capd::intervals::width(it)))
+      precision * (capd::intervals::width(i) / capd::intervals::width(it)))
     {
       partition.push_back(i);
       value += itg;
@@ -48,7 +55,7 @@ measure::integral(std::string var, std::string fun, capd::interval it, double e)
   return make_pair(value, partition);
 }
 
-double measure::precision(double e, int n)
+double measurert::precision(double e, int n)
 {
   double xi = e;
   double lb = 0;
@@ -70,73 +77,25 @@ double measure::precision(double e, int n)
   return xi;
 }
 
-capd::interval measure::p_measure(box b, double e)
+capd::interval measurert::measure(box b, double precision)
 {
   map<std::string, capd::interval> edges = b.get_map();
   capd::interval res(1.0);
   for (auto it = edges.cbegin(); it != edges.cend(); it++)
   {
-    if (
-      old::global_model.sym_table.rv_map.find(it->first) !=
-      old::global_model.sym_table.rv_map.cend())
+    if (sym_table.rv_map.find(it->first) != sym_table.rv_map.cend())
     {
-      res *= measure::integral(
+      res *= measurert::integral(
                it->first,
-               std::get<0>(old::global_model.sym_table.rv_map[it->first])->to_infix(),
+               std::get<0>(sym_table.rv_map[it->first])->to_infix(),
                it->second,
-               measure::precision(e, edges.size()))
+               measurert::precision(precision, edges.size()))
                .first;
     }
-    else if (
-      old::global_model.sym_table.dd_map.find(it->first) !=
-      old::global_model.sym_table.dd_map.cend())
+    else if (sym_table.dd_map.find(it->first) != sym_table.dd_map.cend())
     {
       bool measure_exists = false;
-      map<node *, node *> tmp_map = old::global_model.sym_table.dd_map[it->first];
-      for (auto it2 = tmp_map.cbegin(); it2 != tmp_map.cend(); it2++)
-      {
-        if (it->second == node_utils::node_to_interval(it2->first))
-        {
-          res *= node_utils::node_to_interval(it2->second);
-          measure_exists = true;
-          break;
-        }
-      }
-      if (!measure_exists)
-      {
-        std::stringstream s;
-        s << "Measure for " << it->first << " = " << it->second
-          << " is undefined";
-        throw std::invalid_argument(s.str());
-      }
-    }
-    else
-    {
-      std::stringstream s;
-      s << "Measure for " << it->first << " is undefined";
-      throw std::invalid_argument(s.str());
-    }
-  }
-  return res;
-}
-
-capd::interval measure::p_measure(box b)
-{
-  return p_measure(b, global_config.precision_prob);
-}
-
-capd::interval measure::p_dd_measure(box b)
-{
-  std::map<std::string, capd::interval> edges = b.get_map();
-  capd::interval res(1.0);
-  for (auto it = edges.cbegin(); it != edges.cend(); it++)
-  {
-    if (
-      old::global_model.sym_table.dd_map.find(it->first) !=
-      old::global_model.sym_table.dd_map.cend())
-    {
-      bool measure_exists = false;
-      map<node *, node *> tmp_map = old::global_model.sym_table.dd_map[it->first];
+      map<node *, node *> tmp_map = sym_table.dd_map[it->first];
       for (auto it2 = tmp_map.cbegin(); it2 != tmp_map.cend(); it2++)
       {
         if (it->second == node_utils::node_to_interval(it2->first))
@@ -165,7 +124,7 @@ capd::interval measure::p_dd_measure(box b)
 }
 
 std::string
-measure::gaussian_pdf(std::string var, capd::interval mu, capd::interval sigma)
+measurert::gaussian_pdf(std::string var, capd::interval mu, capd::interval sigma)
 {
   std::stringstream s;
   // outputs only 16 numbers. This is a temporary solution. Will need to declare
@@ -180,7 +139,7 @@ measure::gaussian_pdf(std::string var, capd::interval mu, capd::interval sigma)
   return s.str();
 }
 
-capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
+capd::interval measurert::get_sample_prob(box domain, box mean, box sigma)
 {
   if (!box_factory::compatible({domain, mean, sigma}))
   {
@@ -192,15 +151,14 @@ capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
   for (auto it = edges.begin(); it != edges.end(); it++)
   {
     // considering only the parameters which domain is not a single point
-    if (
-      old::global_model.sym_table.par_map[it->first].first->value !=
-      old::global_model.sym_table.par_map[it->first].second->value)
+    if (sym_table.par_map[it->first].first->value !=
+      sym_table.par_map[it->first].second->value)
     {
       double prec = 1e-5;
       //double prec = sigma.get_map()[it->first].leftBound() / 10;
-      pair<capd::interval, vector<capd::interval>> itg = measure::integral(
+      pair<capd::interval, vector<capd::interval>> itg = measurert::integral(
         it->first,
-        measure::gaussian_pdf(
+        measurert::gaussian_pdf(
           it->first, mean.get_map()[it->first], sigma.get_map()[it->first]),
         it->second,
         prec);
@@ -210,12 +168,14 @@ capd::interval measure::get_sample_prob(box domain, box mean, box sigma)
   return res;
 }
 
-std::pair<capd::interval, std::vector<capd::interval>> measure::bounds_from_pdf(
+std::pair<capd::interval, std::vector<capd::interval>> measurert::bounds_from_pdf(
   std::string var,
   std::string pdf,
   capd::interval domain,
   double start,
-  double e)
+  double step,
+  double inf_cutoff,
+  double precision)
 {
   // checking if the starting point is in the domain
   if (!domain.contains(start))
@@ -231,9 +191,8 @@ std::pair<capd::interval, std::vector<capd::interval>> measure::bounds_from_pdf(
   {
     // setting the interval
     res = capd::interval(
-      res.leftBound() - global_config.integral_pdf_step,
-      res.rightBound() + global_config.integral_pdf_step);
-    //std::cout << res << std::endl;
+      res.leftBound() - step,
+      res.rightBound() + step);
     // adjusting left bound of the initial interval
     if (res.leftBound() < domain.leftBound())
     {
@@ -245,11 +204,10 @@ std::pair<capd::interval, std::vector<capd::interval>> measure::bounds_from_pdf(
       res = capd::interval(res.leftBound(), domain.rightBound());
     }
     // calculating integral
-    //cout << "BEFORE INTEGRAL" << endl;
     std::pair<capd::interval, std::vector<capd::interval>> itg =
-      measure::integral(var, pdf, res, e);
+      measurert::integral(var, pdf, res, precision);
     // checking if the value of the integral satisfies the condition
-    if (1 - itg.first.leftBound() < e * global_config.integral_inf_coeff)
+    if (1 - itg.first.leftBound() < precision * inf_cutoff)
     {
       return make_pair(res, itg.second);
     }
@@ -258,18 +216,16 @@ std::pair<capd::interval, std::vector<capd::interval>> measure::bounds_from_pdf(
     {
       std::stringstream s;
       s << "Unable to bound the integral of the pdf on " << domain
-        << " by the value " << e * global_config.integral_inf_coeff;
+        << " by the value " << precision * global_config.integral_inf_coeff;
       throw std::out_of_range(s.str());
     }
   }
 }
 
-std::vector<box> measure::get_rv_partition()
+std::vector<box> measurert::get_rv_partition()
 {
   std::map<std::string, std::vector<capd::interval>> partition_map;
-  for (auto it = old::global_model.sym_table.rv_map.cbegin();
-       it != old::global_model.sym_table.rv_map.cend();
-       it++)
+  for (auto it = sym_table.rv_map.cbegin(); it != sym_table.rv_map.cend(); ++it)
   {
     // setting initial rv bounds
     capd::interval init_domain(
@@ -286,35 +242,66 @@ std::vector<box> measure::get_rv_partition()
     }
     // getting rv bounds
     std::pair<capd::interval, std::vector<capd::interval>> bound =
-      measure::bounds_from_pdf(
+      measurert::bounds_from_pdf(
         it->first,
         get<0>(it->second)->to_infix(),
         init_domain,
         node_utils::node_to_interval(get<3>(it->second)).mid().leftBound(),
-        measure::precision(
-          global_config.precision_prob, old::global_model.sym_table.rv_map.size()));
-    // updating rv bounds
-    old::global_model.sym_table.rv_map[it->first] = make_tuple(
-      std::get<0>(it->second),
-      new node(std::to_string(bound.first.leftBound())),
-      new node(std::to_string(bound.first.rightBound())),
-      get<3>(it->second));
-    // updating var bounds
-    old::global_model.sym_table.var_map[it->first] = make_pair(
-      new node(std::to_string(bound.first.leftBound())),
-      new node(std::to_string(bound.first.rightBound())));
+        global_config.integral_pdf_step,
+        global_config.integral_inf_coeff,
+        measurert::precision(
+          global_config.precision_prob, sym_table.rv_map.size()));
     // updating partition map
     partition_map.insert(make_pair(it->first, bound.second));
   }
   return box_factory::cartesian_product(partition_map);
 }
 
-std::vector<box> measure::get_dd_partition()
+// domain of continuous random parameters
+box measurert::get_rv_domain()
+{
+  map<std::string, vector<capd::interval>> domain_map;
+  for (auto it = sym_table.rv_map.cbegin(); it != sym_table.rv_map.cend(); ++it)
+  {
+    // setting initial rv bounds
+    capd::interval init_domain(
+      -numeric_limits<double>::infinity(), numeric_limits<double>::infinity());
+    if (get<1>(it->second)->value != "-infty")
+    {
+      init_domain.setLeftBound(
+        node_utils::node_to_interval(std::get<1>(it->second)).leftBound());
+    }
+    if (get<2>(it->second)->value != "infty")
+    {
+      init_domain.setRightBound(
+        node_utils::node_to_interval(std::get<2>(it->second)).rightBound());
+    }
+    // getting rv bounds
+    std::pair<capd::interval, std::vector<capd::interval>> bound =
+      measurert::bounds_from_pdf(
+        it->first,
+        get<0>(it->second)->to_infix(),
+        init_domain,
+        node_utils::node_to_interval(get<3>(it->second)).mid().leftBound(),
+        global_config.integral_pdf_step,
+        global_config.integral_inf_coeff,
+        measurert::precision(
+          global_config.precision_prob, sym_table.rv_map.size()));
+    domain_map.insert(
+        std::make_pair(it->first, std::vector<capd::interval>({bound.first})));
+  }
+  if (domain_map.empty())
+  {
+    return box();
+  }
+  std::vector<box> domain = box_factory::cartesian_product(domain_map);
+  return domain.front();
+}
+
+std::vector<box> measurert::get_dd_partition()
 {
   std::map<std::string, std::vector<capd::interval>> m;
-  for (auto it = old::global_model.sym_table.dd_map.cbegin();
-       it != old::global_model.sym_table.dd_map.cend();
-       it++)
+  for (auto it = sym_table.dd_map.cbegin(); it != sym_table.dd_map.cend(); ++it)
   {
     std::vector<capd::interval> args;
     for (auto it2 = it->second.cbegin(); it2 != it->second.cend(); it2++)
@@ -326,35 +313,13 @@ std::vector<box> measure::get_dd_partition()
   return box_factory::cartesian_product(m);
 }
 
-// domain of continuous random parameters
-box measure::get_rv_domain()
-{
-  map<std::string, vector<capd::interval>> domain_map;
-  for (auto it = old::global_model.sym_table.rv_map.cbegin();
-       it != old::global_model.sym_table.rv_map.cend();
-       it++)
-  {
-    vector<capd::interval> tmp;
-    tmp.push_back(capd::interval(
-      node_utils::node_to_interval(get<1>(it->second)).leftBound(),
-      node_utils::node_to_interval(get<2>(it->second)).rightBound()));
-    domain_map.insert(std::make_pair(it->first, tmp));
-  }
-  if (domain_map.empty())
-  {
-    return box();
-  }
-  std::vector<box> domain = box_factory::cartesian_product(domain_map);
-  return domain.front();
-}
-
 // domain of nondeterministic parameters
-box measure::get_nondet_domain()
+box measurert::get_nondet_domain()
 {
   map<std::string, capd::interval> m;
-  for (auto it = old::global_model.sym_table.par_map.cbegin();
-       it != old::global_model.sym_table.par_map.cend();
-       it++)
+  for (auto it = sym_table.par_map.cbegin(); 
+      it != sym_table.par_map.cend(); 
+      ++it)
   {
     m.insert(make_pair(
       it->first,
@@ -366,7 +331,7 @@ box measure::get_nondet_domain()
 }
 
 // comparing the medians of the intervals
-bool measure::compare_pairs::ascending(
+bool compare_pairs::ascending(
   const pair<box, capd::interval> &lhs,
   const pair<box, capd::interval> &rhs)
 {
@@ -382,7 +347,7 @@ bool measure::compare_pairs::ascending(
 }
 
 // comparing the medians of the intervals
-bool measure::compare_pairs::descending(
+bool compare_pairs::descending(
   const pair<box, capd::interval> &lhs,
   const pair<box, capd::interval> &rhs)
 {
@@ -395,10 +360,4 @@ bool measure::compare_pairs::descending(
     throw std::invalid_argument(s.str());
   }
   return lhs.second.mid() > rhs.second.mid();
-}
-
-bool measure::compare_boxes_by_p_measure(const box lhs, const box rhs)
-{
-  return measure::p_measure(lhs).mid().leftBound() >
-         measure::p_measure(rhs).mid().leftBound();
 }

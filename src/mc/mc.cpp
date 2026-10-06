@@ -290,7 +290,8 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     r,
     std::chrono::system_clock::now().time_since_epoch() /
       std::chrono::milliseconds(1));
-  box domain = measure::get_nondet_domain();
+  measurert measurer(old::global_model.sym_table);  
+  box domain = measurer.get_nondet_domain();
   //initializing probability value
   pair<box, capd::interval> res(domain, capd::interval(0.0));
   if (global_config.min_prob)
@@ -320,7 +321,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     // correct the sample size only if the probability of sampling outside the domain is still greater than 0.99999
     if (size_correction_coef.leftBound() < 0.99999)
     {
-      size_correction_coef = measure::get_sample_prob(domain, mean, sigma);
+      size_correction_coef = measurer.get_sample_prob(domain, mean, sigma);
     }
     unsigned long new_size =
       (unsigned long)ceil(size / size_correction_coef.leftBound());
@@ -367,11 +368,11 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
       cout << "Number of outliers: " << outliers << "\n";
     if (global_config.min_prob)
     {
-      sort(samples.begin(), samples.end(), measure::compare_pairs::ascending);
+      sort(samples.begin(), samples.end(), compare_pairs::ascending);
     }
     else
     {
-      sort(samples.begin(), samples.end(), measure::compare_pairs::descending);
+      sort(samples.begin(), samples.end(), compare_pairs::descending);
     }
     vector<pair<box, capd::interval>> elite;
     copy_n(

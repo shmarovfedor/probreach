@@ -24,10 +24,11 @@ int formal::evaluate_ha(int min_depth, int max_depth)
 
 capd::interval formal::evaluate_pha(int min_depth, int max_depth)
 {
+  measurert measurer(old::global_model.sym_table);  
   // getting partition of domain of continuous random variables
-  std::vector<box> init_rv_partition = measure::get_rv_partition();
+  std::vector<box> init_rv_partition = measurer.get_rv_partition();
   // getting domain of continuous random variables
-  box rv_domain = measure::get_rv_domain();
+  box rv_domain = measurer.get_rv_domain();
   // here we start with entire domain instead of partition
   if (!global_config.partition_prob)
   {
@@ -35,7 +36,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
     init_rv_partition.push_back(rv_domain);
   }
   // getting partition of domain of discrete random variables
-  std::vector<box> dd_partition = measure::get_dd_partition();
+  std::vector<box> dd_partition = measurer.get_dd_partition();
   if (dd_partition.empty())
   {
     dd_partition.push_back(box());
@@ -54,7 +55,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
     if (rv_domain.get_map().size() > 0)
       probability = capd::interval(
         0,
-        2 - measure::p_measure(rv_domain, global_config.precision_prob)
+        2 - measurer.measure(rv_domain, global_config.precision_prob)
               .leftBound());
     vector<box> rv_partition = init_rv_partition;
     // setting the right bound to 1 if it is smaller due to rounding errors
@@ -66,10 +67,12 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
       if (global_config.sort_rv_flag)
       {
         //  << "Sorting the partition of domain of continuous random parameters";
+        /*
         sort(
           rv_partition.begin(),
           rv_partition.end(),
-          measure::compare_boxes_by_p_measure);
+          measurer.compare_boxes_by_measure);
+        */
       }
 #pragma omp parallel for
       for (size_t i = 0; i < rv_partition.size(); i++)
@@ -80,11 +83,11 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
         capd::interval p_box(1);
         if (!dd.empty())
         {
-          p_box *= measure::p_dd_measure(dd);
+          p_box *= measurer.measure(dd, global_config.precision_prob);
         }
         if (!rv.empty())
         {
-          p_box *= measure::p_measure(rv, global_config.precision_prob);
+          p_box *= measurer.measure(rv, global_config.precision_prob);
         }
         // evaluating boxes
         std::vector<box> boxes{dd, rv};
@@ -179,7 +182,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
     }
     if (!dd.empty())
     {
-      capd::interval dd_measure = measure::p_dd_measure(dd);
+      capd::interval dd_measure = measurer.measure(dd, global_config.precision_prob);
       res_prob += probability * dd_measure;
     }
     else
@@ -193,8 +196,9 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
 std::map<box, capd::interval>
 formal::evaluate_npha(int min_depth, int max_depth)
 {
+  measurert measurer(old::global_model.sym_table);  
   // getting parameter domain
-  box nd_domain = measure::get_nondet_domain();
+  box nd_domain = measurer.get_nondet_domain();
   // initially partition is the entire parameter domain
   std::vector<box> nd_partition{nd_domain};
   // if flag is enabled the domain is partitioned up to precision_nondet
@@ -205,13 +209,13 @@ formal::evaluate_npha(int min_depth, int max_depth)
       box_factory::partition(nd_domain, global_config.partition_nondet_map);
   }
   // getting partition of domain of continuous random variables
-  std::vector<box> rv_partition = measure::get_rv_partition();
+  std::vector<box> rv_partition = measurer.get_rv_partition();
   if (rv_partition.empty())
   {
     rv_partition.push_back(box());
   }
   // getting domain of continuous random variables
-  box rv_domain = measure::get_rv_domain();
+  box rv_domain = measurer.get_rv_domain();
   // here we start with entire domain instead of partition
   if (!global_config.partition_prob)
   {
@@ -234,14 +238,16 @@ formal::evaluate_npha(int min_depth, int max_depth)
   // sorting boxes by probability value
   if (global_config.sort_rv_flag)
   {
+    /*
     sort(
       rv_partition.begin(),
       rv_partition.end(),
-      measure::compare_boxes_by_p_measure);
+      measurer.compare_boxes_by_measure);
+      */
   }
 
   // getting partition of domain of discrete random variables
-  std::vector<box> dd_partition = measure::get_dd_partition();
+  std::vector<box> dd_partition = measurer.get_dd_partition();
   // fix for now
   if (dd_partition.empty())
   {
@@ -254,7 +260,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
   // initializing probability map
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =
-    measure::p_measure(rv_domain, global_config.precision_prob);
+    measurer.measure(rv_domain, global_config.precision_prob);
   // temporary solution. This will need to be fixed
   if (rv_domain_measure.leftBound() > 1)
     rv_domain_measure.setLeftBound(1);
@@ -286,7 +292,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
     capd::interval dd_measure(1.0);
     if (!dd.empty())
     {
-      dd_measure = measure::p_dd_measure(dd);
+      dd_measure = measurer.measure(dd, global_config.precision_prob);
     }
 
     if (global_config.verbose)
@@ -329,11 +335,11 @@ formal::evaluate_npha(int min_depth, int max_depth)
           {
             if (!dd.empty())
             {
-              p_box *= measure::p_dd_measure(dd);
+              p_box *= measurer.measure(dd, global_config.precision_prob);
             }
             if (!rv.empty())
             {
-              p_box *= measure::p_measure(rv, global_config.precision_prob);
+              p_box *= measurer.measure(rv, global_config.precision_prob);
             }
           }
           std::stringstream s;
@@ -423,10 +429,12 @@ formal::evaluate_npha(int min_depth, int max_depth)
           // sorting newly obtained boxes
           if (global_config.sort_rv_flag)
           {
+            /*
             sort(
               rv_stack.begin(),
               rv_stack.end(),
-              measure::compare_boxes_by_p_measure);
+              measurer.compare_boxes_by_measure);
+              */
           }
           // updating partition map only in case if probability value does not satisfy the probability precision
           if (partition_map.find(nd) != partition_map.cend())
@@ -509,8 +517,9 @@ formal::evaluate_npha(int min_depth, int max_depth)
 std::map<box, capd::interval>
 formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
 {
+  measurert measurer(old::global_model.sym_table);  
   // getting parameter domain
-  box nd_domain = measure::get_nondet_domain();
+  box nd_domain = measurer.get_nondet_domain();
   // initially partition is the entire parameter domain
   std::vector<box> nd_partition{nd_domain};
   // if flag is enabled the domain is partitioned up to precision_nondet
@@ -521,13 +530,13 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
       box_factory::partition(nd_domain, global_config.partition_nondet_map);
   }
   // getting partition of domain of continuous random variables
-  std::vector<box> rv_partition = measure::get_rv_partition();
+  std::vector<box> rv_partition = measurer.get_rv_partition();
   if (rv_partition.empty())
   {
     rv_partition.push_back(box());
   }
   // getting domain of continuous random variables
-  box rv_domain = measure::get_rv_domain();
+  box rv_domain = measurer.get_rv_domain();
   // here we start with entire domain instead of partition
   if (!global_config.partition_prob)
   {
@@ -550,13 +559,15 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
   // sorting boxes by probability value
   if (global_config.sort_rv_flag)
   {
+    /*
     sort(
       rv_partition.begin(),
       rv_partition.end(),
-      measure::compare_boxes_by_p_measure);
+      measurer.compare_boxes_by_measure);
+      */
   }
   // getting partition of domain of discrete random variables
-  std::vector<box> dd_partition = measure::get_dd_partition();
+  std::vector<box> dd_partition = measurer.get_dd_partition();
   // fix for now
   if (dd_partition.empty())
   {
@@ -569,7 +580,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
   // initializing probability map
   std::map<box, capd::interval> p_map;
   capd::interval rv_domain_measure =
-    measure::p_measure(rv_domain, global_config.precision_prob);
+    measurer.measure(rv_domain, global_config.precision_prob);
   capd::interval total_probability =
     capd::interval(0, 2 - rv_domain_measure.leftBound());
   // initialising the probability map
@@ -603,7 +614,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
     capd::interval dd_measure(1.0);
     if (!dd.empty())
     {
-      dd_measure = measure::p_dd_measure(dd);
+      dd_measure = measurer.measure(dd, global_config.precision_prob);
     }
 
     if (global_config.verbose)
@@ -644,11 +655,11 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
           {
             if (!dd.empty())
             {
-              p_box *= measure::p_dd_measure(dd);
+              p_box *= measurer.measure(dd, global_config.precision_prob);
             }
             if (!rv.empty())
             {
-              p_box *= measure::p_measure(rv, global_config.precision_prob);
+              p_box *= measurer.measure(rv, global_config.precision_prob);
             }
           }
           std::stringstream s;
@@ -700,10 +711,12 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
           // sorting newly obtained boxes
           if (global_config.sort_rv_flag)
           {
+            /*
             sort(
               rv_stack.begin(),
               rv_stack.end(),
-              measure::compare_boxes_by_p_measure);
+              measurer.compare_boxes_by_measure);
+            */
           }
           // updating partition map only in case if probability value does not satisfy the probability precision
           if (partition_map.find(nd) != partition_map.cend())
