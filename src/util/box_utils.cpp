@@ -2,14 +2,14 @@
 // Created by fedor on 29/12/15.
 //
 
-#include "box_factory.h"
+#include "box_utils.h"
 
 using namespace std;
 
 /**
  * Cartesian product
  */
-std::vector<box> box_factory::cartesian_product(
+std::vector<box> box_utils::cartesian_product(
   std::map<std::string, std::vector<capd::interval>> m)
 {
   // checking if the map is empty
@@ -46,7 +46,7 @@ std::vector<box> box_factory::cartesian_product(
 }
 
 // partitioning a box
-vector<box> box_factory::partition(box b, double e)
+vector<box> box_utils::partition(box b, double e)
 {
   // setting up a precision map
   map<string, capd::interval> e_map;
@@ -75,20 +75,20 @@ vector<box> box_factory::partition(box b, double e)
   return res;
 }
 
-vector<box> box_factory::partition(box b, int amount)
+vector<box> box_utils::partition(box b, int amount)
 {
   vector<box> res{b};
   while (res.size() < amount)
   {
     box b_tmp = res.front();
     res.erase(res.begin());
-    vector<box> b_bisect = box_factory::bisect(b_tmp);
+    vector<box> b_bisect = box_utils::bisect(b_tmp);
     res.insert(res.end(), b_bisect.begin(), b_bisect.end());
   }
   return res;
 }
 
-vector<box> box_factory::partition(box b, map<string, string> e_map)
+vector<box> box_utils::partition(box b, map<string, string> e_map)
 {
   map<string, capd::interval> res_map;
   for (auto it = e_map.begin(); it != e_map.end(); it++)
@@ -96,10 +96,10 @@ vector<box> box_factory::partition(box b, map<string, string> e_map)
     res_map.insert(
       make_pair(it->first, capd::interval(it->second, it->second)));
   }
-  return box_factory::partition(b, res_map);
+  return box_utils::partition(b, res_map);
 }
 
-vector<box> box_factory::partition(box b, map<string, capd::interval> e_map)
+vector<box> box_utils::partition(box b, map<string, capd::interval> e_map)
 {
   // checking if precision map is empty
   if (e_map.empty())
@@ -108,7 +108,7 @@ vector<box> box_factory::partition(box b, map<string, capd::interval> e_map)
   }
   // checking whether partition map contains does not contain undefined
   // variables
-  if (!box_factory::get_keys_diff(box(e_map), b).empty())
+  if (!box_utils::get_keys_diff(box(e_map), b).empty())
   {
     ostringstream s;
     s << "partition map \"" << box(e_map)
@@ -138,7 +138,7 @@ vector<box> box_factory::partition(box b, map<string, capd::interval> e_map)
 /**
  * Dividing the box in all n dimensions producing 2^n boxes of the same size
  */
-std::vector<box> box_factory::bisect(box b, vector<string> vars, double prec)
+std::vector<box> box_utils::bisect(box b, vector<string> vars, double prec)
 {
   std::map<std::string, capd::interval> e;
   std::map<std::string, capd::interval> m = b.get_map();
@@ -154,13 +154,13 @@ std::vector<box> box_factory::bisect(box b, vector<string> vars, double prec)
     }
   }
 
-  return box_factory::bisect(b, e);
+  return box_utils::bisect(b, e);
 }
 
 /**
  * Dividing the box in all n dimensions producing 2^n boxes of the same size
  */
-std::vector<box> box_factory::bisect(box b, vector<string> vars)
+std::vector<box> box_utils::bisect(box b, vector<string> vars)
 {
   return bisect(b, vars, 0);
 }
@@ -168,7 +168,7 @@ std::vector<box> box_factory::bisect(box b, vector<string> vars)
 /**
  * Dividing the box in all n dimensions producing 2^n boxes of the same size
  */
-std::vector<box> box_factory::bisect(box b)
+std::vector<box> box_utils::bisect(box b)
 {
   std::map<std::string, capd::interval> e;
   std::map<std::string, capd::interval> m = b.get_map();
@@ -177,10 +177,10 @@ std::vector<box> box_factory::bisect(box b)
     e.insert(make_pair(it->first, capd::interval(0)));
   }
 
-  return box_factory::bisect(b, e);
+  return box_utils::bisect(b, e);
 }
 
-vector<box> box_factory::bisect(box b, map<std::string, string> e_map)
+vector<box> box_utils::bisect(box b, map<std::string, string> e_map)
 {
   map<string, capd::interval> res_map;
   for (auto it = e_map.begin(); it != e_map.end(); it++)
@@ -188,14 +188,14 @@ vector<box> box_factory::bisect(box b, map<std::string, string> e_map)
     res_map.insert(
       make_pair(it->first, capd::interval(it->second, it->second)));
   }
-  return box_factory::bisect(b, res_map);
+  return box_utils::bisect(b, res_map);
 }
 
 /**
  * Dividing the box in all n dimensions producing 2^n boxes of the same size
  * according to the precision vector e
  */
-vector<box> box_factory::bisect(box b, map<std::string, capd::interval> e)
+vector<box> box_utils::bisect(box b, map<std::string, capd::interval> e)
 {
   if (e.empty())
   {
@@ -219,10 +219,10 @@ vector<box> box_factory::bisect(box b, map<std::string, capd::interval> e)
       tmp_m.insert(make_pair(it->first, vector<capd::interval>{it->second}));
     }
   }
-  return box_factory::cartesian_product(tmp_m);
+  return box_utils::cartesian_product(tmp_m);
 }
 
-std::vector<box> box_factory::merge(std::vector<box> boxes)
+std::vector<box> box_utils::merge(std::vector<box> boxes)
 {
   unsigned long i = 0;
   while (i < boxes.size())
@@ -247,7 +247,7 @@ std::vector<box> box_factory::merge(std::vector<box> boxes)
   return boxes;
 }
 
-box box_factory::merge(box lhs, box rhs)
+box box_utils::merge(box lhs, box rhs)
 {
   std::map<std::string, capd::interval> m = lhs.get_map();
   for (auto it = m.cbegin(); it != m.cend(); it++)
@@ -298,7 +298,7 @@ box box_factory::merge(box lhs, box rhs)
   }
 }
 
-box box_factory::get_mean(vector<box> q)
+box box_utils::get_mean(vector<box> q)
 {
   box f_box = q.front();
   map<string, capd::interval> f_map = f_box.get_map();
@@ -317,7 +317,7 @@ box box_factory::get_mean(vector<box> q)
   return res / div;
 }
 
-box box_factory::get_stddev(vector<box> q)
+box box_utils::get_stddev(vector<box> q)
 {
   box mean = get_mean(q);
   map<string, capd::interval> f_map = mean.get_map();
@@ -336,7 +336,7 @@ box box_factory::get_stddev(vector<box> q)
   return (sum / div).sqrt();
 }
 
-box box_factory::get_keys_diff(box lhs, box rhs)
+box box_utils::get_keys_diff(box lhs, box rhs)
 {
   map<string, capd::interval> res;
   map<string, capd::interval> lhs_map = lhs.get_map();
@@ -351,12 +351,12 @@ box box_factory::get_keys_diff(box lhs, box rhs)
   return box(res);
 }
 
-box box_factory::get_cover(vector<box> q)
+box box_utils::get_cover(vector<box> q)
 {
   sort(q.begin(), q.end());
   if (
-    !box_factory::get_keys_diff(q.front(), q.back()).empty() ||
-    !box_factory::get_keys_diff(q.back(), q.front()).empty())
+    !box_utils::get_keys_diff(q.front(), q.back()).empty() ||
+    !box_utils::get_keys_diff(q.back(), q.front()).empty())
   {
     ostringstream s;
     s << "could not get_cover for " << q.front() << " and " << q.back()
@@ -375,7 +375,7 @@ box box_factory::get_cover(vector<box> q)
   return box(res);
 }
 
-bool box_factory::compatible(vector<box> q)
+bool box_utils::compatible(vector<box> q)
 {
   for (box b : q)
   {
@@ -391,7 +391,7 @@ bool box_factory::compatible(vector<box> q)
 }
 
 pair<map<box, capd::interval>, map<box, capd::interval>>
-box_factory::get_intersection_conflicts(
+box_utils::get_intersection_conflicts(
   map<box, capd::interval> original,
   map<box, capd::interval> compared)
 {
@@ -405,7 +405,7 @@ box_factory::get_intersection_conflicts(
       if (b.intersects(it2->first))
       {
         intersect_flag = true;
-        if (!box_factory::intersect(it->second, it2->second))
+        if (!box_utils::intersect(it->second, it2->second))
         {
           original_conflict.insert(make_pair(it->first, it->second));
           compared_conflict.insert(make_pair(it2->first, it2->second));
@@ -421,13 +421,13 @@ box_factory::get_intersection_conflicts(
   return make_pair(original_conflict, compared_conflict);
 }
 
-bool box_factory::intersect(capd::interval lhs, capd::interval rhs)
+bool box_utils::intersect(capd::interval lhs, capd::interval rhs)
 {
   return lhs.contains(rhs.leftBound()) || lhs.contains(rhs.rightBound()) ||
          rhs.contains(lhs.leftBound()) || rhs.contains(lhs.rightBound());
 }
 
-box box_factory::box_hull(vector<box> boxes)
+box box_utils::box_hull(vector<box> boxes)
 {
   map<string, capd::interval> res_map = boxes.front().get_map();
   for (int i = 1; i < boxes.size(); i++)

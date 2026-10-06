@@ -2,16 +2,33 @@
 // Created by fedor on 04/04/16.
 //
 
-#include "rnd.h"
-#include "model.h"
-#include "node_utils.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <vector>
+#include <chrono>
+
+#include "sampler.h"
+#include "model.h"
+#include "node_utils.h"
 
 using namespace std;
 
-box rnd::get_random_sample(gsl_rng *r)
+samplert::samplert(old::symbol_tablet sym_table)
+{
+  const gsl_rng_type *T;
+  gsl_rng_env_setup();
+  T = gsl_rng_default;
+  // creating random generator
+  this->r = gsl_rng_alloc(T);
+  // setting the seed
+  gsl_rng_set(
+    this->r,
+    std::chrono::system_clock::now().time_since_epoch() /
+      std::chrono::milliseconds(1));
+  this->sym_table = sym_table;
+}
+
+box samplert::get_random_sample()
 {
   map<std::string, capd::interval> edges;
 
@@ -89,7 +106,7 @@ box rnd::get_random_sample(gsl_rng *r)
   return box(edges);
 }
 
-box rnd::get_normal_random_sample(gsl_rng *r, box mu, box sigma)
+box samplert::get_normal_random_sample(box mu, box sigma)
 {
   map<std::string, capd::interval> edges;
   for (auto it = old::global_model.sym_table.par_map.cbegin();

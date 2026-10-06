@@ -6,10 +6,10 @@
 
 #include "box.h"
 
-#ifndef PROBREACH_BOX_FACTORY_H
-#define PROBREACH_BOX_FACTORY_H
+#ifndef PROBREACH_BOX_UTILS_H
+#define PROBREACH_BOX_UTILS_H
 
-class box_factory
+class box_utils
 {
 public:
   static std::vector<box>
@@ -44,4 +44,4 @@ public:
       std::map<box, capd::interval>);
 };
 
-#endif // PROBREACH_BOX_FACTORY_H
+#endif // PROBREACH_BOX_UTILS_H

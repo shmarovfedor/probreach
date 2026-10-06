@@ -6,8 +6,8 @@
 #include "box.h"
 #include "model.h"
 
-#ifndef PROBREACH_MEASURE_H
-#define PROBREACH_MEASURE_H
+#ifndef PROBREACH_MEASURER_H
+#define PROBREACH_MEASURER_H
 
 class measurert
 {
@@ -58,4 +58,4 @@ bool descending(
 } // namespace compare_pairs
 
 
-#endif //PROBREACH_MEASURE_H
+#endif //PROBREACH_MEASURER_H

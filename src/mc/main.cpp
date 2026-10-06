@@ -6,16 +6,15 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
+
+#include "frontend.h"
 #include "model.h"
 #include "box.h"
 #include "mc.h"
 #include "pdrh_config.h"
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-#include "frontend.h"
 
 using namespace std;
 

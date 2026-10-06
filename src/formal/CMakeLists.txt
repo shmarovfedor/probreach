@@ -2,8 +2,8 @@ file(GLOB PROBREACH_FORMAL_SRC
         ${PROBREACH_SOURCE_DIR}/formal/formal.cpp
         ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
-        ${PROBREACH_SOURCE_DIR}/util/box_factory.cpp
-        ${PROBREACH_SOURCE_DIR}/util/measure.cpp
+        ${PROBREACH_SOURCE_DIR}/util/box_utils.cpp
+        ${PROBREACH_SOURCE_DIR}/util/measurer.cpp
         ${PROBREACH_SOURCE_DIR}/solver/decision_procedure.cpp
         ${PROBREACH_SOURCE_DIR}/solver/dreal_wrapper.cpp
         ${PROBREACH_SOURCE_DIR}/generators/smt2_generator.cpp)

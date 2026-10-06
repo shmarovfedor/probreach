@@ -6,6 +6,7 @@
 #define PROBREACH_ALGORITHM_H
 
 #include <capd/intervals/lib.h>
+
 #include "decision_procedure.h"
 
 namespace algorithm

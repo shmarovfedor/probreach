@@ -2,19 +2,17 @@
 // Created by fedor on 03/03/16.
 //
 
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_qrng.h>
 #include <gsl/gsl_cdf.h>
 #include <capd/intervals/lib.h>
-#include "mc.h"
-#include "pdrh_config.h"
-#include "measure.h"
-#include "box_factory.h"
-#include <chrono>
 #include <iomanip>
 #include <omp.h>
-#include "rnd.h"
+
+#include "sampler.h"
 #include "node_utils.h"
+#include "mc.h"
+#include "pdrh_config.h"
+#include "measurer.h"
+#include "box_utils.h"
 
 using namespace std;
 
@@ -25,21 +23,9 @@ capd::interval algorithm::evaluate_pha_chernoff(
   double conf,
   vector<box> nondet_boxes)
 {
-  const gsl_rng_type *T;
-  gsl_rng *r;
-  gsl_rng_env_setup();
-  T = gsl_rng_default;
-  // creating random generator
-  r = gsl_rng_alloc(T);
-  // setting the seed
-  gsl_rng_set(
-    r,
-    std::chrono::system_clock::now().time_since_epoch() /
-      std::chrono::milliseconds(1));
   // getting sample size using the Chernoff bound formula
   long int sample_size =
     (long int)std::ceil((1 / (2 * acc * acc)) * std::log(2 / (1 - conf)));
-  //    long int sample_size = algorithm::get_cernoff_bound(acc, std::sqrt(conf));
   long int sat = 0;
   long int unsat = 0;
   if (global_config.verbose)
@@ -49,6 +35,7 @@ capd::interval algorithm::evaluate_pha_chernoff(
   if (global_config.verbose_result)
     cout << "Random sample size: " << sample_size << "\n";
   old::symext symex(old::global_model);
+  samplert sampler(old::global_model.sym_table);
 #pragma omp parallel for schedule(dynamic)
   for (long int ctr = 0; ctr < sample_size; ctr++)
   {
@@ -56,7 +43,7 @@ capd::interval algorithm::evaluate_pha_chernoff(
     std::vector<std::vector<old::modet *>> paths =
       symex.get_all_paths(min_depth, max_depth);
     // getting a sample
-    box b = rnd::get_random_sample(r);
+    box b = sampler.get_random_sample();
     if (global_config.verbose)
       cout << "Random sample: " << b << "\n";
     std::vector<box> boxes = {b};
@@ -130,7 +117,6 @@ capd::interval algorithm::evaluate_pha_chernoff(
         cout << "Progress: " << (double)ctr / (double)sample_size << "\n";
     }
   }
-  gsl_rng_free(r);
   if (global_config.verbose_result)
     cout << "Chernoff-Hoeffding algorithm finished\n";
   return capd::interval(
@@ -145,18 +131,6 @@ capd::interval algorithm::evaluate_pha_bayesian(
   double conf,
   vector<box> nondet_boxes)
 {
-  const gsl_rng_type *T;
-  gsl_rng *r;
-  gsl_rng_env_setup();
-  T = gsl_rng_default;
-  // creating random generator
-  r = gsl_rng_alloc(T);
-  // setting the seed
-  gsl_rng_set(
-    r,
-    std::chrono::system_clock::now().time_since_epoch() /
-      std::chrono::milliseconds(1));
-
   // getting sample size with recalculated confidence
   long int sample_size = 0;
   long int sat = 0;
@@ -178,11 +152,12 @@ capd::interval algorithm::evaluate_pha_bayesian(
   old::symext symex(old::global_model);
   vector<vector<old::modet *>> paths = 
     symex.get_all_paths(min_depth, max_depth);
+  samplert sampler(old::global_model.sym_table);
 #pragma omp parallel
   while (post_prob < conf)
   {
     // getting a sample
-    box b = rnd::get_random_sample(r);
+    box b = sampler.get_random_sample();
 // increasing the sample size
 #pragma omp critical
     {
@@ -259,7 +234,6 @@ capd::interval algorithm::evaluate_pha_bayesian(
       }
     }
   }
-  gsl_rng_free(r);
   // displaying sample size if enabled
   if (global_config.verbose_result)
   {
@@ -278,18 +252,6 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   double acc,
   double conf)
 {
-  // random number generator for cross entropy
-  const gsl_rng_type *T;
-  gsl_rng *r;
-  gsl_rng_env_setup();
-  T = gsl_rng_default;
-  // creating random generator
-  r = gsl_rng_alloc(T);
-  // setting the seed
-  gsl_rng_set(
-    r,
-    std::chrono::system_clock::now().time_since_epoch() /
-      std::chrono::milliseconds(1));
   measurert measurer(old::global_model.sym_table);  
   box domain = measurer.get_nondet_domain();
   //initializing probability value
@@ -307,6 +269,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
   capd::interval size_correction_coef(1e-32);
   // getting initial mode
   old::modet *init_mode = old::global_model.get_mode(old::global_model.init.front().id);
+  samplert sampler(old::global_model.sym_table);
   //#pragma omp parallel
   for (int j = 0; j < iter_num; j++)
   {
@@ -331,7 +294,7 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
     //#pragma omp parallel for
     for (int i = 0; i < new_size; i++)
     {
-      box b = rnd::get_normal_random_sample(r, mean, sigma);
+      box b = sampler.get_normal_random_sample(mean, sigma);
       if (global_config.verbose_result)
         cout << "Quasi-random sample: " << b << "\n";
       capd::interval probability;
@@ -403,9 +366,8 @@ pair<box, capd::interval> algorithm::evaluate_npha_cross_entropy_normal(
       }
     }
     samples.clear();
-    mean = box_factory::get_mean(elite_boxes);
-    sigma = box_factory::get_stddev(elite_boxes);
+    mean = box_utils::get_mean(elite_boxes);
+    sigma = box_utils::get_stddev(elite_boxes);
   }
-  gsl_rng_free(r);
   return res;
 }

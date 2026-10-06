@@ -3,14 +3,14 @@
 //
 
 #include <capd/intervals/lib.h>
-#include "pdrh_config.h"
-#include "measure.h"
-#include "box_factory.h"
 #include <iomanip>
 #include <omp.h>
 #include "node_utils.h"
 #include "formal.h"
 #include "decision_procedure.h"
+#include "pdrh_config.h"
+#include "measurer.h"
+#include "box_utils.h"
 
 using namespace std;
 
@@ -153,7 +153,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
             // if the box is undetermined on either path
             if (undet_counter > 0)
             {
-              std::vector<box> rv_bisect = box_factory::bisect(rv);
+              std::vector<box> rv_bisect = box_utils::bisect(rv);
               rv_stack.insert(
                 rv_stack.end(), rv_bisect.begin(), rv_bisect.end());
             }
@@ -206,7 +206,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
   {
     nd_partition.clear();
     nd_partition =
-      box_factory::partition(nd_domain, global_config.partition_nondet_map);
+      box_utils::partition(nd_domain, global_config.partition_nondet_map);
   }
   // getting partition of domain of continuous random variables
   std::vector<box> rv_partition = measurer.get_rv_partition();
@@ -229,7 +229,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
     for (box b : rv_partition)
     {
       vector<box> extra_partition =
-        box_factory::partition(b, global_config.partition_prob_map);
+        box_utils::partition(b, global_config.partition_prob_map);
       tmp_vector.insert(
         tmp_vector.cend(), extra_partition.cbegin(), extra_partition.cend());
     }
@@ -393,7 +393,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
           case decision_procedure::result::UNDET:
 #pragma omp critical
           {
-            std::vector<box> rv_bisect = box_factory::bisect(rv);
+            std::vector<box> rv_bisect = box_utils::bisect(rv);
             rv_stack.insert(rv_stack.end(), rv_bisect.begin(), rv_bisect.end());
             // updating total partition
             auto it = find(total_partition.begin(), total_partition.end(), rv);
@@ -457,12 +457,12 @@ formal::evaluate_npha(int min_depth, int max_depth)
           // checking if the --ignore-nondet flag is up
           if (global_config.ignore_nondet)
           {
-            tmp_boxes = box_factory::bisect(nd);
+            tmp_boxes = box_utils::bisect(nd);
           }
           else
           {
             tmp_boxes =
-              box_factory::bisect(nd, global_config.partition_nondet_map);
+              box_utils::bisect(nd, global_config.partition_nondet_map);
           }
           capd::interval tmp_prob_value = p_map[nd];
           std::vector<box> tmp_rv_partition = partition_map[nd];
@@ -527,7 +527,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
   {
     nd_partition.clear();
     nd_partition =
-      box_factory::partition(nd_domain, global_config.partition_nondet_map);
+      box_utils::partition(nd_domain, global_config.partition_nondet_map);
   }
   // getting partition of domain of continuous random variables
   std::vector<box> rv_partition = measurer.get_rv_partition();
@@ -550,7 +550,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
     for (box b : rv_partition)
     {
       vector<box> extra_partition =
-        box_factory::partition(b, global_config.partition_prob_map);
+        box_utils::partition(b, global_config.partition_prob_map);
       tmp_vector.insert(
         tmp_vector.cend(), extra_partition.cbegin(), extra_partition.cend());
     }
@@ -739,12 +739,12 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
           // checking if the --ignore-nondet flag is up
           if (global_config.ignore_nondet)
           {
-            tmp_boxes = box_factory::bisect(nd);
+            tmp_boxes = box_utils::bisect(nd);
           }
           else
           {
             tmp_boxes =
-              box_factory::bisect(nd, global_config.partition_nondet_map);
+              box_utils::bisect(nd, global_config.partition_nondet_map);
           }
           capd::interval tmp_prob_value = p_map[nd];
           std::vector<box> tmp_rv_partition = partition_map[nd];

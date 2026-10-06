@@ -1,10 +1,10 @@
 file(GLOB PROBREACH_MC_SRC
         ${PROBREACH_SOURCE_DIR}/mc/mc.cpp
-        ${PROBREACH_SOURCE_DIR}/util/rnd.cpp
+        ${PROBREACH_SOURCE_DIR}/util/sampler.cpp
         ${PROBREACH_SOURCE_DIR}/util/node_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/box.cpp
-        ${PROBREACH_SOURCE_DIR}/util/box_factory.cpp
-        ${PROBREACH_SOURCE_DIR}/util/measure.cpp
+        ${PROBREACH_SOURCE_DIR}/util/box_utils.cpp
+        ${PROBREACH_SOURCE_DIR}/util/measurer.cpp
         ${PROBREACH_SOURCE_DIR}/solver/decision_procedure.cpp
         ${PROBREACH_SOURCE_DIR}/solver/dreal_wrapper.cpp
         ${PROBREACH_SOURCE_DIR}/generators/smt2_generator.cpp)

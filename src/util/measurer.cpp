@@ -2,8 +2,8 @@
 // Created by fedor on 27/12/15.
 //
 #include <capd/capdlib.h>
-#include "measure.h"
-#include "box_factory.h"
+#include "measurer.h"
+#include "box_utils.h"
 #include "pdrh_config.h"
 #include "node_utils.h"
 
@@ -141,7 +141,7 @@ measurert::gaussian_pdf(std::string var, capd::interval mu, capd::interval sigma
 
 capd::interval measurert::get_sample_prob(box domain, box mean, box sigma)
 {
-  if (!box_factory::compatible({domain, mean, sigma}))
+  if (!box_utils::compatible({domain, mean, sigma}))
   {
     std::stringstream s;
     throw std::invalid_argument(s.str());
@@ -254,7 +254,7 @@ std::vector<box> measurert::get_rv_partition()
     // updating partition map
     partition_map.insert(make_pair(it->first, bound.second));
   }
-  return box_factory::cartesian_product(partition_map);
+  return box_utils::cartesian_product(partition_map);
 }
 
 // domain of continuous random parameters
@@ -294,7 +294,7 @@ box measurert::get_rv_domain()
   {
     return box();
   }
-  std::vector<box> domain = box_factory::cartesian_product(domain_map);
+  std::vector<box> domain = box_utils::cartesian_product(domain_map);
   return domain.front();
 }
 
@@ -310,7 +310,7 @@ std::vector<box> measurert::get_dd_partition()
     }
     m.insert(make_pair(it->first, args));
   }
-  return box_factory::cartesian_product(m);
+  return box_utils::cartesian_product(m);
 }
 
 // domain of nondeterministic parameters
@@ -336,8 +336,8 @@ bool compare_pairs::ascending(
   const pair<box, capd::interval> &rhs)
 {
   if (
-    !box_factory::get_keys_diff(lhs.first, rhs.first).empty() ||
-    !box_factory::get_keys_diff(rhs.first, lhs.first).empty())
+    !box_utils::get_keys_diff(lhs.first, rhs.first).empty() ||
+    !box_utils::get_keys_diff(rhs.first, lhs.first).empty())
   {
     stringstream s;
     s << "Boxes " << lhs.first << " and " << rhs.first << " cannot be compared";
@@ -352,8 +352,8 @@ bool compare_pairs::descending(
   const pair<box, capd::interval> &rhs)
 {
   if (
-    !box_factory::get_keys_diff(lhs.first, rhs.first).empty() ||
-    !box_factory::get_keys_diff(rhs.first, lhs.first).empty())
+    !box_utils::get_keys_diff(lhs.first, rhs.first).empty() ||
+    !box_utils::get_keys_diff(rhs.first, lhs.first).empty())
   {
     stringstream s;
     s << "Boxes " << lhs.first << " and " << rhs.first << " cannot be compared";
