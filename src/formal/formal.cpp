@@ -13,6 +13,8 @@
 #include "measurer.h"
 #include "box_utils.h"
 #include "symex.h"
+#include "solver.h"
+#include "dreal_solver.h"
 
 using namespace std;
 
@@ -20,8 +22,9 @@ int formal::evaluate_ha(int min_depth, int max_depth)
 {
   old::symext symex(old::global_model);
   vector<vector<old::modet *>> paths = symex.get_all_paths(min_depth, max_depth);
+  dreal_solvert solver(global_config.solver_bin);
   return decision_procedure::evaluate(
-    paths, {}, global_config.solver_bin, global_config.solver_opt);
+    paths, {}, solver, global_config.solver_opt);
 }
 
 capd::interval formal::evaluate_pha(int min_depth, int max_depth)
@@ -49,6 +52,8 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
   old::symext symex(old::global_model);
   std::vector<std::vector<old::modet *>> paths =
     symex.get_all_paths(min_depth, max_depth);
+  // creating a solver
+  dreal_solvert solver(global_config.solver_bin);
   //resulting probability
   capd::interval res_prob(0.0);
   // evaluating boxes
@@ -112,8 +117,7 @@ capd::interval formal::evaluate_pha(int min_depth, int max_depth)
             s << solver_opt << " --precision "
               << rv.volume().leftBound() * global_config.solver_precision_ratio;
           }
-          int res = decision_procedure::evaluate(
-            path, boxes, global_config.solver_bin, s.str());
+          int res = decision_procedure::evaluate(path, boxes, solver, s.str());
 // setting old precision
 #pragma omp critical
           {
@@ -247,7 +251,8 @@ formal::evaluate_npha(int min_depth, int max_depth)
       measurer.compare_boxes_by_measure);
       */
   }
-
+  // creating a solver
+  dreal_solvert solver(global_config.solver_bin);
   // getting partition of domain of discrete random variables
   std::vector<box> dd_partition = measurer.get_dd_partition();
   // fix for now
@@ -360,7 +365,7 @@ formal::evaluate_npha(int min_depth, int max_depth)
             }
           }
           int res = decision_procedure::evaluate(
-            paths, vector<box>{nd, dd, rv}, global_config.solver_bin, s.str());
+            paths, vector<box>{nd, dd, rv}, solver, s.str());
 
           if (global_config.verbose)
             std::cout << "formal NPHA: decision procedure result = " << res
@@ -575,6 +580,8 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
   {
     dd_partition.push_back(box());
   }
+  // creating a solver
+  dreal_solvert solver(global_config.solver_bin);
   // generating all paths of lengths [min_depth, max_depth]
   old::symext symex(old::global_model);
   std::vector<std::vector<old::modet *>> paths =
@@ -683,7 +690,7 @@ formal::evaluate_npha_upper_bound(int min_depth, int max_depth)
           if (global_config.verbose)
             std::cout << "formal NPHA: running the decision procedure\n";
           int res = decision_procedure::evaluate_delta_sat(
-            paths, vector<box>{nd, dd, rv}, global_config.solver_bin, s.str());
+            paths, vector<box>{nd, dd, rv}, solver, s.str());
 
           if (global_config.verbose)
             std::cout << "formal NPHA: decision procedure result = " << res

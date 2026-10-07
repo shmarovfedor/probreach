@@ -7,6 +7,7 @@
 #include <iostream>
 #include "model.h"
 #include "box.h"
+#include "solver.h"
 
 namespace decision_procedure
 {
@@ -22,14 +23,14 @@ enum result
 int evaluate(
   std::vector<std::vector<old::modet *>>,
   std::vector<box>,
-  std::string,
+  solvert &solver,
   std::string);
 
 // evaluates a path
 int evaluate(
   std::vector<old::modet *>,
   std::vector<box>,
-  std::string,
+  solvert &solver,
   std::string);
 
 // first argument is the path to be evaluated,
@@ -39,7 +40,7 @@ int evaluate(
 int evaluate_delta_sat(
   std::vector<old::modet *>,
   std::vector<box>,
-  std::string,
+  solvert &solver,
   std::string);
 
 // first argument is the path to be evaluated,
@@ -49,7 +50,7 @@ int evaluate_delta_sat(
 int evaluate_delta_sat(
   std::vector<std::vector<old::modet *>>,
   std::vector<box>,
-  std::string,
+  solvert &solver,
   std::string);
 
 // first argument is the path to be evaluated,
@@ -59,7 +60,7 @@ int evaluate_delta_sat(
 int evaluate_complement(
   std::vector<old::modet *>,
   std::vector<box>,
-  std::string,
+  solvert &solver,
   std::string);
 
 } // namespace decision_procedure

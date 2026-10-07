@@ -14,6 +14,7 @@
 #include "measurer.h"
 #include "box_utils.h"
 #include "symex.h"
+#include "dreal_solver.h"
 
 using namespace std;
 
@@ -37,6 +38,8 @@ capd::interval algorithm::evaluate_pha_chernoff(
     cout << "Random sample size: " << sample_size << "\n";
   old::symext symex(old::global_model);
   samplert sampler(old::global_model.sym_table);
+  // creating a solver
+  dreal_solvert solver(global_config.solver_bin);
 #pragma omp parallel for schedule(dynamic)
   for (long int ctr = 0; ctr < sample_size; ctr++)
   {
@@ -68,12 +71,12 @@ capd::interval algorithm::evaluate_pha_chernoff(
       if (global_config.delta_sat)
       {
         res = decision_procedure::evaluate_delta_sat(
-          path, boxes, global_config.solver_bin, global_config.solver_opt);
+          path, boxes, solver, global_config.solver_opt);
       }
       else
       {
         res = decision_procedure::evaluate(
-          path, boxes, global_config.solver_bin, global_config.solver_opt);
+          path, boxes, solver, global_config.solver_opt);
       }
 #pragma omp critical
       {
@@ -154,6 +157,8 @@ capd::interval algorithm::evaluate_pha_bayesian(
   vector<vector<old::modet *>> paths = 
     symex.get_all_paths(min_depth, max_depth);
   samplert sampler(old::global_model.sym_table);
+  // creating a solver
+  dreal_solvert solver(global_config.solver_bin);
 #pragma omp parallel
   while (post_prob < conf)
   {
@@ -173,12 +178,12 @@ capd::interval algorithm::evaluate_pha_bayesian(
     if (global_config.delta_sat)
     {
       res = decision_procedure::evaluate_delta_sat(
-        paths, boxes, global_config.solver_bin, global_config.solver_opt);
+        paths, boxes, solver, global_config.solver_opt);
     }
     else
     {
       res = decision_procedure::evaluate(
-        paths, boxes, global_config.solver_bin, global_config.solver_opt);
+        paths, boxes, solver, global_config.solver_opt);
     }
 // updating the counters
 #pragma omp critical

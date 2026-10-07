@@ -5,7 +5,7 @@ file(GLOB PROBREACH_FORMAL_SRC
         ${PROBREACH_SOURCE_DIR}/util/box_utils.cpp
         ${PROBREACH_SOURCE_DIR}/util/measurer.cpp
         ${PROBREACH_SOURCE_DIR}/solver/decision_procedure.cpp
-        ${PROBREACH_SOURCE_DIR}/solver/dreal_wrapper.cpp
+        ${PROBREACH_SOURCE_DIR}/solver/dreal_solver.cpp
         ${PROBREACH_SOURCE_DIR}/codegen/smt2_generator.cpp)
 
 add_library(probreach_formal ${PROBREACH_FORMAL_SRC})

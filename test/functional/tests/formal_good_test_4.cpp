@@ -10,7 +10,6 @@
 #include "box.h"
 #include "node_utils.h"
 #include "decision_procedure.h"
-#include "solver/dreal_wrapper.h"
 #include "test_env.h"
 
 #ifdef _OPENMP

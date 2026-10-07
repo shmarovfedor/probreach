@@ -6,7 +6,7 @@
 #include <omp.h>
 #include "smt2_generator.h"
 #include "decision_procedure.h"
-#include "dreal_wrapper.h"
+#include "dreal_solver.h"
 #include "pdrh_config.h"
 
 using namespace std;
@@ -23,13 +23,13 @@ using namespace std;
 int decision_procedure::evaluate(
   vector<vector<old::modet *>> paths,
   vector<box> boxes,
-  string solver_bin,
+  solvert &solver,
   string solver_opt)
 {
   int undet_counter = 0;
   for (vector<old::modet *> path : paths)
   {
-    int res = evaluate(path, boxes, solver_bin, solver_opt);
+    int res = evaluate(path, boxes, solver, solver_opt);
     if (res == decision_procedure::result::SAT)
     {
       return res;
@@ -58,12 +58,12 @@ int decision_procedure::evaluate(
 int decision_procedure::evaluate(
   vector<old::modet *> path,
   vector<box> boxes,
-  string solver_bin,
+  solvert &solver,
   string solver_opt)
 {
   // evaluating the delta-sat formula
   int first_res = decision_procedure::evaluate_delta_sat(
-    path, boxes, global_config.solver_bin, solver_opt);
+    path, boxes, solver, solver_opt);
   if (first_res == decision_procedure::result::UNSAT)
   {
     return decision_procedure::result::UNSAT;
@@ -72,7 +72,7 @@ int decision_procedure::evaluate(
   {
     // evaluating complement
     int second_res = decision_procedure::evaluate_complement(
-      path, boxes, solver_bin, solver_opt);
+      path, boxes, solver, solver_opt);
     if (second_res == decision_procedure::result::UNSAT)
     {
       return decision_procedure::result::SAT;
@@ -96,13 +96,13 @@ int decision_procedure::evaluate(
 int decision_procedure::evaluate_delta_sat(
   vector<vector<old::modet *>> paths,
   vector<box> boxes,
-  string solver_bin,
+  solvert &solver,
   string solver_opt)
 {
   int undet_counter = 0;
   for (vector<old::modet *> path : paths)
   {
-    int res = evaluate_delta_sat(path, boxes, solver_bin, solver_opt);
+    int res = evaluate_delta_sat(path, boxes, solver, solver_opt);
     if (res == decision_procedure::result::SAT)
     {
       return res;
@@ -123,7 +123,7 @@ int decision_procedure::evaluate_delta_sat(
 int decision_procedure::evaluate_delta_sat(
   vector<old::modet *> path,
   vector<box> boxes,
-  string solver_bin,
+  solvert &solver,
   string solver_opt)
 {
   // default value for the thread number
@@ -155,7 +155,8 @@ int decision_procedure::evaluate_delta_sat(
     cout << smt2_generator::reach_to_smt2(path, boxes) << endl;
   }
 
-  int first_res = dreal::execute(solver_bin, smt_filename, solver_opt);
+  //dreal_solvert solver(solver_bin);
+  int first_res = solver.run(smt_filename, solver_opt);
 
   if (global_config.debug)
     cout << "dReal result = " << first_res << "\n";
@@ -207,7 +208,7 @@ int decision_procedure::evaluate_delta_sat(
 int decision_procedure::evaluate_complement(
   vector<old::modet *> path,
   vector<box> boxes,
-  string solver_bin,
+  solvert &solver,
   string solver_opt)
 {
   int thread_num = 0;
@@ -239,7 +240,8 @@ int decision_procedure::evaluate_complement(
     }
     smt_c_file.close();
     // calling dreal here
-    int second_res = dreal::execute(solver_bin, smt_c_filename, solver_opt);
+    //dreal_solvert solver(solver_bin);
+    int second_res = solver.run(smt_c_filename, solver_opt);
 
     if (global_config.debug)
       cout << "dReal result = " << second_res << "\n";
