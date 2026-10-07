@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <omp.h>
+
 #include "smt2_generator.h"
 #include "decision_procedure.h"
 #include "dreal_solver.h"
@@ -145,14 +146,14 @@ int decision_procedure::evaluate_delta_sat(
 
   smt_file.open(smt_filename.c_str());
   // will work for one initial and one state only
-  smt_file << smt2_generator::reach_to_smt2(path, boxes);
+  smt_file << smt2_generatort::reach_to_smt2(path, boxes);
   smt_file.close();
 
   if (global_config.debug)
   {
     cout << "Thread: " << omp_get_thread_num() << endl;
     cout << "First formula:" << endl;
-    cout << smt2_generator::reach_to_smt2(path, boxes) << endl;
+    cout << smt2_generatort::reach_to_smt2(path, boxes) << endl;
   }
 
   //dreal_solvert solver(solver_bin);
@@ -231,12 +232,12 @@ int decision_procedure::evaluate_complement(
     // writing to the file
     ofstream smt_c_file;
     smt_c_file.open(smt_c_filename.c_str());
-    smt_c_file << smt2_generator::reach_c_to_smt2(i, path, boxes);
+    smt_c_file << smt2_generatort::reach_c_to_smt2(i, path, boxes);
     if (global_config.debug)
     {
       cout << "Thread: " << omp_get_thread_num() << endl;
       cout << "Second formula (" << i << "):" << endl;
-      cout << smt2_generator::reach_c_to_smt2(i, path, boxes) << endl;
+      cout << smt2_generatort::reach_c_to_smt2(i, path, boxes) << endl;
     }
     smt_c_file.close();
     // calling dreal here

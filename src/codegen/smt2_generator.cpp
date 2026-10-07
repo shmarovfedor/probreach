@@ -10,7 +10,7 @@ using namespace std;
 using namespace capd;
 
 // getting a string representation of reachability formula in smt2 format for all combinations of initial and goal modes
-string smt2_generator::reach_to_smt2(vector<old::modet *> path, vector<box> boxes)
+string smt2_generatort::reach_to_smt2(vector<old::modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
@@ -246,7 +246,7 @@ node *get_node_neg_by_value(node *root, vector<string> values)
   return res_node;
 }
 
-string smt2_generator::reach_c_to_smt2(vector<old::modet *> path, vector<box> boxes)
+string smt2_generatort::reach_c_to_smt2(vector<old::modet *> path, vector<box> boxes)
 {
   stringstream s;
   // setting logic
@@ -464,14 +464,14 @@ string smt2_generator::reach_c_to_smt2(vector<old::modet *> path, vector<box> bo
   return s.str();
 }
 
-string smt2_generator::reach_c_to_smt2(
+string smt2_generatort::reach_c_to_smt2(
   int depth,
   vector<old::modet *> path,
   vector<box> boxes)
 {
   if (depth == path.size() - 1)
   {
-    return smt2_generator::reach_c_to_smt2(path, boxes);
+    return smt2_generatort::reach_c_to_smt2(path, boxes);
   }
   else
   {

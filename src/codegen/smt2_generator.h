@@ -9,14 +9,15 @@
 #include "model.h"
 #include "box.h"
 
-namespace smt2_generator
+class smt2_generatort
 {
 
+public:
 // generates reachability formulas
-std::string reach_to_smt2(std::vector<old::modet *>, std::vector<box>);
-std::string reach_c_to_smt2(std::vector<old::modet *>, std::vector<box>);
-std::string reach_c_to_smt2(int, std::vector<old::modet *>, std::vector<box>);
+  static std::string reach_to_smt2(std::vector<old::modet *>, std::vector<box>);
+  static std::string reach_c_to_smt2(std::vector<old::modet *>, std::vector<box>);
+  static std::string reach_c_to_smt2(int, std::vector<old::modet *>, std::vector<box>);
 
-} // namespace smt2_generator
+};
 
 #endif //PROBREACH_SMT2_GENERATOR_H
