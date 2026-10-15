@@ -85,6 +85,8 @@ include_directories("${CAPD_INCLUDE_DIR}")
 include_directories("${PROBREACH_SOURCE_DIR}/config")
 include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/codegen")
+include_directories("${PROBREACH_SOURCE_DIR}/decision_procedure")
+include_directories("${PROBREACH_SOURCE_DIR}/analysis")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
 
 # searching for GSL
@@ -131,9 +133,9 @@ configure_file(
 
 # adding CMakeLists.txt files that specify executables
 include("${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/CMakeLists.txt")
-include("${CMAKE_CURRENT_SOURCE_DIR}/src/formal/CMakeLists.txt")
-include("${CMAKE_CURRENT_SOURCE_DIR}/src/mc/CMakeLists.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/analysis/CMakeLists.txt")
 include("${CMAKE_CURRENT_SOURCE_DIR}/src/config/CMakeLists.txt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/CMakeLists.txt")
 
 # enabling testing
 find_package(GTest)
