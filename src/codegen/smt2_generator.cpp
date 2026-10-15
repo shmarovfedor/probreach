@@ -186,8 +186,8 @@ string smt2_generatort::reach_to_smt2(vector<old::modet *> path, vector<box> box
   // final statements
   s << "(check-sat)" << endl;
   s << "(exit)" << endl;
-  std::cout << "FORMULA\n";
-  std::cout << s.str();
+  //std::cout << "FORMULA\n";
+  //std::cout << s.str();
   return s.str();
 }
 

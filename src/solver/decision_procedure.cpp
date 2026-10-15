@@ -156,7 +156,6 @@ int decision_procedure::evaluate_delta_sat(
     cout << smt2_generatort::reach_to_smt2(path, boxes) << endl;
   }
 
-  //dreal_solvert solver(solver_bin);
   int first_res = solver.run(smt_filename, solver_opt);
 
   if (global_config.debug)
@@ -241,7 +240,6 @@ int decision_procedure::evaluate_complement(
     }
     smt_c_file.close();
     // calling dreal here
-    //dreal_solvert solver(solver_bin);
     int second_res = solver.run(smt_c_filename, solver_opt);
 
     if (global_config.debug)

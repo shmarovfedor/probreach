@@ -5,7 +5,7 @@
 #include <capd/intervals/lib.h>
 
 #include "box.h"
-#include "symbol_table.h"
+#include "old/symbol_table.h"
 
 #ifndef PROBREACH_MEASURER_H
 #define PROBREACH_MEASURER_H

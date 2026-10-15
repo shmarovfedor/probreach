@@ -80,41 +80,6 @@ void old::modelt::build_nondet_parameter_map()
   }
 }
 
-void old::modelt::complete_flows()
-{
-  // adding equations for the parameters (nondet and random)
-  for (size_t i = 0; i < modes.size(); ++i)
-  {
-    for (auto it : sym_table.par_map)
-      modes[i].odes.insert(make_pair(it.first, new node("0")));
-    for (auto it : sym_table.rv_map)
-      modes[i].odes.insert(make_pair(it.first, new node("0")));
-    for (auto it : sym_table.dd_map)
-      modes[i].odes.insert(make_pair(it.first, new node("0")));
-  }
-}
-
-void old::modelt::complete_resets()
-{
-  // adding implicit resets
-  for (size_t i = 0; i < modes.size(); ++i)
-  {
-    for (size_t j = 0; j < modes[i].jumps.size(); ++j)
-    {
-      for (auto it : modes[i].odes)
-      {
-        if (
-          modes[i].jumps[j].reset.find(it.first) ==
-          modes[i].jumps[j].reset.cend())
-        {
-          modes[i].jumps[j].reset.insert(
-            make_pair(it.first, new node(it.first)));
-        }
-      }
-    }
-  }
-}
-
 void old::modelt::set_model_type()
 {
   if (
@@ -138,9 +103,6 @@ void old::modelt::finalise()
   // the order of operations is important
   build_symbol_table();
   build_nondet_parameter_map();
-  // the order is not important after this point
-  complete_flows();
-  complete_resets();
   set_model_type();
 }
 

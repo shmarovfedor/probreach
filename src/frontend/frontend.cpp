@@ -6,6 +6,9 @@
 #include "pdrhparser.hpp"
 #include "model.h"
 #include "new_to_old.h"
+#include "symbol_table.h"
+#include "build_symbol_table.h"
+#include "complete_model.h"
 
 extern FILE *yyin;
 old::modelt old::global_model;
@@ -20,6 +23,12 @@ int frontendt::parse(const std::string &filename)
     yy::parser parser(*this);
 
     int result = parser.parse();
+
+    symbol_tablet sym_table;
+    build_symbol_tablet builder;
+    builder.build(sym_table, root.get());
+    complete_modelt completer;
+    completer.run(sym_table, *root);
 
     if(result == 0 && root)
     {

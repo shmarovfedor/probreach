@@ -2,8 +2,8 @@
 // Created by fedor on 24/01/16.
 //
 
-#ifndef PROBREACH_MODEL_H
-#define PROBREACH_MODEL_H
+#ifndef PROBREACH_OLD_MODEL_H
+#define PROBREACH_OLD_MODEL_H
 
 #include <vector>
 #include <map>
@@ -110,8 +110,6 @@ public:
   // methods for updating the model (should be part of typechecker/visitor)
   void build_symbol_table();
   void build_nondet_parameter_map();
-  void complete_flows();
-  void complete_resets();
   void set_model_type();
   void finalise();
 };
@@ -120,4 +118,4 @@ extern modelt global_model;
 
 }
 
-#endif //PROBREACH_MODEL_H
+#endif //PROBREACH_OLD_MODEL_H

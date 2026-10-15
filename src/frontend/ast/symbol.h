@@ -23,6 +23,11 @@ public:
     return value == other.value;
   }
 
+  bool operator<(const symbolt& other) const
+  {
+    return value < other.value;
+  }
+
   std::string get_type() const
   {
     return "symbolt";

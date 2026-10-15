@@ -116,6 +116,11 @@ public:
       out << *odes[i] << ";\n";
   }
 
+  void insert(std::unique_ptr<odet> ode)
+  {
+    odes.push_back(std::move(ode));
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const flowt &e)
   {
     e.print(os);
@@ -200,6 +205,11 @@ public:
   std::vector<std::unique_ptr<assignt>> &get_assignments()
   {
     return assigns;
+  }
+
+  void insert(std::unique_ptr<assignt> assign)
+  {
+    assigns.push_back(std::move(assign));
   }
 
   void print(std::ostream &out) const override

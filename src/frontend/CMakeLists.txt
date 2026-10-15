@@ -35,6 +35,7 @@ include_directories("${PROBREACH_BINARY_DIR}/frontend/parser")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend/ast")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend/parser")
+include_directories("${PROBREACH_SOURCE_DIR}/frontend/transform")
 include_directories("${PROBREACH_SOURCE_DIR}/frontend/old")
 
 # building the frontend
@@ -44,6 +45,8 @@ file(GLOB PROBREACH_FRONTEND_SRC
         ${PROBREACH_SOURCE_DIR}/frontend/old/symbol_table.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/old/node.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/old/new_to_old.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/transform/build_symbol_table.cpp
+        ${PROBREACH_SOURCE_DIR}/frontend/transform/complete_model.cpp
         ${PROBREACH_SOURCE_DIR}/frontend/frontend.cpp)
 
 set(PROBREACH_FRONTEND_SRC ${PROBREACH_FRONTEND_SRC}      

@@ -2,8 +2,8 @@
 // Created by fedor on 24/01/16.
 //
 
-#ifndef PROBREACH_SYMBOL_TABLE_H
-#define PROBREACH_SYMBOL_TABLE_H
+#ifndef PROBREACH_OLD_SYMBOL_TABLE_H
+#define PROBREACH_OLD_SYMBOL_TABLE_H
 
 #include <vector>
 #include <map>
@@ -45,4 +45,4 @@ public:
 
 }
 
-#endif //PROBREACH_SYMBOL_TABLE_H
+#endif //PROBREACH_OLD_SYMBOL_TABLE_H

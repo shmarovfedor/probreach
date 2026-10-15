@@ -8,7 +8,7 @@
 #include <gsl/gsl_rng.h>
 
 #include "box.h"
-#include "symbol_table.h"
+#include "old/symbol_table.h"
 
 class samplert
 {
