@@ -26,7 +26,7 @@ int yylex(
 
 // terminals
 %token TIME
-%token N_DIST U_DIST E_DIST DD_DIST
+%token NORMAL_DIST UNIFORM_DIST EXP_DIST DISCRETE_DIST INTERVAL_DIST
 %token INFTY
 
 %token MODE INVT FLOW JUMP INIT GOAL 
@@ -158,21 +158,27 @@ dist_declaration:
 }
 
 dist:
-  N_DIST '(' number ',' number ')'
+  NORMAL_DIST '(' number ',' number ')'
 {
   $$ = std::make_unique<normal_distt>(
     std::make_unique<numbert>($3), std::make_unique<numbert>($5));
 }
-  | U_DIST '(' number ',' number ')'
+  | UNIFORM_DIST '(' number ',' number ')'
 {
   $$ = std::make_unique<uniform_distt>(
     std::make_unique<numbert>($3), std::make_unique<numbert>($5));
 }
-  | E_DIST '(' number ')'
+  | EXP_DIST '(' number ')'
 {
   $$ = std::make_unique<exp_distt>(std::make_unique<numbert>($3));
 }
-  | DD_DIST '(' dd_pairs ')'
+  | INTERVAL_DIST '(' number ',' number ')'
+{
+  $$ = std::make_unique<interval_distt>(std::make_unique<intervalt>(
+    std::make_unique<numbert>($3), 
+    std::make_unique<numbert>($5)));
+}
+  | DISCRETE_DIST '(' dd_pairs ')'
 {
   $$ = std::make_unique<discrete_distt>(std::move(*$3));
 }

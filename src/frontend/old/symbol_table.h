@@ -32,6 +32,7 @@ public:
   }
   
   void push_var(std::string, node *, node *);
+  void push_par(std::string, node *, node *);
   void push_dd(std::string, std::map<node *, node *>);
   void push_rv(std::string, node *, node *, node *, node *);
   void push_uniform(std::string, node *, node *);

@@ -454,6 +454,13 @@ node *new_to_old(exp_distt &e)
   return new node("dist_exp", {new_to_old(e.get_lambda())});
 }
 
+node *new_to_old(interval_distt &e)
+{
+  return new node("dist_interval", {
+      new_to_old(e.get_interval().get_left()),
+      new_to_old(e.get_interval().get_right())});
+}
+
 node *new_to_old(distt &e)
 {
   if (auto ptr = dynamic_cast<discrete_distt *>(&e))
@@ -469,6 +476,10 @@ node *new_to_old(distt &e)
     return new_to_old(*ptr);
   }
   else if (auto ptr = dynamic_cast<exp_distt *>(&e))
+  {
+    return new_to_old(*ptr);
+  }
+  else if (auto ptr = dynamic_cast<interval_distt *>(&e))
   {
     return new_to_old(*ptr);
   }
@@ -528,5 +539,74 @@ old::modelt new_to_old(modelt &e)
   res.modes = new_to_old(e.get_modes());
   res.init = new_to_old(e.get_inits());
   res.goal = new_to_old(e.get_goals());
+  return res;
+}
+
+old::symbol_tablet new_to_old(symbol_tablet &e)
+{
+  old::symbol_tablet sym_table;
+  // extracting sym_table and populating the maps
+  for (auto it = e.cbegin(); it != e.cend(); ++it)
+  {
+    std::string sym_name = it->first.get_value();
+    declt* decl = it->second;
+    if (auto ptr = dynamic_cast<const_declt *>(decl))
+    {
+      sym_table.push_var(sym_name,
+          new_to_old(ptr->get_value()), new_to_old(ptr->get_value()));
+    }
+    else if (auto ptr = dynamic_cast<var_declt *>(decl))
+    {
+      sym_table.push_var(sym_name,
+          new_to_old(ptr->get_domain().get_left()), 
+          new_to_old(ptr->get_domain().get_right()));
+    }
+    else if (auto ptr = dynamic_cast<dist_declt *>(decl))
+    {
+      distt &dist = ptr->get_dist();
+      if (auto dist_ptr = dynamic_cast<normal_distt *>(&dist))
+      {
+        sym_table.push_normal(sym_name,
+            new_to_old(dist_ptr->get_mu()),
+            new_to_old(dist_ptr->get_sigma()));
+      }
+      else if (auto dist_ptr = dynamic_cast<uniform_distt *>(&dist))
+      {
+        sym_table.push_uniform(sym_name,
+            new_to_old(dist_ptr->get_left()),
+            new_to_old(dist_ptr->get_right()));
+      }
+      else if (auto dist_ptr = dynamic_cast<exp_distt *>(&dist))
+      {
+        sym_table.push_exp(sym_name,
+            new_to_old(dist_ptr->get_lambda()));
+      }
+      else if (auto dist_ptr = dynamic_cast<interval_distt *>(&dist))
+      {
+        sym_table.push_par(sym_name,
+            new_to_old(dist_ptr->get_interval().get_left()),
+            new_to_old(dist_ptr->get_interval().get_right()));
+      }
+      else if (auto dist_ptr = dynamic_cast<discrete_distt *>(&dist))
+      {
+        std::map<node*, node*> dd_pairs;
+        for (auto &dd_it : dist_ptr->get_p_mass())
+        {
+          dd_pairs.insert(std::make_pair(
+            new_to_old(*dd_it.first),
+            new_to_old(*dd_it.second)));
+        }
+        sym_table.push_dd(sym_name, dd_pairs);
+      }
+    }
+  }
+  return sym_table;
+}
+
+old::modelt new_to_old(modelt &e, symbol_tablet &t)
+{
+  old::modelt res;
+  res = new_to_old(e);
+  res.sym_table = new_to_old(t);
   return res;
 }

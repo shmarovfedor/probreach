@@ -12,6 +12,7 @@
 
 #include "expr.h"
 #include "rvalue.h"
+#include "interval.h"
 
 class distt : public rvaluet
 {
@@ -27,11 +28,39 @@ public:
   }
 };
 
-class cont_distt : public distt
+class random_distt : public distt
 {
 };
 
-class uniform_distt : public cont_distt
+class interval_distt : public distt
+{
+private:
+  std::unique_ptr<intervalt> interval;
+
+public:
+  interval_distt(std::unique_ptr<intervalt> interval)
+    : interval(std::move(interval))
+  {
+  }
+  
+  std::string get_type() const override
+  {
+    return "interval_distt";
+  }
+
+  intervalt &get_interval()
+  {
+    return *interval;
+  }
+
+  void print(std::ostream &out) const override
+  {
+    out << "dist_interval(" << interval->get_left() << ", " 
+      << interval->get_right() << ")";
+  }
+};
+
+class uniform_distt : public random_distt
 {
 private:
   std::unique_ptr<numbert> left;
@@ -64,7 +93,7 @@ public:
   }
 };
 
-class normal_distt : public cont_distt
+class normal_distt : public random_distt
 {
 private:
   std::unique_ptr<numbert> mu;
@@ -97,7 +126,7 @@ public:
   }
 };
 
-class exp_distt : public cont_distt
+class exp_distt : public random_distt
 {
 private:
   std::unique_ptr<numbert> lambda;
@@ -123,17 +152,17 @@ public:
   }
 };
 
-class gamma_distt : public cont_distt
+class gamma_distt : public random_distt
 {
   // Leave implementation for later
 };
 
-class beta_distt : public cont_distt
+class beta_distt : public random_distt
 {
   // Leave implementation for later
 };
 
-class discrete_distt : public distt
+class discrete_distt : public random_distt
 {
 private:
   std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>> p_mass;

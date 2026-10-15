@@ -32,14 +32,14 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   
   // only the following cases are supported in the formal setting
-  if (old::global_model.model_type == old::modelt::type::PHA)
+  if (old::global_model.get_model_type() == old::modelt::type::PHA)
   {
     capd::interval probability = formal::evaluate_pha(
       global_config.reach_depth_min, global_config.reach_depth_max);
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (old::global_model.model_type == old::modelt::type::NPHA)
+  else if (old::global_model.get_model_type() == old::modelt::type::NPHA)
   {
     map<box, capd::interval> probability_map;
     if(global_config.upper_p_bound_flag)

@@ -33,7 +33,7 @@ public:
     return "symbolt";
   }
 
-  std::string get_value()
+  const std::string &get_value() const
   {
     return value;
   }

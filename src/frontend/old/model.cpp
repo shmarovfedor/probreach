@@ -11,99 +11,22 @@
 
 using namespace std;
 
-void old::modelt::build_symbol_table()
-{
-  // extracting sym_table and populating the maps
-  for (auto it = decls.cbegin(); it != decls.cend(); ++it)
-  {
-    declarationt decl = it->second;
-    if (decl.decl->value == "const_decl")
-    {
-      sym_table.push_var(decl.sym, decl.decl->operands[0], decl.decl->operands[0]);
-    }
-    else if (decl.decl->value == "var_decl")
-    {
-      sym_table.push_var(decl.sym, decl.decl->operands[0], decl.decl->operands[1]);
-    }
-    else if (decl.decl->value == "dist_decl")
-    {
-      node *decl_node = decl.decl->operands[0];
-      if (decl_node->value == "dist_normal")
-      {
-        sym_table.push_normal(
-          decl.sym, decl_node->operands[0], decl_node->operands[1]);
-      }
-      else if (decl_node->value == "dist_uniform")
-      {
-        sym_table.push_uniform(
-          decl.sym, decl_node->operands[0], decl_node->operands[1]);
-      }
-      else if (decl_node->value == "dist_exp")
-      {
-        sym_table.push_exp(
-          decl.sym, decl_node->operands[0]);
-      }
-      else if (decl_node->value == "dist_discrete")
-      {
-        std::map<node*, node*> dd_pairs;
-        for (node* op : decl_node->operands)
-          dd_pairs.insert(make_pair(op->operands[0], op->operands[1]));
-        
-        sym_table.push_dd(decl.sym, dd_pairs);
-      }
-    }
-  }
-}
-
-void old::modelt::build_nondet_parameter_map()
-{
-  // collecting all variables for which an ode is defined
-  std::set<std::string> flow_vars;
-  for (old::modet m : modes)
-    for (auto it : m.odes)
-      flow_vars.insert(it.first);
-
-  // creating par_map (i.e. explicit nondet parameters)
-  for (auto it : sym_table.var_map)
-  {
-    if (
-      flow_vars.find(it.first) == flow_vars.cend() &&
-      sym_table.par_map.find(it.first) ==
-        sym_table.par_map.cend() &&
-      sym_table.rv_map.find(it.first) ==
-        sym_table.rv_map.cend() &&
-      sym_table.dd_map.find(it.first) ==
-        sym_table.dd_map.cend())
-    {
-      sym_table.par_map.insert(make_pair(it.first, it.second));
-    }
-  }
-}
-
-void old::modelt::set_model_type()
+old::modelt::type old::modelt::get_model_type()
 {
   if (
     sym_table.rv_map.empty() && sym_table.dd_map.empty() &&
     sym_table.par_map.empty())
   {
-    old::modelt::model_type = type::HA;
+    return type::HA;
   }
   else if (sym_table.par_map.empty())
   {
-    old::modelt::model_type = type::PHA;
+    return type::PHA;
   }
   else
   {
-    old::modelt::model_type = type::NPHA;
+    return type::NPHA;
   }
-}
-
-void old::modelt::finalise()
-{
-  // the order of operations is important
-  build_symbol_table();
-  build_nondet_parameter_map();
-  set_model_type();
 }
 
 // getting pointer to the mode by id
@@ -123,7 +46,7 @@ old::modet *old::modelt::get_mode(std::string id)
 string old::modelt::to_string()
 {
   stringstream out;
-  out << "MODEL TYPE: " << model_type << endl;
+  out << "MODEL TYPE: " << get_model_type() << endl;
   out << "DECLARATIONS:" << endl;
   for (auto it = decls.cbegin(); it != decls.cend(); ++it)
   {

@@ -9,6 +9,7 @@
 #include "node.h"
 #include "model.h"
 #include "ast.h"
+#include "transform/symbol_table.h"
 
 node *new_to_old(symbolt &e);
 
@@ -73,6 +74,7 @@ node *new_to_old(discrete_distt &e);
 node *new_to_old(normal_distt &e);
 node *new_to_old(uniform_distt &e);
 node *new_to_old(exp_distt &e);
+node *new_to_old(interval_distt &e);
 
 old::declarationt *new_to_old(declt &e);
 old::declarationt *new_to_old(const_declt &e);
@@ -81,5 +83,8 @@ old::declarationt *new_to_old(dist_declt &e);
 std::map<std::string, old::declarationt> new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &e);
 
 old::modelt new_to_old(modelt &e);
+old::symbol_tablet new_to_old(symbol_tablet &e);
+
+old::modelt new_to_old(modelt &e, symbol_tablet &t);
 
 #endif // PROBREACH_NEW_TO_OLD_H

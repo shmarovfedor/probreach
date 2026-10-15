@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <cstdio>
+#include <iostream>
 
 #include "frontend.h"
 #include "pdrhparser.hpp"
@@ -24,16 +25,15 @@ int frontendt::parse(const std::string &filename)
 
     int result = parser.parse();
 
-    symbol_tablet sym_table;
-    build_symbol_tablet builder;
-    builder.build(sym_table, root.get());
-    complete_modelt completer;
-    completer.run(sym_table, *root);
-
     if(result == 0 && root)
     {
-      old::global_model = new_to_old(*root);
-      old::global_model.finalise();
+      symbol_tablet sym_table;
+      build_symbol_tablet builder;
+      builder.build(sym_table, root.get());
+      complete_modelt completer;
+      completer.run(sym_table, *root);
+
+      old::global_model = new_to_old(*root, sym_table);
     }
 
     fclose(input);

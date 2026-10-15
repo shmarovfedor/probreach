@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
 
   // only the following cases are supported in the formal setting
-  if (old::global_model.model_type == old::modelt::type::PHA)
+  if (old::global_model.get_model_type() == old::modelt::type::PHA)
   {
     capd::interval probability = algorithm::evaluate_pha_bayesian(
       global_config.reach_depth_min,
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     cout << scientific << probability << " | "
          << capd::intervals::width(probability) << endl;
   }
-  else if (old::global_model.model_type == old::modelt::type::NPHA)
+  else if (old::global_model.get_model_type() == old::modelt::type::NPHA)
   {
     pair<box, capd::interval> probability =
       algorithm::evaluate_npha_cross_entropy_normal(

@@ -44,10 +44,11 @@ false               { return yy::parser::token::FALSE; }
 
 time                { return yy::parser::token::TIME; }
 
-dist_uniform        { return yy::parser::token::U_DIST; }
-dist_normal         { return yy::parser::token::N_DIST; }
-dist_exp            { return yy::parser::token::E_DIST; }
-dist_discrete       { return yy::parser::token::DD_DIST; }
+dist_uniform        { return yy::parser::token::UNIFORM_DIST; }
+dist_normal         { return yy::parser::token::NORMAL_DIST; }
+dist_exp            { return yy::parser::token::EXP_DIST; }
+dist_discrete       { return yy::parser::token::DISCRETE_DIST; }
+dist_interval       { return yy::parser::token::INTERVAL_DIST; }
 
 mode                { return yy::parser::token::MODE; }
 invt                { return yy::parser::token::INVT; }

@@ -83,7 +83,6 @@ public:
     NPHA
   };
 
-  type model_type;
   symbol_tablet sym_table;
   std::map<std::string, declarationt> decls;
   std::vector<modet> modes;
@@ -106,12 +105,7 @@ public:
   // getter methods
   modet *get_mode(std::string);
   std::string to_string();
-
-  // methods for updating the model (should be part of typechecker/visitor)
-  void build_symbol_table();
-  void build_nondet_parameter_map();
-  void set_model_type();
-  void finalise();
+  type get_model_type();
 };
 
 extern modelt global_model;

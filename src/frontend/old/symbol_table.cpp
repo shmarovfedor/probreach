@@ -26,6 +26,13 @@ void old::symbol_tablet::push_var(string var, node *left, node *right)
   }
 }
 
+// adding a nondetrministic parameter
+void old::symbol_tablet::push_par(string var, node *left, node *right)
+{
+  push_var(var, left, right);
+  par_map.insert(make_pair(var, make_pair(left, right)));
+}
+
 // adding continuous random variable
 void old::symbol_tablet::push_rv(string var, node *pdf, node *left, node *right, node *start)
 {
