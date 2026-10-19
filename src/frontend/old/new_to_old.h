@@ -60,14 +60,13 @@ std::pair<std::string, std::map<std::string, node *>>
 new_to_old(reset_statet &e);
 old::statet new_to_old(cond_statet &e);
 std::vector<old::statet>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> &e);
+new_to_old(std::vector<std::unique_ptr<cond_statet>> &e);
 std::map<std::string, node *> new_to_old(flowt &e);
 old::jumpt new_to_old(jumpt &e);
-std::vector<old::jumpt>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> &e);
+std::vector<old::jumpt> new_to_old(std::vector<std::unique_ptr<jumpt>> &e);
 old::modet new_to_old(modet &e);
 std::vector<old::modet>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> &e);
+new_to_old(std::vector<std::unique_ptr<modet>> &e);
 
 node *new_to_old(distt &e);
 node *new_to_old(discrete_distt &e);
@@ -80,7 +79,7 @@ old::declarationt *new_to_old(declt &e);
 old::declarationt *new_to_old(const_declt &e);
 old::declarationt *new_to_old(var_declt &e);
 old::declarationt *new_to_old(dist_declt &e);
-std::map<std::string, old::declarationt> new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &e);
+std::map<std::string, old::declarationt> new_to_old(std::vector<std::unique_ptr<declt>> &e);
 
 old::modelt new_to_old(modelt &e);
 old::symbol_tablet new_to_old(symbol_tablet &e);

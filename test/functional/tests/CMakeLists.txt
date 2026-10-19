@@ -67,6 +67,12 @@ add_executable(formal_car_stopping_nonlinear_test_1
 target_link_libraries(formal_car_stopping_nonlinear_test_1 probreach_analysis probreach_config -lgtest)
 add_test(formal_car_stopping_nonlinear_test_1 "${PROBREACH_BINARY_DIR}/test/functional/tests/formal_car_stopping_nonlinear_test_1")
 
+add_executable(transition_graph_car_test
+  ${PROBREACH_TEST_DIR}/functional/tests/transition_graph_car.cpp
+  ${PROBREACH_TEST_DIR}/main_test.cpp)
+target_link_libraries(transition_graph_car_test probreach_analysis probreach_config -lgtest)
+add_test(transition_graph_car_test "${PROBREACH_BINARY_DIR}/test/functional/tests/transition_graph_car_test")
+
 # Monte Carlo tests start here
 add_executable(mc_good_test_1 
   ${PROBREACH_TEST_DIR}/functional/tests/mc_good_test_1.cpp

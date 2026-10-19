@@ -260,17 +260,14 @@ public:
   }
 };
 
-class modet
+class modet : public declt
 {
 private:
-  std::unique_ptr<symbolt> mode_id;
+  //std::unique_ptr<symbolt> mode_id;
   std::unique_ptr<intervalt> time_domain;
   std::vector<std::unique_ptr<invtt>> invariants;
   std::unique_ptr<flowt> flow;
-  // the jumps are stored as a map <successor_mode_id, jumpt>
-  // instead of just a vector of <jumpt> so that it's easier to access
-  // the ids of successor modes
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps;
+  std::vector<std::unique_ptr<jumpt>> jumps;
 
 public:
   modet(
@@ -278,18 +275,13 @@ public:
     std::unique_ptr<intervalt> time_domain,
     std::vector<std::unique_ptr<invtt>> invariants,
     std::unique_ptr<flowt> flow,
-    std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps)
-    : mode_id(std::move(mode_id)),
+    std::vector<std::unique_ptr<jumpt>> jumps)
+    : declt(std::move(mode_id)),
       time_domain(std::move(time_domain)),
       invariants(std::move(invariants)),
       flow(std::move(flow)),
       jumps(std::move(jumps))
   {
-  }
-
-  symbolt &get_mode_id()
-  {
-    return *mode_id;
   }
 
   intervalt &get_time_domain()
@@ -307,7 +299,7 @@ public:
     return *flow;
   }
   
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> &get_jumps()
+  std::vector<std::unique_ptr<jumpt>> &get_jumps()
   {
     return jumps;
   }
@@ -320,7 +312,7 @@ public:
   void print(std::ostream &out) const
   {
     out << "{\n";
-    out << "mode " << *mode_id << ";\n";
+    out << "mode " << get_symbol() << ";\n";
     out << "time: " << *time_domain << ";\n";
     if (invariants.size() > 0)
     {
@@ -333,8 +325,8 @@ public:
     if (!jumps.empty())
     {
       out << "jump:\n";
-      for (auto it = jumps.cbegin(); it != jumps.cend(); ++it)
-        out << *(it->second) << ";\n";
+      for (const auto &jump : jumps)
+        out << *jump << ";\n";
     }
     out << "}\n";
   }
@@ -349,17 +341,17 @@ public:
 class modelt
 {
 private:
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> decls;
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes;
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits;
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals;
+  std::vector<std::unique_ptr<declt>> decls;
+  std::vector<std::unique_ptr<modet>> modes;
+  std::vector<std::unique_ptr<cond_statet>> inits;
+  std::vector<std::unique_ptr<cond_statet>> goals;
 
 public:
   modelt(
-    std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> decls,
-    std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes,
-    std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits,
-    std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals) :
+    std::vector<std::unique_ptr<declt>> decls,
+    std::vector<std::unique_ptr<modet>> modes,
+    std::vector<std::unique_ptr<cond_statet>> inits,
+    std::vector<std::unique_ptr<cond_statet>> goals) :
   decls(std::move(decls)),
   modes(std::move(modes)),
   inits(std::move(inits)),
@@ -372,41 +364,41 @@ public:
     return "modelt";
   }
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &get_declarations()
+  std::vector<std::unique_ptr<declt>> &get_declarations()
   {
     return decls;
   }
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> &get_modes()
+  std::vector<std::unique_ptr<modet>> &get_modes()
   {
     return modes;
   }
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> &get_inits()
+  std::vector<std::unique_ptr<cond_statet>> &get_inits()
   {
     return inits;
   }
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> &get_goals()
+  std::vector<std::unique_ptr<cond_statet>> &get_goals()
   {
     return goals;
   }
 
   void print(std::ostream &out) const
   {
-    for (auto it = decls.cbegin(); it != decls.cend(); ++it)
-      out << *(it->second) << ";\n";
+    for (const auto &decl : decls)
+      out << *decl << ";\n";
 
-    for (auto it = modes.cbegin(); it != modes.cend(); ++it)
-      out << *(it->second);
+    for (const auto &mode : modes)
+      out << *mode;
 
     out << "init:\n";
-    for (auto it = inits.cbegin(); it != inits.cend(); ++it)
-      out << *(it->second) << ";\n";
+    for (const auto &init : inits)
+      out << *init << ";\n";
     
     out << "goal:\n";
-    for (auto it = goals.cbegin(); it != goals.cend(); ++it)
-      out << *(it->second) << ";\n";
+    for (const auto &goal : goals)
+      out << *goal << ";\n";
   }
 
   friend std::ostream &operator<<(std::ostream &os, const modelt &e)

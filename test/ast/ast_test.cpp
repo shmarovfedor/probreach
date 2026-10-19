@@ -438,8 +438,8 @@ TEST(modet_ostream, normal_test)
     std::make_unique<symbolt>("cooling"), std::move(operands2));
 
   auto jump = std::make_unique<jumpt>(std::move(guard), std::move(reset));
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps;
-  jumps[std::make_unique<symbolt>("cooling")] = std::move(jump);
+  std::vector<std::unique_ptr<jumpt>> jumps;
+  jumps.push_back(std::move(jump));
 
   auto mode = std::make_unique<modet>(
     std::move(mode_id),
@@ -485,11 +485,10 @@ TEST(modelt_ostream, normal_test)
       std::make_unique<numbert>("-0.1254"),
       std::make_unique<numbert>("1.43e2")));
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> sym_table;
-  sym_table[std::make_unique<symbolt>(const1->get_symbol())] =
-    std::move(const1);
-  sym_table[std::make_unique<symbolt>(var1->get_symbol())] = std::move(var1);
-  sym_table[std::make_unique<symbolt>(rv1->get_symbol())] = std::move(rv1);
+  std::vector<std::unique_ptr<declt>> sym_table;
+  sym_table.push_back(std::move(const1));
+  sym_table.push_back(std::move(var1));
+  sym_table.push_back(std::move(rv1));
 
   auto mode_id = std::make_unique<symbolt>("heating");
 
@@ -560,8 +559,8 @@ TEST(modelt_ostream, normal_test)
     std::make_unique<symbolt>("cooling"), std::move(operands2));
 
   auto jump = std::make_unique<jumpt>(std::move(guard), std::move(reset));
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> jumps;
-  jumps[std::make_unique<symbolt>("cooling")] = std::move(jump);
+  std::vector<std::unique_ptr<jumpt>> jumps;
+  jumps.push_back(std::move(jump));
 
   auto mode = std::make_unique<modet>(
     std::move(mode_id),
@@ -570,8 +569,8 @@ TEST(modelt_ostream, normal_test)
     std::move(flow),
     std::move(jumps));
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> modes;
-  modes[std::make_unique<symbolt>(mode->get_mode_id())] = std::move(mode);
+  std::vector<std::unique_ptr<modet>> modes;
+  modes.push_back(std::move(mode));
 
   auto expr5 = std::make_unique<greater_equalt>(
     std::make_unique<addt>(
@@ -587,9 +586,8 @@ TEST(modelt_ostream, normal_test)
   auto init_state = std::make_unique<cond_statet>(
     std::make_unique<symbolt>("heating"), std::move(init_expr));
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> inits;
-  inits[std::make_unique<symbolt>(init_state->get_mode_id())] =
-    std::move(init_state);
+  std::vector<std::unique_ptr<cond_statet>> inits;
+  inits.push_back(std::move(init_state));
 
   auto expr6 = std::make_unique<not_equalt>(
     std::make_unique<addt>(
@@ -605,9 +603,8 @@ TEST(modelt_ostream, normal_test)
   auto goal_state = std::make_unique<cond_statet>(
     std::make_unique<symbolt>("cooling"), std::move(goal_expr));
 
-  std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> goals;
-  goals[std::make_unique<symbolt>(goal_state->get_mode_id())] =
-    std::move(goal_state);
+  std::vector<std::unique_ptr<cond_statet>> goals;
+  goals.push_back(std::move(goal_state));
 
   auto model = std::make_unique<modelt>(
     std::move(sym_table), std::move(modes), std::move(inits), std::move(goals));
@@ -616,9 +613,9 @@ TEST(modelt_ostream, normal_test)
   s << *model;
 
   EXPECT_EQ(s.str(), 
+    "[3.1415] pi;\n"
     "[-0.1254, 1.43e2] a1;\n"
     "dist_uniform(-0.1254, 1.43e2) p_11;\n"
-    "[3.1415] pi;\n"
     "{\n"
     "mode heating;\n"
     "time: [0, 10];\n"

@@ -63,20 +63,20 @@ int yylex(
 %type<std::unique_ptr<reset_statet>> reset_state
 
 %type<std::unique_ptr<cond_statet>> cond_state
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>*> cond_states
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>*> init
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>*> goal
+%type<std::vector<std::unique_ptr<cond_statet>>*> cond_states
+%type<std::vector<std::unique_ptr<cond_statet>>*> init
+%type<std::vector<std::unique_ptr<cond_statet>>*> goal
 
 %type<std::unique_ptr<odet>> ode
 %type<std::vector<std::unique_ptr<odet>>*> odes 
 %type<std::unique_ptr<flowt>> flow_section
 
 %type<std::unique_ptr<jumpt>> jump
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>*> jumps 
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>*> jump_section 
+%type<std::vector<std::unique_ptr<jumpt>>*> jumps 
+%type<std::vector<std::unique_ptr<jumpt>>*> jump_section 
 
 %type<std::unique_ptr<modet>> mode
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>>*> modes
+%type<std::vector<std::unique_ptr<modet>>*> modes
 
 %type<std::pair<std::unique_ptr<numbert>, std::unique_ptr<numbert>>*> dd_pair
 %type<std::map<std::unique_ptr<numbert>, std::unique_ptr<numbert>>*> dd_pairs
@@ -87,7 +87,7 @@ int yylex(
 %type<std::unique_ptr<declt>> const_declaration 
 %type<std::unique_ptr<declt>> var_declaration 
 %type<std::unique_ptr<declt>> dist_declaration
-%type<std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>>*> declarations
+%type<std::vector<std::unique_ptr<declt>>*> declarations
 
 %%
 model:
@@ -104,15 +104,13 @@ model:
 declarations:
 	declarations declaration 
 {
-  auto sym = std::make_unique<symbolt>($2->get_symbol().get_value());
-  $1->emplace(std::move(sym), std::move($2));
+  $1->push_back(std::move($2));
   $$ = std::move($1);
 }
 	| declaration 
 {
-  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>>();
-  auto sym = std::make_unique<symbolt>($1->get_symbol().get_value());
-  $$->emplace(std::move(sym), std::move($1));
+  $$ = new std::vector<std::unique_ptr<declt>>();
+  $$->push_back(std::move($1));
 }
 
 declaration:
@@ -205,15 +203,13 @@ dd_pair:
 modes:
 	modes mode  
 {
-  auto mode_id = std::make_unique<symbolt>($2->get_mode_id().get_value());
-  $1->emplace(std::move(mode_id), std::move($2));
+  $1->push_back(std::move($2));
   $$ = std::move($1);
 }
 	| mode      
 {
-  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>>();
-  auto mode_id = std::make_unique<symbolt>($1->get_mode_id().get_value());
-  $$->emplace(std::move(mode_id), std::move($1));
+  $$ = new std::vector<std::unique_ptr<modet>>();
+  $$->push_back(std::move($1));
 }
 
 mode:
@@ -500,27 +496,37 @@ jump_section:
 }
 	| JUMP ':' 
 { 
-  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+  //$$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+  $$ = new std::vector<std::unique_ptr<jumpt>>();
 }
   | 
 { 
-  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+  //$$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
+  $$ = new std::vector<std::unique_ptr<jumpt>>();
 }
 
 jumps:
 	jumps jump 
 {
+/*
   auto mode_id = 
     std::make_unique<symbolt>($2->get_reset().get_mode_id().get_value());
   $1->emplace(std::move(mode_id), std::move($2));
   $$ = std::move($1);
+*/
+  $1->push_back(std::move($2));
+  $$ = std::move($1);
 }
 	| jump 
 {
+/*
   $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>>();
   auto mode_id = 
     std::make_unique<symbolt>($1->get_reset().get_mode_id().get_value());
   $$->emplace(std::move(mode_id), std::move($1));
+*/
+  $$ = new std::vector<std::unique_ptr<jumpt>>();
+  $$->push_back(std::move($1));
 }
 
 jump:
@@ -541,14 +547,14 @@ cond_state:
 
 cond_states:
   cond_states cond_state 
-{ 
-  $1->emplace(std::make_unique<symbolt>($2->get_mode_id().get_value()), std::move($2));
+{
+  $1->push_back(std::move($2));
   $$ = $1;
- }
+}
   | cond_state 
 { 
-  $$ = new std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>>();
-  $$->emplace(std::make_unique<symbolt>($1->get_mode_id().get_value()), std::move($1));
+  $$ = new std::vector<std::unique_ptr<cond_statet>>();
+  $$->push_back(std::move($1));
 }
 
 init:

@@ -5,22 +5,18 @@
 
 void complete_modelt::run(symbol_tablet &sym_table, modelt &model)
 {
-  for (auto it = model.get_modes().cbegin(); 
-      it != model.get_modes().cend(); 
-      ++it)
+  for (const auto &mode : model.get_modes())
   {
-    visit(sym_table, *(it->second));
+    visit(sym_table, *mode);
   }
 }
 
 void complete_modelt::visit(symbol_tablet &sym_table, modet &mode)
 {
   visit(sym_table, mode.get_flow());
-  for (auto it = mode.get_jumps().cbegin(); 
-      it != mode.get_jumps().cend(); 
-      ++it)
+  for (const auto &jump : mode.get_jumps())
   {
-    visit(sym_table, *(it->second));
+    visit(sym_table, *jump);
   }
 }
 
@@ -34,7 +30,7 @@ void complete_modelt::visit(symbol_tablet &sym_table, flowt &flow)
   for (auto it = sym_table.cbegin(); it != sym_table.cend(); ++it)
   {
     if (std::find(ode_syms.cbegin(), ode_syms.cend(), it->first) 
-        == ode_syms.cend())
+        == ode_syms.cend() && it->second->get_type() != "modet")
     {
       std::unique_ptr<symbolt> sym = std::make_unique<symbolt>(it->first);
       std::unique_ptr<numbert> rhs = std::make_unique<numbert>("0.0");
@@ -58,7 +54,7 @@ void complete_modelt::visit(symbol_tablet &sym_table, reset_statet &reset)
   for (auto it = sym_table.cbegin(); it != sym_table.cend(); ++it)
   {
     if (std::find(assign_syms.cbegin(), assign_syms.cend(), it->first) 
-        == assign_syms.cend())
+        == assign_syms.cend() && it->second->get_type() != "modet")
     {
       std::unique_ptr<symbolt> sym = std::make_unique<symbolt>(it->first);
       std::unique_ptr<symbol_exprt> rhs = 

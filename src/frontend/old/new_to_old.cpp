@@ -371,11 +371,11 @@ old::statet new_to_old(cond_statet &e)
 }
 
 std::vector<old::statet>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<cond_statet>> &e)
+new_to_old(std::vector<std::unique_ptr<cond_statet>> &e)
 {
   std::vector<old::statet> res;
-  for (auto &it : e)
-    res.push_back(new_to_old(*(it.second)));
+  for (const auto &it : e)
+    res.push_back(new_to_old(*it));
   return res;
 }
 
@@ -397,18 +397,18 @@ old::jumpt new_to_old(jumpt &e)
 }
 
 std::vector<old::jumpt>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<jumpt>> &e)
+new_to_old(std::vector<std::unique_ptr<jumpt>> &e)
 {
   std::vector<old::jumpt> res;
-  for (auto &it : e)
-    res.push_back(new_to_old(*(it.second)));
+  for (const auto &jump : e)
+    res.push_back(new_to_old(*jump));
   return res;
 }
 
 old::modet new_to_old(modet &e)
 {
   old::modet res;
-  res.id = e.get_mode_id().get_value();
+  res.id = e.get_symbol().get_value();
   res.invts = new_to_old(e.get_invariants());
   res.jumps = new_to_old(e.get_jumps());
   res.odes = new_to_old(e.get_flow());
@@ -417,11 +417,11 @@ old::modet new_to_old(modet &e)
 }
 
 std::vector<old::modet>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<modet>> &e)
+new_to_old(std::vector<std::unique_ptr<modet>> &e)
 {
   std::vector<old::modet> res;
-  for (auto &it : e)
-    res.push_back(new_to_old(*(it.second)));
+  for (const auto &it : e)
+    res.push_back(new_to_old(*it));
   return res;
 }
 
@@ -524,11 +524,11 @@ old::declarationt *new_to_old(dist_declt &e)
 }
 
 std::map<std::string, old::declarationt>
-new_to_old(std::map<std::unique_ptr<symbolt>, std::unique_ptr<declt>> &e)
+new_to_old(std::vector<std::unique_ptr<declt>> &e)
 {
   std::map<std::string, old::declarationt> res;
-  for (auto &it : e)
-    res.emplace(it.first->get_value(), *new_to_old(*(it.second)));
+  for (const auto &it : e)
+    res.emplace(it->get_symbol().get_value(), *new_to_old(*it));
   return res;
 }
 

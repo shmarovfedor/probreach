@@ -28,7 +28,7 @@ public:
   virtual ~declt() = default;
   virtual void print(std::ostream &out) const = 0;
 
-  symbolt &get_symbol()
+  const symbolt &get_symbol() const
   {
     return *sym;
   }
