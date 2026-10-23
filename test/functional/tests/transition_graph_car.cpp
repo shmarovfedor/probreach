@@ -11,6 +11,8 @@
 #include "symbol_table.h"
 #include "build_symbol_table.h"
 #include "complete_model.h"
+#include "transition_graph.h"
+#include "build_transition_graph.h"
 
 using namespace std;
 
@@ -29,5 +31,10 @@ TEST(transition_graph_car_test, testing_transition_graph_car)
   builder.build(sym_table, &model);
   complete_modelt completer;
   completer.run(sym_table, model);
+  build_transition_grapht transition_graph_builder(sym_table);
+  transition_grapht graph;
+  transition_graph_builder.build(graph);
   std::cout << model << "\n";
+  std::cout << "Transition graph\n";
+  std::cout << graph;
 }

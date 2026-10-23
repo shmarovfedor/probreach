@@ -238,12 +238,12 @@ public:
     return "jumpt";
   }
 
-  bool_exprt &get_guard()
+  bool_exprt &get_guard() const
   {
     return *guard;
   }
 
-  reset_statet &get_reset()
+  reset_statet &get_reset() const
   {
     return *reset;
   }
@@ -263,7 +263,6 @@ public:
 class modet : public declt
 {
 private:
-  //std::unique_ptr<symbolt> mode_id;
   std::unique_ptr<intervalt> time_domain;
   std::vector<std::unique_ptr<invtt>> invariants;
   std::unique_ptr<flowt> flow;

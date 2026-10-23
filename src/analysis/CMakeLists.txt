@@ -7,6 +7,7 @@ file(GLOB PROBREACH_ANALYSIS_SRC
         ${PROBREACH_SOURCE_DIR}/util/measurer.cpp
         ${PROBREACH_SOURCE_DIR}/util/sampler.cpp
         ${PROBREACH_SOURCE_DIR}/decision_procedure/decision_procedure.cpp
+        ${PROBREACH_SOURCE_DIR}/transition_graph/build_transition_graph.cpp
         ${PROBREACH_SOURCE_DIR}/solver/dreal_solver.cpp
         ${PROBREACH_SOURCE_DIR}/codegen/smt2_generator.cpp)
 
