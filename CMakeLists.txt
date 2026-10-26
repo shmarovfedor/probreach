@@ -87,6 +87,7 @@ include_directories("${PROBREACH_SOURCE_DIR}/util")
 include_directories("${PROBREACH_SOURCE_DIR}/codegen")
 include_directories("${PROBREACH_SOURCE_DIR}/decision_procedure")
 include_directories("${PROBREACH_SOURCE_DIR}/transition_graph")
+include_directories("${PROBREACH_SOURCE_DIR}/trace")
 include_directories("${PROBREACH_SOURCE_DIR}/analysis")
 include_directories("${PROBREACH_SOURCE_DIR}/solver")
 

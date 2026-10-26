@@ -35,10 +35,19 @@ public:
   {
     return target;
   }
+
+  bool is_terminal() const
+  {
+    return jump == nullptr;
+  }
   
   void print(std::ostream &out) const
   {
-    out << "@" << source->get_symbol() << " " << *jump;
+    out << "@" << source->get_symbol() << " ";
+    if (jump)
+      out << *jump;
+    else
+      out << "[X]";
   }
 
   friend std::ostream &operator<<(std::ostream &os, const transitiont &e)
@@ -71,6 +80,11 @@ public:
     auto *ptr = transition.get();
     transitions.push_back(std::move(transition));
     outgoing[source].push_back(ptr);
+  }
+
+  std::vector<const transitiont *> get_successors(const modet *mode) const
+  {
+    return outgoing.at(mode);
   }
 
   const std::vector<const transitiont *> & 

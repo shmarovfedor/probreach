@@ -13,6 +13,8 @@
 #include "complete_model.h"
 #include "transition_graph.h"
 #include "build_transition_graph.h"
+#include "trace.h"
+#include "build_traces.h"
 
 using namespace std;
 
@@ -35,6 +37,10 @@ TEST(transition_graph_car_test, testing_transition_graph_car)
   transition_grapht graph;
   transition_graph_builder.build(graph);
   std::cout << model << "\n";
-  std::cout << "Transition graph\n";
+  std::cout << "Transition graph:\n";
   std::cout << graph;
+  build_tracest trace_gen(model, graph, sym_table, 3);
+  std::cout << "Traces:\n";
+  while (tracet* trace = trace_gen.next())
+    std::cout << *trace << "\n";
 }

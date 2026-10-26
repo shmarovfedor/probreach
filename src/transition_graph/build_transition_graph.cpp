@@ -8,6 +8,12 @@ void build_transition_grapht::build(transition_grapht &graph) const
     if(source == nullptr)
       continue;
 
+    if(source->get_jumps().empty())
+    {
+      graph.add_transition(source, nullptr, nullptr);
+      continue;
+    }
+
     for(auto &jump : source->get_jumps())
     {
       const modet *target = resolve_target(*jump);
