@@ -156,16 +156,16 @@ int decision_procedure::evaluate_delta_sat(
     cout << smt2_generatort::reach_to_smt2(path, boxes) << endl;
   }
 
-  int first_res = solver.run(smt_filename, solver_opt);
+  solver_resultt first_res = solver.run(smt_filename, solver_opt);
 
   if (global_config.debug)
     cout << "dReal result = " << first_res << "\n";
 
-  if (first_res == -1)
+  if (first_res.get_result() == resultt::ERROR)
   {
     return decision_procedure::ERROR;
   }
-  else if (first_res == 1)
+  else if (first_res.get_result() == resultt::UNSAT)
   {
     if (
       (std::remove(smt_filename.c_str()) == 0) &&
@@ -240,16 +240,16 @@ int decision_procedure::evaluate_complement(
     }
     smt_c_file.close();
     // calling dreal here
-    int second_res = solver.run(smt_c_filename, solver_opt);
+    solver_resultt second_res = solver.run(smt_c_filename, solver_opt);
 
     if (global_config.debug)
       cout << "dReal result = " << second_res << "\n";
 
-    if (second_res == -1)
+    if (second_res.get_result() == resultt::ERROR)
     {
       return decision_procedure::ERROR;
     }
-    else if (second_res == 1)
+    else if (second_res.get_result() == resultt::UNSAT)
     {
       if (
         (remove(smt_c_filename.c_str()) != 0) ||

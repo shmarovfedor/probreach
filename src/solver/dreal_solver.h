@@ -18,7 +18,7 @@ public:
   {
   }
 
-  int run(std::string file_path, std::string args) const override;
+  solver_resultt run(std::string file_path, std::string args) const override;
 
 };
 
