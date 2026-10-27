@@ -25,6 +25,7 @@ d/dt[v]= alpha*exp(-alpha*tau+beta)-drag*v*v;
 d/dt[tau]= 1.0;
 jump:
 (v >= v_100)==>@2(tau' = 0);
+(v >= v_100)==>@2(tau' = 0);
 }
 
 // reacting

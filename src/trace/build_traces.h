@@ -25,11 +25,12 @@ private:
 
   struct framet
   {
-    const transitiont* transition;
+    const modet* current_mode;
     size_t next_successor;
   };
 
   std::vector<framet> stack;
+  bool trace_pending = false;
 
 public:
   build_tracest(
